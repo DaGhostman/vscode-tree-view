@@ -16,6 +16,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 
 - [TS/JS] 'Imports' section
+- [General] Use TSLint
 
 ## [0.0.1] - 2017-12-17
 
