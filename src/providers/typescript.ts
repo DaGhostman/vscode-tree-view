@@ -3,7 +3,7 @@ import * as vscode from 'vscode'
 import * as ts from 'typescript-parser'
 import * as token from './../tokens'
 import { Provider } from './../provider'
-import { TreeItem } from 'vscode';
+import { TreeItem, Range } from 'vscode';
 
 export class TypescriptProvider implements BaseProvider {
     private parser: ts.TypescriptParser;
@@ -114,6 +114,11 @@ export class TypescriptProvider implements BaseProvider {
                         if (cls.properties) {
                             for (let property of cls.properties) {
                                 let t = new TreeItem(`$${property.name}${property.value !== '' ? ` = ${property.value}` : ''}`, vscode.TreeItemCollapsibleState.None)
+                                t.command = {
+                                    command: 'extension.treeview.goto',
+                                    title: '',
+                                    arguments: [property.position]
+                                };
                                 items.push(Provider.getIcon(
                                     t,
                                     'property',
@@ -139,6 +144,11 @@ export class TypescriptProvider implements BaseProvider {
                                     `${method.name}(${args.join(', ')})${method.type !== undefined ? `: ${method.type}` : ''}`,
                                     vscode.TreeItemCollapsibleState.None
                                 )
+                                t.command = {
+                                    command: 'extension.treeview.goto',
+                                    title: '',
+                                    arguments: [method.position]
+                                };
                                 items.push(Provider.getIcon(
                                     t,
                                     'method',
@@ -158,11 +168,13 @@ export class TypescriptProvider implements BaseProvider {
         let properties: token.PropertyToken[] = [];
 
         for (let property of children) {
+            let start = this.offsetToPosition(property.start);
             properties.push(<token.PropertyToken>{
                 name: property.name,
                 type: property.type === undefined ? 'any' : property.type,
                 visibility: this.VISIBILITY[property.visibility === undefined ? 2 : property.visibility],
-                value: this.normalizeType(property.value, property.type)
+                value: this.normalizeType(property.value, property.type),
+                position: new vscode.Range(start, start)
             });
         }
 
@@ -202,10 +214,12 @@ export class TypescriptProvider implements BaseProvider {
         let methods: token.MethodToken[] = [];
 
         for (let method of children) {
+            let start = this.offsetToPosition(method.start);
             methods.push(<token.MethodToken>{
                 name: method.name,
                 type: method.type === null ? 'any' : method.type,
                 arguments: this.handleArguments(method.parameters),
+                position: new vscode.Range(start, start),
                 visibility: this.VISIBILITY[method.visibility === undefined ? 2 : method.visibility],
             })
         }
@@ -226,5 +240,25 @@ export class TypescriptProvider implements BaseProvider {
         }
 
         return variables;
+    }
+
+    private offsetToPosition(offset: number): vscode.Position
+    {
+        let document = vscode.window.activeTextEditor.document;
+        let lines = document.getText().split('\n');
+        let char: number = 0
+        let line: number = 0;
+
+        for (let l in lines) {
+            if (offset > 0) {
+                char = 0;
+                offset -= lines[line].length;
+                if (offset <= 0) { break; }
+                // @todo: Implement column localization within the line
+                line++;
+            }
+            offset--;
+        }
+        return new vscode.Position(line, char);
     }
 }

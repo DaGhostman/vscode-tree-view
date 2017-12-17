@@ -10,6 +10,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - [PHP] Removed leading `\` where `array` typehint would show as `\array`
 - [PHP] Show `null` where null is used as value of arguments instead of `undefined`
+- [TS/JS] Initial (go to _line only_) 'GoTo definition' on node click (@ToDo calculate the proper character offset to find the exact match)
 
 ## [0.0.1] - 2017-12-17
 
