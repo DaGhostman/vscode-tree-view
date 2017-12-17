@@ -1,22 +1,21 @@
-'use strict';
+"use strict";
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
-import { PhpProvider, TypescriptProvider } from './providers';
-import { TextEditor } from 'vscode';
-import { Provider } from './provider';
+import * as vscode from "vscode";
+import { Provider } from "./provider";
+import { PhpProvider, TypescriptProvider } from "./providers";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
     const provider = new Provider([
-        new PhpProvider,
-        new TypescriptProvider
-    ])
+        new PhpProvider(),
+        new TypescriptProvider(),
+    ]);
 
-    vscode.window.registerTreeDataProvider('tree-outline', provider);
-    vscode.commands.registerCommand('extension.treeview.goto', (range: vscode.Range) => {
-        let editor:TextEditor = vscode.window.activeTextEditor;
+    vscode.window.registerTreeDataProvider("tree-outline", provider);
+    vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => {
+        const editor: vscode.TextEditor = vscode.window.activeTextEditor;
 
         // Center the method in the document
         editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
@@ -27,7 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
     });
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "php-treeview" is now active!');
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
@@ -44,4 +42,5 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+    return undefined;
 }

@@ -1,0 +1,18 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {
+        "semicolon": false
+    },
+    "rules": {
+        "member-access": true,
+        "semicolon": true,
+        "align": true,
+        "arrow-return-shorthand": true,
+        "arrow-parens": true,
+        "ban": true
+    },
+    "rulesDirectory": []
+}

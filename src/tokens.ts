@@ -1,42 +1,46 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-type VISIBILITY_PUBLIC = 'public';
-type VISIBILITY_PROTECTED = 'protected';
-type VISIBILITY_PRIVATE = 'private';
+type VISIBILITY_PUBLIC = "public";
+type VISIBILITY_PROTECTED = "protected";
+type VISIBILITY_PRIVATE = "private";
 
-export interface BaseToken {
-    name: string
-    position?: vscode.Range
+export interface IBaseToken {
+    name: string;
+    position?: vscode.Range;
 }
 
-export interface VariableToken extends BaseToken {
-    value: string
-    visibility?: VISIBILITY_PRIVATE | VISIBILITY_PROTECTED | VISIBILITY_PUBLIC
-    type?: string
+export interface IVariableToken extends IBaseToken {
+    value: string;
+    visibility?: VISIBILITY_PRIVATE | VISIBILITY_PROTECTED | VISIBILITY_PUBLIC;
+    type?: string;
 }
 
-export interface PropertyToken extends VariableToken {}
-export interface ConstantToken extends VariableToken {}
-
-export interface MethodToken extends VariableToken {
-    arguments?: VariableToken[]
+export interface IPropertyToken extends IVariableToken {
+    name: string;
+}
+export interface IConstantToken extends IVariableToken {
+    name: string;
 }
 
-export interface EntityToken extends BaseToken {
-    constants?: ConstantToken[]
-    methods?: MethodToken[]
-    properties?: PropertyToken[]
-    traits?: EntityToken[],
-    visibility?: VISIBILITY_PRIVATE | VISIBILITY_PROTECTED | VISIBILITY_PUBLIC
+export interface IMethodToken extends IVariableToken {
+    arguments?: IVariableToken[];
 }
 
-export interface ImportToken extends BaseToken {
-    alias?: string
+export interface IEntityToken extends IBaseToken {
+    constants?: IConstantToken[];
+    methods?: IMethodToken[];
+    properties?: IPropertyToken[];
+    traits?: IEntityToken[];
+    visibility?: VISIBILITY_PRIVATE | VISIBILITY_PROTECTED | VISIBILITY_PUBLIC;
 }
 
-export interface TokenTree {
-    strict?: boolean
-    namespace?: string
-    imports?: ImportToken[]
-    nodes?: EntityToken[]
+export interface ImportToken extends IBaseToken {
+    alias?: string;
+}
+
+export interface ITokenTree {
+    strict?: boolean;
+    namespace?: string;
+    imports?: ImportToken[];
+    nodes?: IEntityToken[];
 }

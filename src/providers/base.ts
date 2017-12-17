@@ -1,12 +1,10 @@
-import * as vscode from 'vscode';
-import * as token from '../tokens'
-import { TreeItem } from 'vscode';
+import * as vscode from "vscode";
+import * as token from "../tokens";
 
-export interface BaseProvider
-{
-    hasSupport(langId: string): boolean
-    refresh(event?: vscode.TextDocumentChangeEvent): void
+export interface IBaseProvider {
+    hasSupport(langId: string): boolean;
+    refresh(event?: vscode.TextDocumentChangeEvent): void;
 
-    getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem>
-    getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]>
+    getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem>;
+    getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]>;
 }

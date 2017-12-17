@@ -1,24 +1,13 @@
-import * as vscode from 'vscode'
-import * as token from './../tokens'
-import { BaseProvider } from './base'
-import { Provider } from './../provider'
-import { BaseToken, VariableToken } from './../tokens';
-import { TreeItem, Range } from 'vscode';
+import * as vscode from "vscode";
+import { Provider } from "./../provider";
+import * as token from "./../tokens";
+import { IBaseToken, IVariableToken } from "./../tokens";
+import { IBaseProvider } from "./base";
 
-export class PhpProvider implements BaseProvider {
+export class PhpProvider implements IBaseProvider {
     private config;
 
-    public hasSupport(language: string) { return language.toLowerCase() === 'php' }
-    private getTree(): token.TokenTree {
-        if (vscode.window.activeTextEditor.document !== undefined) {
-            return this.walk(
-                require('php-parser').create({ ast: {withPositions: true } })
-                    .parseCode(vscode.window.activeTextEditor.document.getText()).children
-            )
-        }
-
-        return <token.TokenTree>{}
-    }
+    public hasSupport(language: string) { return language.toLowerCase() === "php"; }
 
     public withConfiguration(config: any): void {
         this.config = config;
@@ -26,57 +15,57 @@ export class PhpProvider implements BaseProvider {
 
     public refresh(event?): void {
         if (event !== undefined) {
-            this.getTree()
+            this.getTree();
         }
-        console.log('PHP Tree View provider refresh triggered')
     }
 
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> { return element; }
     public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
-        let resolution: Thenable<TreeItem[]> = Promise.resolve([]);
-        let tree = this.getTree();
+        let resolution: Thenable<vscode.TreeItem[]> = Promise.resolve([]);
+        const tree = this.getTree();
 
         try {
-            let items: vscode.TreeItem[] = [];
+            const items: vscode.TreeItem[] = [];
 
             if (tree !== {}) {
                 if (element === undefined) {
                     if (tree.strict !== undefined) {
                         items.push(new vscode.TreeItem(
-                            `Strict Types: ${tree.strict ? 'Yes' : 'No'}`
-                        ))
+                            `Strict Types: ${tree.strict ? "Yes" : "No"}`,
+                            vscode.TreeItemCollapsibleState.None,
+                        ));
                     }
 
                     if (tree.imports !== undefined) {
-                        items.push(new vscode.TreeItem(`Imports`, vscode.TreeItemCollapsibleState.Collapsed))
+                        items.push(new vscode.TreeItem(`Imports`, vscode.TreeItemCollapsibleState.Collapsed));
                     }
 
                     if (tree.nodes !== undefined) {
-                        for (let cls of tree.nodes) {
-                            let collapsed: number = tree.nodes.indexOf(cls) === 0 ?
+                        for (const cls of tree.nodes) {
+                            const collapsed: number = tree.nodes.indexOf(cls) === 0 ?
                                 vscode.TreeItemCollapsibleState.Expanded :
-                                vscode.TreeItemCollapsibleState.Collapsed
+                                vscode.TreeItemCollapsibleState.Collapsed;
 
                             items.push(
                                 Provider.getIcon(
                                     new vscode.TreeItem(cls.name, collapsed),
-                                    'class'
-                                )
-                            )
+                                    "class",
+                                ),
+                            );
                         }
                     }
                 } else {
-                    for (let cls of tree.nodes) {
-                        if (element.label === 'Imports') {
-                            for (let imp of tree.imports) {
-                                let t = new vscode.TreeItem(
-                                    `${imp.name}${imp.alias !== null ? ` as ${imp.alias}` : ''}`,
-                                    vscode.TreeItemCollapsibleState.None
+                    for (const cls of tree.nodes) {
+                        if (element.label === "Imports") {
+                            for (const imp of tree.imports) {
+                                const t = new vscode.TreeItem(
+                                    `${imp.name}${imp.alias !== null ? ` as ${imp.alias}` : ""}`,
+                                    vscode.TreeItemCollapsibleState.None,
                                 );
                                 t.command = {
-                                    command: 'extension.treeview.goto',
-                                    title: '',
-                                    arguments: [imp.position]
+                                    arguments: [imp.position],
+                                    command: "extension.treeview.goto",
+                                    title: "",
                                 };
                                 items.push(t);
                             }
@@ -84,66 +73,72 @@ export class PhpProvider implements BaseProvider {
 
                         if (cls.name === element.label) {
                             if (cls.constants) {
-                                for (let constant of cls.constants) {
-                                    let t = new TreeItem(`${constant.name} = ${constant.value}`, vscode.TreeItemCollapsibleState.None)
+                                for (const constant of cls.constants) {
+                                    const t = new vscode.TreeItem(
+                                        `${constant.name} = ${constant.value}`,
+                                        vscode.TreeItemCollapsibleState.None,
+                                    );
+
                                     t.command = {
-                                        command: 'extension.treeview.goto',
-                                        title: '',
-                                        arguments: [constant.position]
+                                        arguments: [constant.position],
+                                        command: "extension.treeview.goto",
+                                        title: "",
                                     };
 
-                                    items.push(Provider.getIcon(t, 'constant'))
+                                    items.push(Provider.getIcon(t, "constant"));
                                 }
                             }
 
                             if (cls.properties) {
-                                for (let property of cls.properties) {
-                                    let t = new TreeItem(`$${property.name}${property.value !== '' ? ` = ${property.value}` : ''}`, vscode.TreeItemCollapsibleState.None)
+                                for (const property of cls.properties) {
+                                    const t = new vscode.TreeItem(
+                                        `$${property.name}${property.value !== "" ? ` = ${property.value}` : ""}`,
+                                        vscode.TreeItemCollapsibleState.None,
+                                    );
                                     t.command = {
-                                        command: 'extension.treeview.goto',
-                                        title: '',
-                                        arguments: [property.position]
+                                        arguments: [property.position],
+                                        command: "extension.treeview.goto",
+                                        title: "",
                                     };
-                                    items.push(Provider.getIcon(
-                                        t,
-                                        'property',
-                                        property.visibility
-                                    ))
+                                    items.push(Provider.getIcon(t, "property", property.visibility));
                                 }
                             }
 
                             if (cls.traits) {
-                                for (let trait of cls.traits) {
-                                    let t = new TreeItem(`${trait.name}`, vscode.TreeItemCollapsibleState.None)
+                                for (const trait of cls.traits) {
+                                    const t = new vscode.TreeItem(
+                                        `${trait.name}`,
+                                        vscode.TreeItemCollapsibleState.None,
+                                    );
                                     t.command = {
-                                        command: 'extension.treeview.goto',
-                                        title: '',
-                                        arguments: [trait.position]
+                                        arguments: [trait.position],
+                                        command: "extension.treeview.goto",
+                                        title: "",
                                     };
-                                    items.push(Provider.getIcon(t, 'trait'))
+                                    items.push(Provider.getIcon(t, "trait"));
                                 }
                             }
 
                             if (cls.methods) {
-                                for (let method of cls.methods) {
-                                    let args = [];
-                                    for (let arg of method.arguments) {
-                                        args.push(`${arg.type !== undefined ? `${arg.type} ` : ''}$${arg.name}${(arg.value !== '' ? ` = ${arg.value}` : '')}`)
+                                for (const method of cls.methods) {
+                                    const args = [];
+                                    for (const arg of method.arguments) {
+                                        args.push(
+                                            `${arg.type !== undefined ? `${arg.type} ` : ""}` +
+                                            `$${arg.name}${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                                        );
                                     }
-                                    let t = new TreeItem(
-                                        `${method.name}(${args.join(', ')})${method.type !== undefined ? `: ${method.type}` : ''}`,
-                                        vscode.TreeItemCollapsibleState.None
-                                    )
+                                    const t = new vscode.TreeItem(
+                                        `${method.name}(${args.join(", ")})` +
+                                        `${method.type !== undefined ? `: ${method.type}` : ""}`,
+                                        vscode.TreeItemCollapsibleState.None,
+                                    );
                                     t.command = {
-                                        command: 'extension.treeview.goto',
-                                        title: '',
-                                        arguments: [method.position]
+                                        arguments: [method.position],
+                                        command: "extension.treeview.goto",
+                                        title: "",
                                     };
-                                    items.push(Provider.getIcon(
-                                        t,
-                                        'method',
-                                        method.visibility
-                                    ))
+                                    items.push(Provider.getIcon(t, "method", method.visibility));
                                 }
                             }
                         }
@@ -153,67 +148,77 @@ export class PhpProvider implements BaseProvider {
 
             resolution = Promise.resolve(items);
         } catch (err) {
-            console.error(err);
+            // console.error(err);
         }
 
-        return resolution
+        return resolution;
     }
 
-    private walk(ast: any, parentNode?: token.TokenTree): token.TokenTree {
-        let tree: token.TokenTree = (parentNode === undefined ? <token.TokenTree>{} : parentNode);
+    private getTree(): token.ITokenTree {
+        if (vscode.window.activeTextEditor.document !== undefined) {
+            return this.walk(
+                require("php-parser").create({ ast: { withPositions: true } })
+                    .parseCode(vscode.window.activeTextEditor.document.getText()).children,
+            );
+        }
+
+        return {} as token.ITokenTree;
+    }
+
+    private walk(ast: any, parentNode?: token.ITokenTree): token.ITokenTree {
+        let tree: token.ITokenTree = (parentNode === undefined ? {} as token.ITokenTree : parentNode);
 
         if (ast.length === 0) {
             return tree;
         }
 
-        for (let node of ast) {
-            if (['declare', 'namespace', 'class', 'interface', 'trait', 'usegroup'].indexOf(node.kind) === -1) {
+        for (const node of ast) {
+            if (["declare", "namespace", "class", "interface", "trait", "usegroup"].indexOf(node.kind) === -1) {
                 continue;
             }
 
             switch (node.kind) {
-                case 'interface':
-                case 'class':
-                case 'trait':
+                case "interface":
+                case "class":
+                case "trait":
                     if (tree.nodes === undefined) {
-                        tree.nodes = <token.EntityToken[]>[];
+                        tree.nodes = [] as token.IEntityToken[];
                     }
-                    let entity: token.EntityToken = <token.EntityToken>{}
+                    const entity: token.IEntityToken = {} as token.IEntityToken;
+                    const constants = node.body.filter((x) => x.kind === "classconstant");
+                    const properties = node.body.filter((x) => x.kind === "property");
+                    const methods = node.body.filter((x) => x.kind === "method");
+                    const traits = node.body.filter((x) => x.kind === "traituse");
 
-                    let constants = node.body.filter((x) => x.kind === 'classconstant')
-                    let properties = node.body.filter((x) => x.kind === 'property')
-                    let methods = node.body.filter((x) => x.kind === 'method')
-                    let traits = node.body.filter((x) => x.kind === 'traituse')
-
-                    entity.name = `${tree.namespace}\\${node.name}`
-                    entity.traits = traits.length === 0 ? undefined : this.handleUseTraits(traits)
-                    entity.constants = constants.length === 0 ? undefined : this.handleConstants(constants)
-                    entity.properties = properties.length === 0 ? undefined : this.handleProperties(properties)
-                    entity.methods = methods.length === 0 ? undefined : this.handleMethods(methods)
+                    entity.name = `${tree.namespace}\\${node.name}`;
+                    entity.traits = traits.length === 0 ? undefined : this.handleUseTraits(traits);
+                    entity.constants = constants.length === 0 ? undefined : this.handleConstants(constants);
+                    entity.properties = properties.length === 0 ? undefined : this.handleProperties(properties);
+                    entity.methods = methods.length === 0 ? undefined : this.handleMethods(methods);
 
                     tree.nodes.push(entity);
                     break;
-                case 'namespace':
-                    tree.namespace = node.kind === 'namespace' ? node.name : '\\'
-                    tree = this.walk(node.children, tree)
+                case "namespace":
+                    tree.namespace = node.kind === "namespace" ? node.name : "\\";
+                    tree = this.walk(node.children, tree);
                     break;
-                case 'declare':
-                    let strict = node.what.strict_types;
-                    tree.strict = (strict !== undefined ? (strict.value === '1' ? true : false) : false)
-                    tree = this.walk(node.children, tree)
+                case "declare":
+                    const strict = node.what.strict_types;
+                    tree.strict = (strict !== undefined ? (strict.value === "1" ? true : false) : false);
+                    tree = this.walk(node.children, tree);
                     break;
-                case 'usegroup':
+                case "usegroup":
                     if (tree.imports === undefined) {
-                        tree.imports = <token.ImportToken[]>[];
+                        tree.imports = [] as token.ImportToken[];
                     }
-                    let imp = <token.ImportToken>{
-                        name: node.items[0].name,
+                    const imp = {
                         alias: node.items[0].alias,
+                        name: node.items[0].name,
                         position: new vscode.Range(
-                            new vscode.Position(node.loc.start.line-1, node.loc.start.column),
-                            new vscode.Position(node.loc.end.line-1, node.loc.end.column)
-                        )
-                    };
+                            new vscode.Position(node.loc.start.line - 1, node.loc.start.column),
+                            new vscode.Position(node.loc.end.line - 1, node.loc.end.column),
+                        ),
+                    } as token.ImportToken;
 
                     tree.imports.push(imp);
                     break;
@@ -224,30 +229,30 @@ export class PhpProvider implements BaseProvider {
     }
 
     private normalizeType(value): string {
-        if (value === null) { return ''; }
+        if (value === null) { return ""; }
 
         let val;
         switch (value.kind) {
-            case 'array':
+            case "array":
                 let arr: any;
-                for (let x of value.items) {
+                for (const x of value.items) {
                     if (x.key === null) {
                         if (arr === undefined) { arr = []; }
                         arr.push(x.value.value);
                     } else {
                         if (arr === undefined) { arr = {}; }
-                        arr[x.key] = x.value.value
+                        arr[x.key] = x.value.value;
                     }
                 }
 
                 val = JSON.stringify(arr);
                 break;
-            case 'string':
-                val = `"${value.value}"`
-                break
-            case 'constref':
-                val = value.value.name
-                break
+            case "string":
+                val = `"${value.value}"`;
+                break;
+            case "constref":
+                val = value.value.name;
+                break;
             default:
                 val = value.value;
                 break;
@@ -255,102 +260,124 @@ export class PhpProvider implements BaseProvider {
         return val;
     }
 
-    private handleUseTraits(children: any[]): token.EntityToken[] {
-        let traits: token.EntityToken[] = [];
+    private handleUseTraits(children: any[]): token.IEntityToken[] {
+        const traits: token.IEntityToken[] = [];
 
-        for (let trait of children) {
-            for (let i in trait.traits) {
-                traits.push(<token.EntityToken>{
+        for (const trait of children) {
+            for (const i in trait.traits) {
+                if (trait.traits[i] === undefined) {
+                    continue;
+                }
+
+                traits.push({
                     name: trait.traits[i].name,
                     position: new vscode.Range(
-                        new vscode.Position(trait.loc.start.line-1, trait.loc.start.column),
-                        new vscode.Position(trait.loc.end.line-1, trait.loc.end.column-1),
-                    )
-                })
+                        new vscode.Position(trait.loc.start.line - 1, trait.loc.start.column),
+                        new vscode.Position(trait.loc.end.line - 1, trait.loc.end.column - 1),
+                    ),
+                } as token.IEntityToken);
             }
         }
 
         return traits;
     }
 
-    private handleConstants(children: any[]): token.ConstantToken[] {
-        let constants: token.ConstantToken[] = [];
+    private handleConstants(children: any[]): token.IConstantToken[] {
+        const constants: token.IConstantToken[] = [];
 
-        for (let constant of children) {
-            constants.push(<token.ConstantToken>{
+        for (const constant of children) {
+            constants.push({
                 name: constant.name,
-                visibility: constant.visibility === undefined ? 'public' : constant.visibility,
-                value: this.normalizeType(constant.value),
                 position: new vscode.Range(
-                    new vscode.Position(constant.loc.start.line-1, constant.loc.start.column),
-                    new vscode.Position(constant.loc.end.line-1, constant.loc.start.column+constant.name.length),
-                )
-            })
+                    new vscode.Position(constant.loc.start.line - 1, constant.loc.start.column),
+                    new vscode.Position(constant.loc.end.line - 1, constant.loc.start.column + constant.name.length),
+                ),
+                value: this.normalizeType(constant.value),
+                visibility: constant.visibility === undefined ? "public" : constant.visibility,
+            } as token.IConstantToken);
         }
 
         return constants.sort(Provider.sort);
     }
 
-    private handleProperties(children: any[]): token.PropertyToken[] {
-        let properties: token.PropertyToken[] = [];
+    private handleProperties(children: any[]): token.IPropertyToken[] {
+        const properties: token.IPropertyToken[] = [];
 
-        for (let property of children) {
-            properties.push(<token.PropertyToken>{
+        for (const property of children) {
+            properties.push({
                 name: property.name,
-                type: 'mixed',
-                visibility: property.visibility === undefined ? 'public' : property.visibility,
-                value: this.normalizeType(property.value),
                 position: new vscode.Range(
-                    new vscode.Position(property.loc.start.line-1, property.loc.start.column),
-                    new vscode.Position(property.loc.end.line-1, property.loc.start.column+property.name.length+1),
-                )
-            });
+                    new vscode.Position(
+                        property.loc.start.line - 1,
+                        property.loc.start.column,
+                    ),
+                    new vscode.Position(
+                        property.loc.end.line - 1,
+                        property.loc.start.column + property.name.length + 1,
+                    ),
+                ),
+                type: "mixed",
+                value: this.normalizeType(property.value),
+                visibility: property.visibility === undefined ? "public" : property.visibility,
+            } as token.IPropertyToken);
         }
 
         return properties.sort(Provider.sort);
     }
 
-    private handleMethods(children: any[]): token.MethodToken[] {
-        let methods: token.MethodToken[] = [];
+    private handleMethods(children: any[]): token.IMethodToken[] {
+        const methods: token.IMethodToken[] = [];
 
-        for (let method of children) {
-            let type: string = method.type === null ? 'mixed' : method.type.name;
-            if (type === '\\array') {
-                type = type.substr(1);
+        for (const method of children) {
+            let ty: string = method.type === null ? "mixed" : method.type.name;
+            if (ty === "\\array") {
+                ty = ty.substr(1);
             }
-            methods.push(<token.MethodToken>{
-                name: method.name,
-                type: type,
+            methods.push({
                 arguments: this.handleArguments(method.arguments),
-                visibility: method.visibility,
+                name: method.name,
                 position: new vscode.Range(
-                    new vscode.Position(method.loc.start.line-1, method.loc.start.column+9),
-                    new vscode.Position(method.loc.start.line-1, method.loc.start.column+9+method.name.length),
-                )
-            })
+                    new vscode.Position(
+                        method.loc.start.line - 1,
+                        method.loc.start.column + 9,
+                    ),
+                    new vscode.Position(
+                        method.loc.start.line - 1,
+                        method.loc.start.column + 9 + method.name.length,
+                    ),
+                ),
+                type: ty,
+                visibility: method.visibility,
+            } as token.IMethodToken);
         }
 
         return methods.sort(Provider.sort);
     }
 
-    private handleArguments(children: any[]): token.VariableToken[] {
-        let variables: token.VariableToken[] = [];
+    private handleArguments(children: any[]): token.IVariableToken[] {
+        const variables: token.IVariableToken[] = [];
 
-        for (let variable of children) {
-            let type: string = variable.type === null ? 'mixed' : variable.type.name;
-            if (type === '\\array') {
-                type = type.substr(1);
+        for (const variable of children) {
+            let ty: string = variable.type === null ? "mixed" : variable.type.name;
+            if (ty === "\\array") {
+                ty = ty.substr(1);
             }
-            variables.push(<token.VariableToken>{
+            variables.push({
                 name: variable.name,
-                type: type,
-                value: variable.value === undefined ? '' : this.normalizeType(variable.value),
-                visibility: variable.visibility === undefined ? 'public' : variable.visibility,
                 position: new vscode.Range(
-                    new vscode.Position(variable.loc.start.line-1, variable.loc.start.column),
-                    new vscode.Position(variable.loc.end.line-1, variable.loc.start.column+variable.name.length),
-                )
-            });
+                    new vscode.Position(
+                        variable.loc.start.line - 1,
+                        variable.loc.start.column,
+                    ),
+                    new vscode.Position(
+                        variable.loc.end.line - 1,
+                        variable.loc.start.column + variable.name.length,
+                    ),
+                ),
+                type: ty,
+                value: variable.value === undefined ? "" : this.normalizeType(variable.value),
+                visibility: variable.visibility === undefined ? "public" : variable.visibility,
+            } as token.IVariableToken);
         }
 
         return variables;
