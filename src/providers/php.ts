@@ -245,6 +245,9 @@ export class PhpProvider implements BaseProvider {
             case 'string':
                 val = `"${value.value}"`
                 break
+            case 'constref':
+                val = value.value.name
+                break
             default:
                 val = value.value;
                 break;
@@ -311,9 +314,13 @@ export class PhpProvider implements BaseProvider {
         let methods: token.MethodToken[] = [];
 
         for (let method of children) {
+            let type: string = method.type === null ? 'mixed' : method.type.name;
+            if (type === '\\array') {
+                type = type.substr(1);
+            }
             methods.push(<token.MethodToken>{
                 name: method.name,
-                type: method.type === null ? 'mixed' : method.type.name,
+                type: type,
                 arguments: this.handleArguments(method.arguments),
                 visibility: method.visibility,
                 position: new vscode.Range(
@@ -330,9 +337,13 @@ export class PhpProvider implements BaseProvider {
         let variables: token.VariableToken[] = [];
 
         for (let variable of children) {
+            let type: string = variable.type === null ? 'mixed' : variable.type.name;
+            if (type === '\\array') {
+                type = type.substr(1);
+            }
             variables.push(<token.VariableToken>{
                 name: variable.name,
-                type: variable.type === null ? 'mixed' : variable.type.name,
+                type: type,
                 value: variable.value === undefined ? '' : this.normalizeType(variable.value),
                 visibility: variable.visibility === undefined ? 'public' : variable.visibility,
                 position: new vscode.Range(
