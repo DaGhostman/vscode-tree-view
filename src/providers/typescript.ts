@@ -113,7 +113,7 @@ export class TypescriptProvider implements BaseProvider {
 
                         if (cls.properties) {
                             for (let property of cls.properties) {
-                                let t = new TreeItem(`$${property.name}${property.value !== '' ? ` = ${property.value}` : ''}`, vscode.TreeItemCollapsibleState.None)
+                                let t = new TreeItem(`${property.name}${property.value !== '' ? ` = ${property.value}` : ''}`, vscode.TreeItemCollapsibleState.None)
                                 t.command = {
                                     command: 'extension.treeview.goto',
                                     title: '',
