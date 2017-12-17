@@ -13,6 +13,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - [TS/JS] Initial (go to _line only_) 'GoTo definition' on node click (@ToDo calculate the proper character offset to find the exact match)
 - [TS/JS] Remove `$` from property names
 
+### Added
+
+- [TS/JS] 'Imports' section
+
 ## [0.0.1] - 2017-12-17
 
 ### Added

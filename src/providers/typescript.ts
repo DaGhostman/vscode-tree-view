@@ -58,6 +58,31 @@ export class TypescriptProvider implements BaseProvider {
                 })
             }
 
+            for (let imp of f.imports) {
+                if (this.tree.imports === undefined) {
+                    this.tree.imports = []
+                }
+                let start: vscode.Position = this.offsetToPosition(imp.start);
+
+                if (imp.specifiers !== undefined) {
+                    let classes:string[] = [];
+                    for (let spec of imp.specifiers) {
+                        classes.push(spec.specifier)
+                    }
+
+                    this.tree.imports.push(<token.ImportToken>{
+                        name: `${imp.libraryName}: ${classes.join(', ')}`,
+                        position: new vscode.Range(start, start)
+                    })
+                } else {
+                    this.tree.imports.push(<token.ImportToken>{
+                        name: imp.libraryName,
+                        alias: imp.alias,
+                        position: new vscode.Range(start, start)
+                    });
+                }
+            }
+
             let items: TreeItem[] = []
             let tree = this.tree;
             if (element === undefined) {
@@ -91,7 +116,7 @@ export class TypescriptProvider implements BaseProvider {
                     if (element.label === 'Imports') {
                         for (let imp of tree.imports) {
                             let t = new vscode.TreeItem(
-                                `${imp.name}${imp.alias !== null ? ` as ${imp.alias}` : ''}`,
+                                `${imp.name}${imp.alias !== undefined ? ` as ${imp.alias}` : ''}`,
                                 vscode.TreeItemCollapsibleState.None
                             );
                             t.command = {
