@@ -13,6 +13,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - [TS/JS] Initial (go to _line only_) 'GoTo definition' on node click (@ToDo calculate the proper character offset to find the exact match)
 - [TS/JS] Remove `$` from property names
 - [PHP] Properly handle default value of `[]`
+- [ALL] Show all imports X times, where X is the number of classes/interfaces/traits defined in the current file
 
 ### Added
 

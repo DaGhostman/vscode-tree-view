@@ -55,22 +55,22 @@ export class PhpProvider implements IBaseProvider {
                         }
                     }
                 } else {
-                    for (const cls of tree.nodes) {
-                        if (element.label === "Imports") {
-                            for (const imp of tree.imports) {
-                                const t = new vscode.TreeItem(
-                                    `${imp.name}${imp.alias !== null ? ` as ${imp.alias}` : ""}`,
-                                    vscode.TreeItemCollapsibleState.None,
-                                );
-                                t.command = {
-                                    arguments: [imp.position],
-                                    command: "extension.treeview.goto",
-                                    title: "",
-                                };
-                                items.push(t);
-                            }
+                    if (element.label === "Imports") {
+                        for (const imp of tree.imports) {
+                            const t = new vscode.TreeItem(
+                                `${imp.name}${imp.alias !== null ? ` as ${imp.alias}` : ""}`,
+                                vscode.TreeItemCollapsibleState.None,
+                            );
+                            t.command = {
+                                arguments: [imp.position],
+                                command: "extension.treeview.goto",
+                                title: "",
+                            };
+                            items.push(t);
                         }
+                    }
 
+                    for (const cls of tree.nodes) {
                         if (cls.name === element.label) {
                             if (cls.constants) {
                                 for (const constant of cls.constants) {
