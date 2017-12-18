@@ -85,7 +85,7 @@ export class PhpProvider implements IBaseProvider {
                                         title: "",
                                     };
 
-                                    items.push(Provider.getIcon(t, "constant"));
+                                    items.push(Provider.getIcon(t, "constant", constant.visibility.toString()));
                                 }
                             }
 

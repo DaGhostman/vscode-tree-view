@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "php-treeview" extension will be documented in this file.
+All notable changes to the "vs-treeview" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
@@ -14,6 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - [TS/JS] Remove `$` from property names
 - [PHP] Properly handle default value of `[]`
 - [ALL] Show all imports X times, where X is the number of classes/interfaces/traits defined in the current file
+- [PHP] Fix constant visibility always being public
 
 ### Added
 
