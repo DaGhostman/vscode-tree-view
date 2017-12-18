@@ -234,7 +234,7 @@ export class PhpProvider implements IBaseProvider {
         let val;
         switch (value.kind) {
             case "array":
-                let arr: any;
+                let arr: any = [];
                 for (const x of value.items) {
                     if (x.key === null) {
                         if (arr === undefined) { arr = []; }

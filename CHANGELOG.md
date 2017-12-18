@@ -12,6 +12,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - [PHP] Show `null` where null is used as value of arguments instead of `undefined`
 - [TS/JS] Initial (go to _line only_) 'GoTo definition' on node click (@ToDo calculate the proper character offset to find the exact match)
 - [TS/JS] Remove `$` from property names
+- [PHP] Properly handle default value of `[]`
 
 ### Added
 
