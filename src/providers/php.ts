@@ -251,7 +251,7 @@ export class PhpProvider implements IBaseProvider {
                 val = `"${value.value}"`;
                 break;
             case "constref":
-                val = value.value.name;
+                val = value.name.name;
                 break;
             default:
                 val = value.value;
