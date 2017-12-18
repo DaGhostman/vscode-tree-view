@@ -6,6 +6,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [UNRELEASED]
 
+## [0.0.2]
+
 ### Changed
 
 - [PHP] Removed leading `\` where `array` typehint would show as `\array`
