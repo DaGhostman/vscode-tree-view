@@ -1,12 +1,8 @@
 # Change Log
 
-All notable changes to the "vs-treeview" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
 ## [UNRELEASED]
 
-## [0.0.2]
+## [0.0.2] - 2017-12-18
 
 ### Changed
 
