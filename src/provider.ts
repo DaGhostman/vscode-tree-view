@@ -67,10 +67,10 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     public refresh(event?: vscode.TextDocumentChangeEvent) {
         try {
             this.getProvider().refresh(event);
-            this.onDidChangeTreeDataEmitter.fire(void 0);
         } catch (ex) {
-            // Don"t do anything
+            // Don't do anything
         }
+        this.onDidChangeTreeDataEmitter.fire(void 0);
     }
 
     public getProvider(): IBaseProvider<(vscode.TreeItem|string)> {
