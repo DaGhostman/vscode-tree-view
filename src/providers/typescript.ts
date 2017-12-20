@@ -1,6 +1,5 @@
 import * as ts from "typescript-parser";
 import * as vscode from "vscode";
-import { Range, TreeItem } from "vscode";
 import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
@@ -87,7 +86,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 }
             }
 
-            const items: TreeItem[] = [];
+            const items: vscode.TreeItem[] = [];
             const tree = this.tree;
             if (element === undefined) {
                 if (tree.strict !== undefined) {
@@ -135,7 +134,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     if (cls.name === element.label) {
                         if (cls.constants) {
                             for (const constant of cls.constants) {
-                                const t = new TreeItem(
+                                const t = new vscode.TreeItem(
                                     `${constant.name} = ${constant.value}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );
@@ -145,7 +144,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
                         if (cls.properties) {
                             for (const property of cls.properties) {
-                                const t = new TreeItem(
+                                const t = new vscode.TreeItem(
                                     `${property.name}${property.value !== "" ? ` = ${property.value}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );
@@ -164,7 +163,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
                         if (cls.traits) {
                             for (const trait of cls.traits) {
-                                const t = new TreeItem(`${trait.name}`, vscode.TreeItemCollapsibleState.None);
+                                const t = new vscode.TreeItem(`${trait.name}`, vscode.TreeItemCollapsibleState.None);
                                 items.push(Provider.getIcon(t, "trait"));
                             }
                         }
@@ -178,7 +177,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                                             `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
                                     );
                                 }
-                                const t = new TreeItem(
+                                const t = new vscode.TreeItem(
                                     `${method.name}(${args.join(", ")})` +
                                         `${method.type !== undefined ? `: ${method.type}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,

@@ -3,8 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { Provider } from "./provider";
-import { PhpProvider, TypescriptProvider } from "./providers";
-import { JsonProvider } from "./providers/json";
+import { JsonProvider, PhpProvider, TypescriptProvider } from "./providers";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

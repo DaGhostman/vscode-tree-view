@@ -1,5 +1,4 @@
 import * as json from "jsonc-parser";
-import * as path from "path";
 import * as vscode from "vscode";
 import { Provider } from "./../provider";
 import { IBaseProvider } from "./base";

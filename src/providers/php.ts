@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { Provider } from "./../provider";
 import * as token from "./../tokens";
-import { IBaseToken, IVariableToken } from "./../tokens";
 import { IBaseProvider } from "./base";
 
 export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
