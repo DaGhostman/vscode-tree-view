@@ -2,11 +2,11 @@
 
 A simple extension that adds an explorer view outlining the main symbols of the currently open file
 
-![PHP-editing](https://i.imgur.com/A3IEpGh.gif)
+[![PHP-editing](https://i.imgur.com/A3IEpGh.gif)](https://i.imgur.com/A3IEpGh.gifv)
 
-![JSON-navigation](https://i.imgur.com/vMd3zc2.gif)
+[![JSON-navigation](https://i.imgur.com/vMd3zc2.gif)](https://i.imgur.com/vMd3zc2.gifv)
 
-![JS/TS](https://i.imgur.com/18jv31H.gif)
+[![JS/TS](https://i.imgur.com/18jv31H.gif)](https://i.imgur.com/18jv31H.gifv)
 
 ## Features
 
