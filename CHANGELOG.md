@@ -1,6 +1,15 @@
 # Change Log
 
-## [UNRELEASED]
+## [0.0.3] - 2017-12-21
+
+### Changed
+
+- [ALL] Small changes to the base provider interface
+- [ALL] Add icon to represent lists
+
+### Added
+
+- (Preview) JSON tree explorer, a modified version of `vscode-extension-samples`
 
 ## [0.0.2] - 2017-12-18
 
