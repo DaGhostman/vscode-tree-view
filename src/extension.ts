@@ -5,6 +5,16 @@ import * as vscode from "vscode";
 import { Provider } from "./provider";
 import { JsonProvider, PhpProvider, TypescriptProvider } from "./providers";
 
+function goToDefinition(range: vscode.Range) {
+    const editor: vscode.TextEditor = vscode.window.activeTextEditor;
+
+        // Center the method in the document
+        editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+        // Select the method name
+        editor.selection = new vscode.Selection(range.start, range.end);
+        // Swap the focus to the editor
+        vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+}
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -15,16 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
     ]);
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
-    vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => {
-        const editor: vscode.TextEditor = vscode.window.activeTextEditor;
-
-        // Center the method in the document
-        editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
-        // Select the method name
-        editor.selection = new vscode.Selection(range.start, range.end);
-        // Swap the focus to the editor
-        vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
-    });
+    vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
 
