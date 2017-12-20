@@ -4,6 +4,7 @@
 import * as vscode from "vscode";
 import { Provider } from "./provider";
 import { PhpProvider, TypescriptProvider } from "./providers";
+import { JsonProvider } from "./providers/json";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -11,6 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
     const provider = new Provider([
         new PhpProvider(),
         new TypescriptProvider(),
+        new JsonProvider(),
     ]);
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
