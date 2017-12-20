@@ -24,6 +24,7 @@
     ],
     "activationEvents": [
         "onLanguage:php",
+        "onLanguage:json",
         "onLanguage:javascript",
         "onLanguage:typescript"
     ],
@@ -54,6 +55,7 @@
     },
     "dependencies": {
         "php-parser": "^2.1.0",
-        "typescript-parser": "^2.2.0"
+        "typescript-parser": "^2.2.0",
+        "jsonc-parser": "^1.0.0"
     }
 }
