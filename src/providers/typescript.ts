@@ -5,7 +5,7 @@ import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
-export class TypescriptProvider implements IBaseProvider {
+export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
     private parser: ts.TypescriptParser;
     private tree: token.ITokenTree = {} as token.ITokenTree;
 
@@ -61,7 +61,6 @@ export class TypescriptProvider implements IBaseProvider {
                 if (this.tree.imports === undefined) {
                     this.tree.imports = [];
                 }
-                const start: vscode.Position = this.offsetToPosition(imp.start);
 
                 if (imp.specifiers !== undefined) {
                     const classes: string[] = [];
@@ -71,13 +70,19 @@ export class TypescriptProvider implements IBaseProvider {
 
                     this.tree.imports.push({
                         name: `${imp.libraryName}: ${classes.join(", ")}`,
-                        position: new vscode.Range(start, start),
+                        position: new vscode.Range(
+                            this.offsetToPosition(imp.start),
+                            this.offsetToPosition(imp.end),
+                        ),
                     } as token.ImportToken);
                 } else {
                     this.tree.imports.push({
                         alias: imp.alias,
                         name: imp.libraryName,
-                        position: new vscode.Range(start, start),
+                        position: new vscode.Range(
+                            this.offsetToPosition(imp.start),
+                            this.offsetToPosition(imp.end),
+                        ),
                     } as token.ImportToken);
                 }
             }
@@ -202,10 +207,12 @@ export class TypescriptProvider implements IBaseProvider {
         const properties: token.IPropertyToken[] = [];
 
         for (const property of children) {
-            const start = this.offsetToPosition(property.start);
             properties.push({
                 name: property.name,
-                position: new vscode.Range(start, start),
+                position: new vscode.Range(
+                    this.offsetToPosition(property.start),
+                    this.offsetToPosition(property.end),
+                ),
                 type: property.type === undefined ? "any" : property.type,
                 value: this.normalizeType(property.value, property.type),
                 visibility: this.VISIBILITY[property.visibility === undefined ? 2 : property.visibility],
@@ -248,11 +255,13 @@ export class TypescriptProvider implements IBaseProvider {
         const methods: token.IMethodToken[] = [];
 
         for (const method of children) {
-            const start = this.offsetToPosition(method.start);
             methods.push({
                 arguments: this.handleArguments(method.parameters),
                 name: method.name,
-                position: new vscode.Range(start, start),
+                position: new vscode.Range(
+                    this.offsetToPosition(method.start),
+                    this.offsetToPosition(method.end),
+                ),
                 type: method.type === null ? "any" : method.type,
                 visibility: this.VISIBILITY[method.visibility === undefined ? 2 : method.visibility],
             } as token.IMethodToken);
@@ -277,24 +286,6 @@ export class TypescriptProvider implements IBaseProvider {
     }
 
     private offsetToPosition(offset: number): vscode.Position {
-        const document = vscode.window.activeTextEditor.document;
-        const lines = document.getText().split("\n");
-        let char: number = 0;
-        let line: number = 0;
-
-        for (const l in lines) {
-            if (lines[l] !== undefined) {
-                if (offset > 0) {
-                    char = 0;
-                    offset -= lines[l].length;
-                    if (offset <= 0) { break; }
-                    // @todo: Implement column localization within the line
-                    line++;
-                }
-                offset--;
-            }
-        }
-
-        return new vscode.Position(line, char);
+        return vscode.window.activeTextEditor.document.positionAt(offset);
     }
 }

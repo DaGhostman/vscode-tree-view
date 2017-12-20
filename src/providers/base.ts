@@ -1,10 +1,8 @@
 import * as vscode from "vscode";
 import * as token from "../tokens";
+export * from "../tokens";
 
-export interface IBaseProvider {
+export interface IBaseProvider<T> extends vscode.TreeDataProvider<T> {
     hasSupport(langId: string): boolean;
     refresh(event?: vscode.TextDocumentChangeEvent): void;
-
-    getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem>;
-    getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]>;
 }

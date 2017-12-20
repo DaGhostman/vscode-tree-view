@@ -4,14 +4,10 @@ import * as token from "./../tokens";
 import { IBaseToken, IVariableToken } from "./../tokens";
 import { IBaseProvider } from "./base";
 
-export class PhpProvider implements IBaseProvider {
+export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
     private config;
 
     public hasSupport(language: string) { return language.toLowerCase() === "php"; }
-
-    public withConfiguration(config: any): void {
-        this.config = config;
-    }
 
     public refresh(event?): void {
         if (event !== undefined) {

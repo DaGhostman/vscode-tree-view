@@ -50,14 +50,15 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         new vscode.EventEmitter<TreeItem | null>();
     public readonly onDidChangeTreeData: vscode.Event<TreeItem | null> = this.onDidChangeTreeDataEmitter.event;
 
-    private langProviders: IBaseProvider[];
+    private langProviders: Array<IBaseProvider<any>>;
 
-    public constructor(langProviders: IBaseProvider[]) {
+    public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
         vscode.window.onDidChangeActiveTextEditor((ev) => {
             this.refresh();
         });
         vscode.workspace.onDidChangeTextDocument((ev) => this.refresh(ev));
+        vscode.workspace.onDidOpenTextDocument((ev) => this.refresh());
     }
 
     public refresh(event?: vscode.TextDocumentChangeEvent) {
@@ -69,7 +70,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
     }
 
-    public getProvider(): IBaseProvider {
+    public getProvider(): IBaseProvider<(vscode.TreeItem|string)> {
         let lang = "none";
         if (vscode.window.activeTextEditor !== undefined) {
             lang = vscode.window.activeTextEditor.document.languageId;
@@ -93,7 +94,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
     public getChildren(element?: TreeItem): Thenable<TreeItem[]> {
         try {
-            return this.getProvider().getChildren(element);
+            return this.getProvider().getChildren(element) as Thenable<vscode.TreeItem[]>;
         } catch (ex) {
             return Promise.resolve([]);
         }
