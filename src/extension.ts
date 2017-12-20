@@ -4,6 +4,7 @@
 import * as vscode from "vscode";
 import { Provider } from "./provider";
 import { JsonProvider, PhpProvider, TypescriptProvider } from "./providers";
+import { IBaseProvider } from "./providers/base";
 
 function goToDefinition(range: vscode.Range) {
     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
@@ -22,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
         new PhpProvider(),
         new TypescriptProvider(),
         new JsonProvider(),
-    ]);
+    ] as Array<IBaseProvider<any>>);
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
