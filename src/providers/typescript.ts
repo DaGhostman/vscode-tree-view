@@ -71,7 +71,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                         name: `${imp.libraryName}: ${classes.join(", ")}`,
                         position: new vscode.Range(
                             this.offsetToPosition(imp.start),
-                            this.offsetToPosition(imp.end),
+                            this.offsetToPosition(imp.start),
                         ),
                     } as token.ImportToken);
                 } else {
@@ -80,7 +80,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                         name: imp.libraryName,
                         position: new vscode.Range(
                             this.offsetToPosition(imp.start),
-                            this.offsetToPosition(imp.end),
+                            this.offsetToPosition(imp.start),
                         ),
                     } as token.ImportToken);
                 }
@@ -210,7 +210,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 name: property.name,
                 position: new vscode.Range(
                     this.offsetToPosition(property.start),
-                    this.offsetToPosition(property.end),
+                    this.offsetToPosition(property.start),
                 ),
                 type: property.type === undefined ? "any" : property.type,
                 value: this.normalizeType(property.value, property.type),
@@ -259,7 +259,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 name: method.name,
                 position: new vscode.Range(
                     this.offsetToPosition(method.start),
-                    this.offsetToPosition(method.end),
+                    this.offsetToPosition(method.start),
                 ),
                 type: method.type === null ? "any" : method.type,
                 visibility: this.VISIBILITY[method.visibility === undefined ? 2 : method.visibility],
