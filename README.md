@@ -2,11 +2,11 @@
 
 A simple extension that adds an explorer view outlining the main symbols of the currently open file
 
-[![PHP-editing](https://i.imgur.com/A3IEpGh.gif)](https://i.imgur.com/A3IEpGh.gifv)
+![PHP-editing](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/php.treeview.gif?raw=true)
 
-[![JSON-navigation](https://i.imgur.com/vMd3zc2.gif)](https://i.imgur.com/vMd3zc2.gifv)
+![JSON-navigation](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/json.treeview.gif?raw=true)
 
-[![JS/TS](https://i.imgur.com/18jv31H.gif)](https://i.imgur.com/18jv31H.gifv)
+![JS/TS](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/js_ts.treeview.gif?raw=true)
 
 ## Features
 
