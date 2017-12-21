@@ -1,11 +1,15 @@
 # Change Log
 
-## [UNRELEASED]
+## [0.0.4] - 2017-12-21
 
 ### Changed
 
 - [ALL] Removed some unused imports in `providers/`
 - [TS/JS] Go To definition now jumps to 1st line of definition without any selection to prevent selection of large methods, etc.
+
+### Added
+
+- [WEB] GIFs to provide a basic idea about the interface and functionality
 
 ## [0.0.3] - 2017-12-21
 
