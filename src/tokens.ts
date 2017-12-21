@@ -18,6 +18,7 @@ export interface IVariableToken extends IBaseToken {
 export interface IPropertyToken extends IVariableToken {
     name: string;
     static?: boolean;
+    readonly?: boolean;
 }
 export interface IConstantToken extends IVariableToken {
     name: string;
