@@ -95,7 +95,11 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                         command: "extension.treeview.goto",
                                         title: "",
                                     };
-                                    items.push(Provider.getIcon(t, "property", property.visibility));
+                                    items.push(Provider.getIcon(
+                                        t,
+                                        `property${property.static ? "_static" : ""}`,
+                                        property.visibility,
+                                    ));
                                 }
                             }
 
@@ -133,7 +137,11 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                         command: "extension.treeview.goto",
                                         title: "",
                                     };
-                                    items.push(Provider.getIcon(t, `method${method.static}`, method.visibility));
+                                    items.push(Provider.getIcon(
+                                        t,
+                                        `method${method.static ? "_static" : ""}`,
+                                        method.visibility,
+                                    ));
                                 }
                             }
                         }
@@ -311,6 +319,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                         property.loc.start.column + property.name.length + 1,
                     ),
                 ),
+                static: property.isStatic,
                 type: "mixed",
                 value: this.normalizeType(property.value),
                 visibility: property.visibility === undefined ? "public" : property.visibility,
@@ -342,6 +351,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                         method.loc.start.column + 9 + method.name.length,
                     ),
                 ),
+                static: method.isStatic,
                 type: (method.nullable ? "?" : "") + ty,
                 visibility: method.visibility,
             } as token.IMethodToken);
