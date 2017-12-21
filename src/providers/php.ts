@@ -120,7 +120,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                     for (const arg of method.arguments) {
                                         args.push(
                                             `${arg.type !== undefined ? `${arg.type} ` : ""}` +
-                                            `$${arg.name}${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                                            `${arg.name}${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
                                         );
                                     }
                                     const t = new vscode.TreeItem(
@@ -133,7 +133,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                         command: "extension.treeview.goto",
                                         title: "",
                                     };
-                                    items.push(Provider.getIcon(t, "method", method.visibility));
+                                    items.push(Provider.getIcon(t, `method${method.static}`, method.visibility));
                                 }
                             }
                         }
@@ -325,12 +325,13 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
 
         for (const method of children) {
             let ty: string = method.type === null ? "mixed" : method.type.name;
-            if (ty === "\\array") {
+            if (ty.substr(0, 1) === "\\") {
                 ty = ty.substr(1);
             }
+
             methods.push({
                 arguments: this.handleArguments(method.arguments),
-                name: method.name,
+                name: (method.byref ? "&" : "") + method.name,
                 position: new vscode.Range(
                     new vscode.Position(
                         method.loc.start.line - 1,
@@ -341,7 +342,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                         method.loc.start.column + 9 + method.name.length,
                     ),
                 ),
-                type: ty,
+                type: (method.nullable ? "?" : "") + ty,
                 visibility: method.visibility,
             } as token.IMethodToken);
         }
@@ -354,11 +355,13 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
 
         for (const variable of children) {
             let ty: string = variable.type === null ? "mixed" : variable.type.name;
-            if (ty === "\\array") {
+            if (ty.substr(0, 1) === "\\") {
                 ty = ty.substr(1);
             }
             variables.push({
-                name: variable.name,
+                name: (variable.byref ? "&" : "") +
+                    (variable.variadic ? "..." : "") +
+                    `$${variable.name}`,
                 position: new vscode.Range(
                     new vscode.Position(
                         variable.loc.start.line - 1,
@@ -369,8 +372,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                         variable.loc.start.column + variable.name.length,
                     ),
                 ),
-                type: ty,
-                value: variable.value === undefined ? "" : this.normalizeType(variable.value),
+                type: (variable.nullable ? "?" : "") + ty,
+                value: (variable.value === undefined ? "" : this.normalizeType(variable.value)),
                 visibility: variable.visibility === undefined ? "public" : variable.visibility,
             } as token.IVariableToken);
         }
