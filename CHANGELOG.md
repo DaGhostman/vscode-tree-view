@@ -1,5 +1,19 @@
 # Change Log
 
+## [0.0.5] - 2017-12-21
+
+### Changed
+
+- [ALL] - Changed the icon marking methods
+- [ALL] - Icons for method and properties are now filled, outlines are used for static
+
+### Added
+
+- [PHP] Add `&` prefix to by-reference methods and method arguments
+- [PHP] Add `...` to variadic arguments
+- [PHP/TS/JS] Differentiate between static and regular declarations
+- [TS] Prefix `readonly` properties with `!`
+
 ## [0.0.4] - 2017-12-21
 
 ### Changed
