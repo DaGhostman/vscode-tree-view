@@ -145,7 +145,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                         if (cls.properties) {
                             for (const property of cls.properties) {
                                 const t = new vscode.TreeItem(
-                                    `${property.name}${property.value !== "" ? ` = ${property.value}` : ""}`,
+                                    `${property.readonly ? "!" : ""}${property.name}` +
+                                        `${property.value !== "" ? ` = ${property.value}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );
                                 t.command = {
@@ -155,7 +156,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                                 };
                                 items.push(Provider.getIcon(
                                     t,
-                                    "property",
+                                    `property${property.static ? "_static" : ""}`,
                                     property.visibility,
                                 ));
                             }
@@ -189,7 +190,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                                 };
                                 items.push(Provider.getIcon(
                                     t,
-                                    "method",
+                                    `method${method.static ? "_static" : ""}`,
                                     method.visibility,
                                 ));
                             }
@@ -206,12 +207,19 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         const properties: token.IPropertyToken[] = [];
 
         for (const property of children) {
+            const def = vscode.window.activeTextEditor.document.getText(new vscode.Range(
+                this.offsetToPosition(property.start),
+                this.offsetToPosition(property.end),
+            )).split(" ").slice(0, 5);
+
             properties.push({
                 name: property.name,
                 position: new vscode.Range(
                     this.offsetToPosition(property.start),
                     this.offsetToPosition(property.start),
                 ),
+                readonly: (def.indexOf("readonly") > -1),
+                static: (def.indexOf("static") > -1),
                 type: property.type === undefined ? "any" : property.type,
                 value: this.normalizeType(property.value, property.type),
                 visibility: this.VISIBILITY[property.visibility === undefined ? 2 : property.visibility],
@@ -254,6 +262,11 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         const methods: token.IMethodToken[] = [];
 
         for (const method of children) {
+            const def = vscode.window.activeTextEditor.document.getText(new vscode.Range(
+                this.offsetToPosition(method.start),
+                this.offsetToPosition(method.end),
+            )).split(" ").slice(0, 5);
+
             methods.push({
                 arguments: this.handleArguments(method.parameters),
                 name: method.name,
@@ -261,6 +274,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     this.offsetToPosition(method.start),
                     this.offsetToPosition(method.start),
                 ),
+                static: (def.indexOf("static") > -1),
                 type: method.type === null ? "any" : method.type,
                 visibility: this.VISIBILITY[method.visibility === undefined ? 2 : method.visibility],
             } as token.IMethodToken);
