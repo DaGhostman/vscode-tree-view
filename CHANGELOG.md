@@ -1,5 +1,9 @@
 # Change Log
 
+## [Unreleased]
+
+- [ALL] - Fix race condition that triggers the tree retrieval when there is no active document
+
 ## [0.0.5] - 2017-12-21
 
 ### Changed
