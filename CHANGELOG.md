@@ -1,8 +1,16 @@
 # Change Log
 
-## [Unreleased]
+## [0.1.0] - 2017-12-27
+
+### Changed
 
 - [ALL] - Fix race condition that triggers the tree retrieval when there is no active document
+- [ALL] - Remove duplication of returned items (possible issue)
+
+### Added
+
+- [PHP/JS/TS] - Support for function definitions inside active document
+- [TS/JS] - Add support for `"use strict"` declarations similar to PHP's `Strict Types` section
 
 ## [0.0.5] - 2017-12-21
 
