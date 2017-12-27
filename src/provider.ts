@@ -114,7 +114,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
     public getChildren(element?: TreeItem): Thenable<TreeItem[]> {
         try {
-            return this.getProvider().getChildren(element) as Thenable<vscode.TreeItem[]>;
+            const items = this.getProvider().getChildren(element) as Thenable<vscode.TreeItem[]>;
+            items.then((x) => {
+                return x.filter((y) => {
+                    return x.indexOf(y) === x.lastIndexOf(y);
+                });
+            });
+
+            return items;
         } catch (ex) {
             return Promise.resolve([]);
         }
