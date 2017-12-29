@@ -26,7 +26,8 @@
         "onLanguage:php",
         "onLanguage:json",
         "onLanguage:javascript",
-        "onLanguage:typescript"
+        "onLanguage:typescript",
+        "onLanguage:openhab"
     ],
     "main": "./out/extension",
     "contributes": {
