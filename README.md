@@ -8,6 +8,8 @@ A simple extension that adds an explorer view outlining the main symbols of the 
 
 ![JS/TS](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/js_ts.treeview.gif?raw=true)
 
+![openHAB](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/openhab.treeview.gif?raw=true)
+
 ## Features
 
 - Preview file imports

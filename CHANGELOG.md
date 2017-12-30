@@ -1,5 +1,11 @@
 # Change Log
 
+## [UNRELEASED]
+
+### Added
+
+- [openHAB](http://www.openhab.org/) Support
+
 ## [0.1.1] - 2017-12-30
 
 ### Changed
