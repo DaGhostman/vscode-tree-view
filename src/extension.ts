@@ -5,6 +5,7 @@ import * as vscode from "vscode";
 import { Provider } from "./provider";
 import { JsonProvider, PhpProvider, TypescriptProvider } from "./providers";
 import { IBaseProvider } from "./providers/base";
+import { RuleProvider } from "./providers/openhab/rule";
 
 function goToDefinition(range: vscode.Range) {
     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
@@ -23,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
         new PhpProvider(),
         new TypescriptProvider(),
         new JsonProvider(),
+        new RuleProvider(),
     ] as Array<IBaseProvider<any>>);
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
