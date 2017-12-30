@@ -43,7 +43,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 }
 
                 if (dec instanceof ts.ClassDeclaration || dec instanceof ts.InterfaceDeclaration) {
-                    if (dec.ctor !== undefined) {
+                    if (dec instanceof ts.ClassDeclaration && dec.ctor !== undefined) {
                         dec.ctor.name = "constructor";
                         dec.methods.unshift(dec.ctor as ts.MethodDeclaration);
                     }
