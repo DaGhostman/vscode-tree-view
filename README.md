@@ -20,10 +20,9 @@ A simple extension that adds an explorer view outlining the main symbols of the 
 \* Note there might be slight variation in feature's behavior, but those mainly
 come from external library limitations/behavior and will be fixed/normalized ASAP
 
-
 ## Contributions
 
-Contributions of any form are welcome, issue reports, PRs, feedback, etc.
+See [CONTRIBUTING.md](https://github.com/DaGhostman/vscode-tree-view/blob/develop/CONTRIBUTING.md)
 
 ## Attributions
 
