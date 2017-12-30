@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
