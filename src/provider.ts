@@ -141,6 +141,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 return provider.getChildren(element);
             });
         } catch (ex) {
+            vscode.window.showErrorMessage(ex);
             return Promise.resolve([]);
         }
     }
