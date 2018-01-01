@@ -52,6 +52,24 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     } as token.IEntityToken);
                 }
 
+                if (dec instanceof ts.VariableDeclaration) {
+                    const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
+
+                    if (tree.variables === undefined) {
+                        tree.variables = [];
+                    }
+
+                    tree.variables.push({
+                        name: `${dec.isConst ? "@" : ""}${dec.name}`,
+                        position: new vscode.Range(
+                            startPosition,
+                            new vscode.Position(startPosition.line, startPosition.character),
+                        ),
+                        type: dec.type === null ? "any" : dec.type,
+                        visibility: dec.isExported === true ? "public" : "protected",
+                    } as token.IVariableToken);
+                }
+
                 if (dec instanceof ts.FunctionDeclaration) {
                     const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
 

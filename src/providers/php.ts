@@ -13,6 +13,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
         "trait",
         "usegroup",
         "function",
+        "variable",
+        "assign",
     ];
 
     public hasSupport(language: string) { return language.toLowerCase() === "php"; }
@@ -25,7 +27,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
 
     public getTokenTree(): Thenable<token.ITokenTree> {
         return Promise.resolve(this.getTree());
-    }s
+    }
 
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> { return element; }
     public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
@@ -128,6 +130,29 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                     } as token.IMethodToken;
 
                     tree.functions.push(func);
+                    break;
+                case "assign":
+                case "variable":
+                    if (tree.variables === undefined) {
+                        tree.variables = [];
+                    }
+
+                    const val = node.right !== undefined ?
+                        (node.right.value === undefined ? node.right.name : node.right) : "null";
+
+                    const v = node.left !== undefined ? node.left : node;
+
+                    tree.variables.push({
+                        name: v.name,
+                        position: new vscode.Range(
+                            new vscode.Position(v.loc.start.line, v.loc.start.column),
+                            new vscode.Position(v.loc.end.line, v.loc.end.column),
+                        ),
+                        type: "mixed",
+                        value: this.normalizeType(val),
+                        visibility: "public",
+                    } as token.IVariableToken);
+                    break;
             }
         }
 

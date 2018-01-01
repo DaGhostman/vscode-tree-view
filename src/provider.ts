@@ -158,6 +158,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 items.push(new vscode.TreeItem(`Imports`, vscode.TreeItemCollapsibleState.Collapsed));
             }
 
+            if (tree.variables !== undefined) {
+                items.push(new vscode.TreeItem(
+                    `Variables`,
+                    tree.nodes === undefined && tree.functions !== undefined ?
+                        vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
+                ));
+            }
+
             if (tree.functions !== undefined) {
                 items.push(new vscode.TreeItem(
                     `Functions`,
@@ -189,6 +197,23 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                         vscode.TreeItemCollapsibleState.None,
                     );
                     items.push(Provider.addItemCommand(t, "extension.treeview.goto", [ imp.position ]));
+                }
+            }
+
+            if (tree.variables !== undefined && element.label.toLowerCase() === "variables") {
+                for (const variable of tree.variables) {
+                    const t = new vscode.TreeItem(
+                        `${variable.name}` +
+                        `${variable.type !== undefined ? `: ${variable.type}` : ""}` +
+                        `${variable.value !== undefined ? ` = ${variable.value}` : ""}`,
+                        vscode.TreeItemCollapsibleState.None,
+                    );
+
+                    items.push(Provider.addItemCommand(Provider.addItemIcon(
+                        t,
+                        `property_static`,
+                        variable.visibility === undefined ? variable.visibility : "public",
+                    ), "extension.treeview.goto", [variable.position]));
                 }
             }
 
@@ -231,7 +256,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                         if (cls.properties) {
                             for (const property of cls.properties) {
                                 const t = new vscode.TreeItem(
-                                    `${property.readonly ? "!" : ""}${property.name}` +
+                                    `${property.readonly ? "@" : ""}${property.name}` +
                                         `${property.value !== "" ? ` = ${property.value}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );

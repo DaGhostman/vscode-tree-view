@@ -65,6 +65,5 @@ export class RuleParser {
 }
 
 export interface IRuleTree extends ITokenTree {
-    variables?: IVariableToken[];
     rules?: any[];
 }

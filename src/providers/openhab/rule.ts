@@ -26,29 +26,6 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
     public getTokenTree(): Thenable<IRuleTree> {
         const text = vscode.window.activeTextEditor.document.getText();
         return this.parser.parseSource(text).then((parsed) => {
-            // const tree = {} as IRuleTree;
-
-            // for (const imp of parsed.imports) {
-
-            // }
-
-            // for (const variable of parsed.variables) {
-            //     if (tree.variables === undefined) {
-            //         tree.variables = [];
-            //     }
-            //     tree.variables.push(variable);
-            // }
-
-            // for (const rule of parsed.rules) {
-            //     if (tree.rules === undefined) {
-            //         tree.rules = [];
-            //     }
-            //     tree.rules.push({
-            //         name: rule,
-            //         position: this.parser.getPosition(rule),
-            //     });
-            // }
-
             return Promise.resolve(parsed);
         });
     }
@@ -58,10 +35,6 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
 
         return this.getTokenTree().then((tree) => {
             if (element === undefined) {
-                if (tree.variables && tree.variables.length) {
-                    items.push(new vscode.TreeItem(`Variables`, vscode.TreeItemCollapsibleState.Collapsed));
-                }
-
                 if (tree.rules && tree.rules.length) {
                     items.push(new vscode.TreeItem(
                         `Rules`,
