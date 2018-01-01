@@ -34,35 +34,30 @@ export class JsonProvider implements IBaseProvider<string> {
         const valueNode = json.findNodeAtLocation(this.tree, p);
         if (valueNode) {
             const hasChildren = valueNode.type === "object" || valueNode.type === "array";
-            const treeItem: vscode.TreeItem = new vscode.TreeItem(
+            let treeItem: vscode.TreeItem = new vscode.TreeItem(
                 this.getLabel(valueNode),
                 hasChildren ? vscode.TreeItemCollapsibleState.Collapsed :
                     vscode.TreeItemCollapsibleState.None,
             );
-            treeItem.command = {
-                arguments: [new vscode.Range(
-                    vscode.window.activeTextEditor.document.positionAt(valueNode.offset),
-                    vscode.window.activeTextEditor.document.positionAt(valueNode.offset + valueNode.length),
-                )],
-                command: "extension.openJsonSelection",
-                title: "",
-            };
+
             treeItem.contextValue = valueNode.type;
             if (!hasChildren) {
                 const start = vscode.window.activeTextEditor.document.positionAt(valueNode.offset);
                 const end = new vscode.Position(start.line, start.character + valueNode.length);
 
-                treeItem.command = {
-                    arguments: [new vscode.Range(start, end)],
-                    command: "extension.treeview.goto",
-                    title: "",
-                };
+                treeItem = Provider.addItemCommand(
+                    treeItem,
+                    "extension.treeview.goto",
+                    [new vscode.Range(start, end)],
+                );
             }
-            return Provider.getIcon(
+
+            return Provider.addItemIcon(
                 treeItem,
                 hasChildren ? "list" : "property",
             );
         }
+
         return null;
     }
 

@@ -59,7 +59,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                 vscode.TreeItemCollapsibleState.Collapsed;
 
                             items.push(
-                                Provider.getIcon(
+                                Provider.addItemIcon(
                                     new vscode.TreeItem(cls.name, collapsed),
                                     "class",
                                 ),
@@ -73,12 +73,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                 `${imp.name}${imp.alias !== null ? ` as ${imp.alias}` : ""}`,
                                 vscode.TreeItemCollapsibleState.None,
                             );
-                            t.command = {
-                                arguments: [imp.position],
-                                command: "extension.treeview.goto",
-                                title: "",
-                            };
-                            items.push(t);
+
+                            items.push(Provider.addItemCommand(t, "extension.treeview.goto", [ imp.position ]));
                         }
                     }
 
@@ -96,16 +92,12 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                 `${func.type !== undefined ? `: ${func.type}` : ""}`,
                                 vscode.TreeItemCollapsibleState.None,
                             );
-                            t.command = {
-                                arguments: [func.position],
-                                command: "extension.treeview.goto",
-                                title: "",
-                            };
-                            items.push(Provider.getIcon(
+
+                            items.push(Provider.addItemCommand(Provider.addItemIcon(
                                 t,
                                 `method${func.static ? "_static" : ""}`,
                                 func.visibility,
-                            ));
+                            ), "extension.treeview.goto", [func.position]));
                         }
                     }
 
@@ -119,13 +111,11 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                             vscode.TreeItemCollapsibleState.None,
                                         );
 
-                                        t.command = {
-                                            arguments: [constant.position],
-                                            command: "extension.treeview.goto",
-                                            title: "",
-                                        };
-
-                                        items.push(Provider.getIcon(t, "constant", constant.visibility.toString()));
+                                        items.push(Provider.addItemCommand(Provider.addItemIcon(
+                                            t,
+                                            "constant",
+                                            constant.visibility.toString(),
+                                        ), "extension.treeview.goto", [constant.position]));
                                     }
                                 }
 
@@ -135,16 +125,12 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                             `$${property.name}${property.value !== "" ? ` = ${property.value}` : ""}`,
                                             vscode.TreeItemCollapsibleState.None,
                                         );
-                                        t.command = {
-                                            arguments: [property.position],
-                                            command: "extension.treeview.goto",
-                                            title: "",
-                                        };
-                                        items.push(Provider.getIcon(
+
+                                        items.push(Provider.addItemCommand(Provider.addItemIcon(
                                             t,
                                             `property${property.static ? "_static" : ""}`,
                                             property.visibility,
-                                        ));
+                                        ), "extension.treeview.goto", [property.position]));
                                     }
                                 }
 
@@ -154,12 +140,11 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                             `${trait.name}`,
                                             vscode.TreeItemCollapsibleState.None,
                                         );
-                                        t.command = {
-                                            arguments: [trait.position],
-                                            command: "extension.treeview.goto",
-                                            title: "",
-                                        };
-                                        items.push(Provider.getIcon(t, "trait"));
+                                        items.push(Provider.addItemCommand(
+                                            Provider.addItemIcon(t, "trait"),
+                                            "extension.treeview.goto",
+                                            [ trait.position ],
+                                        ));
                                     }
                                 }
 
@@ -177,16 +162,12 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                                             `${method.type !== undefined ? `: ${method.type}` : ""}`,
                                             vscode.TreeItemCollapsibleState.None,
                                         );
-                                        t.command = {
-                                            arguments: [method.position],
-                                            command: "extension.treeview.goto",
-                                            title: "",
-                                        };
-                                        items.push(Provider.getIcon(
+
+                                        items.push(Provider.addItemCommand(Provider.addItemIcon(
                                             t,
                                             `method${method.static ? "_static" : ""}`,
                                             method.visibility,
-                                        ));
+                                        ), "extension.treeview.goto", [method.position]));
                                     }
                                 }
                             }

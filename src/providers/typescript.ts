@@ -135,7 +135,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                             vscode.TreeItemCollapsibleState.Collapsed;
 
                         items.push(
-                            Provider.getIcon(
+                            Provider.addItemIcon(
                                 new vscode.TreeItem(cls.name, collapsed),
                                 "class",
                                 cls.visibility,
@@ -150,12 +150,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                             `${imp.name}${imp.alias !== undefined ? ` as ${imp.alias}` : ""}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
-                        t.command = {
-                            arguments: [imp.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(t);
+                        items.push(Provider.addItemCommand(t, "extension.treeview.goto", [ imp.position ]));
                     }
                 }
 
@@ -173,16 +168,12 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                             `${func.type !== undefined ? `: ${func.type}` : ""}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
-                        t.command = {
-                            arguments: [func.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(Provider.getIcon(
+
+                        items.push(Provider.addItemCommand(Provider.addItemIcon(
                             t,
                             `method${func.static ? "_static" : ""}`,
                             func.visibility,
-                        ));
+                        ), "extension.treeview.goto", [func.position]));
                     }
                 }
 
@@ -194,7 +185,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                                     `${constant.name} = ${constant.value}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );
-                                items.push(Provider.getIcon(t, "constant"));
+                                items.push(Provider.addItemIcon(t, "constant"));
                             }
                         }
 
@@ -205,23 +196,19 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                                         `${property.value !== "" ? ` = ${property.value}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );
-                                t.command = {
-                                    arguments: [property.position],
-                                    command: "extension.treeview.goto",
-                                    title: "",
-                                };
-                                items.push(Provider.getIcon(
+
+                                items.push(Provider.addItemCommand(Provider.addItemIcon(
                                     t,
                                     `property${property.static ? "_static" : ""}`,
                                     property.visibility,
-                                ));
+                                ), "extension.treeview.goto", [property.position]));
                             }
                         }
 
                         if (cls.traits) {
                             for (const trait of cls.traits) {
                                 const t = new vscode.TreeItem(`${trait.name}`, vscode.TreeItemCollapsibleState.None);
-                                items.push(Provider.getIcon(t, "trait"));
+                                items.push(Provider.addItemIcon(t, "trait"));
                             }
                         }
 
@@ -239,16 +226,12 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                                         `${method.type !== undefined ? `: ${method.type}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );
-                                t.command = {
-                                    arguments: [method.position],
-                                    command: "extension.treeview.goto",
-                                    title: "",
-                                };
-                                items.push(Provider.getIcon(
+
+                                items.push(Provider.addItemCommand(Provider.addItemIcon(
                                     t,
                                     `method${method.static ? "_static" : ""}`,
                                     method.visibility,
-                                ));
+                                ), "extension.treeview.goto", [method.position]));
                             }
                         }
                     }

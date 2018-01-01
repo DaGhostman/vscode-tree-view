@@ -79,12 +79,8 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
                             `${imp.name}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
-                        t.command = {
-                            arguments: [imp.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(t);
+
+                        items.push(Provider.addItemCommand(t, "extension.treeview.goto", [imp.position]));
                     }
                 }
 
@@ -94,12 +90,7 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
                             `${variable.name}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
-                        t.command = {
-                            arguments: [variable.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(t);
+                        items.push(Provider.addItemCommand(t, "extension.treeview.goto", [variable.position]));
                     }
                 }
 
@@ -109,15 +100,11 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
                             `${rule.name}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
-                        t.command = {
-                            arguments: [rule.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(Provider.getIcon(
+
+                        items.push(Provider.addItemCommand(Provider.addItemIcon(
                             t,
                             `method`,
-                        ));
+                        ), "extension.treeview.goto", [rule.position]));
                     }
                 }
             }

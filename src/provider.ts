@@ -6,7 +6,17 @@ import * as token from "./tokens";
 export class Provider implements vscode.TreeDataProvider<TreeItem> {
     public static readonly config: vscode.WorkspaceConfiguration;
 
-    public static getIcon(node: vscode.TreeItem, key: string, visibility: string = "public" ) {
+    public static addItemCommand(item: vscode.TreeItem, commandName: string, args?: any[]): vscode.TreeItem {
+        item.command = {
+            arguments: args,
+            command: commandName,
+            title: "",
+        };
+
+        return item;
+    }
+
+    public static addItemIcon(node: vscode.TreeItem, key: string, visibility: string = "public" ) {
         const icons = {
             class: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
