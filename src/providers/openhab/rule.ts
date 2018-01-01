@@ -23,44 +23,41 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
         // refresh
     }
 
-    public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
+    public getTokenTree(): Thenable<IRuleTree> {
         const text = vscode.window.activeTextEditor.document.getText();
+        return this.parser.parseSource(text).then((parsed) => {
+            // const tree = {} as IRuleTree;
 
-        return this.parser.parseSource(text).then((parsed: IRuleTree) => {
-            this.tree = {
-                imports: [],
-                variables: [],
-                rules: [],
-            };
+            // for (const imp of parsed.imports) {
 
-            for (const imp of parsed.imports) {
-                this.tree.imports.push({
-                    name: imp,
-                    position: this.parser.getPosition(imp),
-                } as token.ImportToken);
-            }
+            // }
 
-            for (const variable of parsed.variables) {
-                this.tree.variables.push({
-                    name: variable,
-                    position: this.parser.getPosition(variable),
-                });
-            }
+            // for (const variable of parsed.variables) {
+            //     if (tree.variables === undefined) {
+            //         tree.variables = [];
+            //     }
+            //     tree.variables.push(variable);
+            // }
 
-            for (const rule of parsed.rules) {
-                this.tree.rules.push({
-                    name: rule,
-                    position: this.parser.getPosition(rule),
-                });
-            }
+            // for (const rule of parsed.rules) {
+            //     if (tree.rules === undefined) {
+            //         tree.rules = [];
+            //     }
+            //     tree.rules.push({
+            //         name: rule,
+            //         position: this.parser.getPosition(rule),
+            //     });
+            // }
 
-            const items: vscode.TreeItem[] = [];
-            const tree = this.tree;
+            return Promise.resolve(parsed);
+        });
+    }
+
+    public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
+        const items: vscode.TreeItem[] = [];
+
+        return this.getTokenTree().then((tree) => {
             if (element === undefined) {
-                if (tree.imports && tree.imports.length) {
-                    items.push(new vscode.TreeItem(`Imports`, vscode.TreeItemCollapsibleState.Collapsed));
-                }
-
                 if (tree.variables && tree.variables.length) {
                     items.push(new vscode.TreeItem(`Variables`, vscode.TreeItemCollapsibleState.Collapsed));
                 }
@@ -73,17 +70,6 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
                     ));
                 }
             } else {
-                if (element.label === "Imports") {
-                    for (const imp of tree.imports) {
-                        const t = new vscode.TreeItem(
-                            `${imp.name}`,
-                            vscode.TreeItemCollapsibleState.None,
-                        );
-
-                        items.push(Provider.addItemCommand(t, "extension.treeview.goto", [imp.position]));
-                    }
-                }
-
                 if (element.label === "Variables") {
                     for (const variable of tree.variables) {
                         const t = new vscode.TreeItem(

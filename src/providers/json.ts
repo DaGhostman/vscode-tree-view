@@ -1,6 +1,7 @@
 import * as json from "jsonc-parser";
 import * as vscode from "vscode";
 import { Provider } from "./../provider";
+import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
 export class JsonProvider implements IBaseProvider<string> {
@@ -14,6 +15,10 @@ export class JsonProvider implements IBaseProvider<string> {
 
     public refresh(event?: vscode.TextDocumentChangeEvent): void {
         this.parseTree(event ? event.document : vscode.window.activeTextEditor.document);
+    }
+
+    public getTokenTree(): Thenable<token.ITokenTree> {
+        return Promise.resolve({} as token.ITokenTree);
     }
 
     public getChildren(offset?: string): Thenable<string[]> {

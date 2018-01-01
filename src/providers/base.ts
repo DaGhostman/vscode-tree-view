@@ -6,5 +6,5 @@ export interface IBaseProvider<T> extends vscode.TreeDataProvider<T> {
     hasSupport(langId: string): boolean;
     refresh(event?: vscode.TextDocumentChangeEvent): void;
 
-    getTokenTree(raw?: any): token.ITokenTree;
+    getTokenTree(): Thenable<token.ITokenTree>;
 }
