@@ -61,10 +61,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
                     tree.variables.push({
                         name: `${dec.isConst ? "@" : ""}${dec.name}`,
-                        position: new vscode.Range(
-                            startPosition,
-                            new vscode.Position(startPosition.line, startPosition.character),
-                        ),
+                        position: this.generateRangeForSelection(dec.name, dec.start),
                         type: dec.type === null ? "any" : dec.type,
                         visibility: dec.isExported === true ? "public" : "protected",
                     } as token.IVariableToken);
@@ -146,10 +143,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
             properties.push({
                 name: property.name,
-                position: new vscode.Range(
-                    this.offsetToPosition(property.start),
-                    this.offsetToPosition(property.start),
-                ),
+                position: this.generateRangeForSelection(property.name, property.start),
                 readonly: (def.indexOf("readonly") > -1),
                 static: (def.indexOf("static") > -1),
                 type: property.type === undefined ? "any" : property.type,
@@ -190,7 +184,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         return val;
     }
 
-    private handleMethods(children: any[]): token.IMethodToken[] {
+    private handleMethods(children: ts.MethodDeclaration[]): token.IMethodToken[] {
         const methods: token.IMethodToken[] = [];
 
         for (const method of children) {
@@ -202,10 +196,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             methods.push({
                 arguments: this.handleArguments(method.parameters),
                 name: method.name,
-                position: new vscode.Range(
-                    this.offsetToPosition(method.start),
-                    this.offsetToPosition(method.start),
-                ),
+                position: this.generateRangeForSelection(method.name, method.start),
                 static: (def.indexOf("static") > -1),
                 type: method.type === null ? "any" : method.type,
                 visibility: this.VISIBILITY[method.visibility === undefined ? 2 : method.visibility],
@@ -232,5 +223,23 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
     private offsetToPosition(offset: number): vscode.Position {
         return vscode.window.activeTextEditor.document.positionAt(offset);
+    }
+
+    private generateRangeForSelection(name: string, offset: number): vscode.Range {
+        const startPosition = this.offsetToPosition(offset);
+        const line = vscode.window.activeTextEditor.document.lineAt(startPosition.line).text;
+
+        const startIndex = line.indexOf(name);
+        if (startIndex === line.lastIndexOf(name)) {
+            return new vscode.Range(
+                new vscode.Position(startPosition.line, startIndex),
+                new vscode.Position(startPosition.line, startIndex + name.length),
+            );
+        }
+
+        return new vscode.Range(
+            new vscode.Position(startPosition.line, startIndex),
+            new vscode.Position(startPosition.line, startIndex),
+        );
     }
 }
