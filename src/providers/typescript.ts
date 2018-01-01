@@ -25,6 +25,82 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         // console.log("TypeScript/JavaScript Tree View provider refresh triggered")
     }
 
+    public getTokenTree(raw?: ts.File): token.ITokenTree {
+        for (const dec of raw.declarations) {
+            if (this.tree.nodes === undefined) {
+                this.tree.nodes = [];
+            }
+
+            if (dec instanceof ts.ClassDeclaration || dec instanceof ts.InterfaceDeclaration) {
+                if (dec instanceof ts.ClassDeclaration && dec.ctor !== undefined) {
+                    dec.ctor.name = "constructor";
+                    dec.methods.unshift(dec.ctor as ts.MethodDeclaration);
+                }
+
+                this.tree.nodes.push({
+                    methods: this.handleMethods(dec.methods),
+                    name: dec.name,
+                    properties: this.handleProperties(dec.properties),
+                    visibility: dec.isExported === true ? "public" : "protected",
+                } as token.IEntityToken);
+            }
+
+            if (dec instanceof ts.FunctionDeclaration) {
+                const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
+
+                if (this.tree.functions === undefined) {
+                    this.tree.functions = [];
+                }
+
+                this.tree.functions.push({
+                    arguments: this.handleArguments(dec.parameters),
+                    name: dec.name,
+                    position: new vscode.Range(
+                        startPosition,
+                        new vscode.Position(startPosition.line, startPosition.character),
+                    ),
+                    static: true,
+                    type: dec.type === null ? "any" : dec.type,
+                    visibility: dec.isExported === true ? "public" : "protected",
+                } as token.IMethodToken);
+            }
+        }
+
+        for (const imp of raw.imports) {
+            if (this.tree.imports === undefined) {
+                this.tree.imports = [];
+            }
+
+            if (imp instanceof ts.NamedImport && imp.specifiers !== undefined) {
+                const classes: string[] = [];
+                for (const spec of imp.specifiers) {
+                    classes.push(spec.specifier);
+                }
+
+                this.tree.imports.push({
+                    name: `${imp.libraryName}: ${classes.join(", ")}`,
+                    position: new vscode.Range(
+                        this.offsetToPosition(imp.start),
+                        this.offsetToPosition(imp.start),
+                    ),
+                } as token.ImportToken);
+            }
+
+            if (imp instanceof ts.NamespaceImport) {
+                this.tree.imports.push({
+                    alias: imp.alias,
+                    name: imp.libraryName,
+                    position: new vscode.Range(
+                        this.offsetToPosition(imp.start),
+                        this.offsetToPosition(imp.start),
+                    ),
+                } as token.ImportToken);
+            }
+        }
+
+        return this.tree;
+    }
+
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
         return element;
     }
@@ -37,75 +113,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             this.tree = {
                 strict: useStrict,
             };
-            for (const dec of f.declarations) {
-                if (this.tree.nodes === undefined) {
-                    this.tree.nodes = [];
-                }
 
-                if (dec instanceof ts.ClassDeclaration || dec instanceof ts.InterfaceDeclaration) {
-                    if (dec instanceof ts.ClassDeclaration && dec.ctor !== undefined) {
-                        dec.ctor.name = "constructor";
-                        dec.methods.unshift(dec.ctor as ts.MethodDeclaration);
-                    }
-
-                    this.tree.nodes.push({
-                        methods: this.handleMethods(dec.methods),
-                        name: dec.name,
-                        properties: this.handleProperties(dec.properties),
-                        visibility: dec.isExported === true ? "public" : "protected",
-                    } as token.IEntityToken);
-                }
-
-                if (dec instanceof ts.FunctionDeclaration) {
-                    const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
-
-                    if (this.tree.functions === undefined) {
-                        this.tree.functions = [];
-                    }
-
-                    this.tree.functions.push({
-                        arguments: this.handleArguments(dec.parameters),
-                        name: dec.name,
-                        position: new vscode.Range(
-                            startPosition,
-                            new vscode.Position(startPosition.line, startPosition.character),
-                        ),
-                        static: true,
-                        type: dec.type === null ? "any" : dec.type,
-                        visibility: dec.isExported === true ? "public" : "protected",
-                    } as token.IMethodToken);
-                }
-            }
-
-            for (const imp of f.imports) {
-                if (this.tree.imports === undefined) {
-                    this.tree.imports = [];
-                }
-
-                if (imp.specifiers !== undefined) {
-                    const classes: string[] = [];
-                    for (const spec of imp.specifiers) {
-                        classes.push(spec.specifier);
-                    }
-
-                    this.tree.imports.push({
-                        name: `${imp.libraryName}: ${classes.join(", ")}`,
-                        position: new vscode.Range(
-                            this.offsetToPosition(imp.start),
-                            this.offsetToPosition(imp.start),
-                        ),
-                    } as token.ImportToken);
-                } else {
-                    this.tree.imports.push({
-                        alias: imp.alias,
-                        name: imp.libraryName,
-                        position: new vscode.Range(
-                            this.offsetToPosition(imp.start),
-                            this.offsetToPosition(imp.start),
-                        ),
-                    } as token.ImportToken);
-                }
-            }
+            this.tree = this.getTokenTree(f);
 
             const items: vscode.TreeItem[] = [];
             const tree = this.tree;
