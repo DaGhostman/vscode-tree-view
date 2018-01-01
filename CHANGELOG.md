@@ -17,8 +17,9 @@
  a promise of `ITokenTree` [BC]
 - [ALL] - Providers' `getChildren` should now return only the nodes that
  are not included in the 'generic' support [BC]
-- [JS/TS] - The symbol for `read-only` and `const` definitions is now `@`
+- [TS/JS] - The symbol for `read-only` and `const` definitions is now `@`
  (previously `!`)
+- [TS/JS] - Align the TS/JS symbol selection when a node is clicked, to *attempt* to surround only the symbol instead of the whole line (offsets provided by the parser)
 
 ## [0.2.0]
 
