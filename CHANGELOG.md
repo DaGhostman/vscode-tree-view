@@ -1,5 +1,25 @@
 # Change Log
 
+## [UNRELEASED]
+
+### Added
+
+- [ALL] - Support for globally(file-level) defined variables in separate
+ expandable section (collapsed by default)
+
+### Changed
+
+- [ALL] - Renamed `Provider` method `getIcon` to `addItemIcon` (arguments are
+ the same) [BC]
+- [ALL] - Extracted a a method to register a command to an item
+ `Provider.addItemCommand`
+- [ALL] - Providers must expose a public method `getTokenTree` that returns
+ a promise of `ITokenTree` [BC]
+- [ALL] - Providers' `getChildren` should now return only the nodes that
+ are not included in the 'generic' support [BC]
+- [JS/TS] - The symbol for `read-only` and `const` definitions is now `@`
+ (previously `!`)
+
 ## [0.2.0]
 
 ### Added
