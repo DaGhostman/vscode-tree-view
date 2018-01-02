@@ -1,5 +1,27 @@
 # Change Log
 
+_[BC]_ Stands for *B*reaking *C*hange
+## [1.0.0]
+
+### Added
+
+- [ALL] - Support for globally(file-level) defined variables in separate
+ expandable section (collapsed by default)
+
+### Changed
+
+- [ALL] - Renamed `Provider` method `getIcon` to `addItemIcon` (arguments are
+ the same) [BC]
+- [ALL] - Extracted a a method to register a command to an item
+ `Provider.addItemCommand`
+- [ALL] - Providers must expose a public method `getTokenTree` that returns
+ a promise of `ITokenTree` [BC]
+- [ALL] - Providers' `getChildren` should now return only the nodes that
+ are not included in the 'generic' support [BC]
+- [TS/JS] - The symbol for `read-only` and `const` definitions is now `@`
+ (previously `!`)
+- [TS/JS] - Align the TS/JS symbol selection when a node is clicked, to *attempt* to surround only the symbol instead of the whole line (offsets provided by the parser)
+
 ## [0.2.0]
 
 ### Added

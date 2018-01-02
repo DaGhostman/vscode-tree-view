@@ -47,4 +47,5 @@ export interface ITokenTree {
     imports?: ImportToken[];
     nodes?: IEntityToken[];
     functions?: IMethodToken[];
+    variables?: IVariableToken[];
 }

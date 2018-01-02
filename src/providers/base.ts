@@ -5,4 +5,6 @@ export * from "../tokens";
 export interface IBaseProvider<T> extends vscode.TreeDataProvider<T> {
     hasSupport(langId: string): boolean;
     refresh(event?: vscode.TextDocumentChangeEvent): void;
+
+    getTokenTree(): Thenable<token.ITokenTree>;
 }

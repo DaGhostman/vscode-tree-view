@@ -1,6 +1,7 @@
 import * as json from "jsonc-parser";
 import * as vscode from "vscode";
 import { Provider } from "./../provider";
+import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
 export class JsonProvider implements IBaseProvider<string> {
@@ -14,6 +15,10 @@ export class JsonProvider implements IBaseProvider<string> {
 
     public refresh(event?: vscode.TextDocumentChangeEvent): void {
         this.parseTree(event ? event.document : vscode.window.activeTextEditor.document);
+    }
+
+    public getTokenTree(): Thenable<token.ITokenTree> {
+        return Promise.resolve({} as token.ITokenTree);
     }
 
     public getChildren(offset?: string): Thenable<string[]> {
@@ -34,35 +39,30 @@ export class JsonProvider implements IBaseProvider<string> {
         const valueNode = json.findNodeAtLocation(this.tree, p);
         if (valueNode) {
             const hasChildren = valueNode.type === "object" || valueNode.type === "array";
-            const treeItem: vscode.TreeItem = new vscode.TreeItem(
+            let treeItem: vscode.TreeItem = new vscode.TreeItem(
                 this.getLabel(valueNode),
                 hasChildren ? vscode.TreeItemCollapsibleState.Collapsed :
                     vscode.TreeItemCollapsibleState.None,
             );
-            treeItem.command = {
-                arguments: [new vscode.Range(
-                    vscode.window.activeTextEditor.document.positionAt(valueNode.offset),
-                    vscode.window.activeTextEditor.document.positionAt(valueNode.offset + valueNode.length),
-                )],
-                command: "extension.openJsonSelection",
-                title: "",
-            };
+
             treeItem.contextValue = valueNode.type;
             if (!hasChildren) {
                 const start = vscode.window.activeTextEditor.document.positionAt(valueNode.offset);
                 const end = new vscode.Position(start.line, start.character + valueNode.length);
 
-                treeItem.command = {
-                    arguments: [new vscode.Range(start, end)],
-                    command: "extension.treeview.goto",
-                    title: "",
-                };
+                treeItem = Provider.addItemCommand(
+                    treeItem,
+                    "extension.treeview.goto",
+                    [new vscode.Range(start, end)],
+                );
             }
-            return Provider.getIcon(
+
+            return Provider.addItemIcon(
                 treeItem,
                 hasChildren ? "list" : "property",
             );
         }
+
         return null;
     }
 
