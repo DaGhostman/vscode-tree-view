@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ImportToken } from "../base";
+import { ImportToken, ITokenTree, IVariableToken } from "../base";
 
 export class RuleParser {
     private text: string;
@@ -11,24 +11,44 @@ export class RuleParser {
         const lines = text.split("\n");
         const imports = lines
             .filter((line) => line.trim().startsWith("import"))
-            .map((line) => line.replace(/import/, "").trim()) || [];
+            .map((line) => {
+                const i = line.replace(/import/, "").trim();
+                return {
+                    name: i,
+                    position: this.getPosition(i),
+                } as ImportToken;
+            }) || [];
 
         const rules = lines
             .filter((line) => line.trim().startsWith("rule"))
-            .map((line) => line.replace(/rule/, "").trim()) || [];
+            .map((line) => {
+                const rule = line.replace(/rule/, "").trim();
+
+                return {
+                    name: rule,
+                    position: this.getPosition(rule),
+                } as IVariableToken;
+            }) || [];
 
         // Remove lambdas
         text = text.replace(/(\[)([\s\S]*?)(\s])/gm, "$1");
-        const lastImport = imports[imports.length - 1] || "";
-        const vars = text.slice(text.search(lastImport) + lastImport.length, text.search(rules[0]) || text.length);
+        const lastImport = imports.length !== 0 ? imports[imports.length - 1].name : "";
+        const vars = text.slice(
+            text.search(lastImport) + lastImport.length,
+            rules.length !== 0 ? text.search(rules[0].name) : text.length,
+        );
         const variables = vars
             .split("\n")
             .filter((line) => /val|var/.test(line.trim()))
-            .map((line) => line.split("=")[0].replace(/val |var /, "").trim()) || [];
+            .map((line) => {
+                const v = line.split("=")[0].replace(/val |var /, "").trim();
+                return {
+                    name: v,
+                    position: this.getPosition(v),
+                } as IVariableToken;
+                }) || [];
 
-        return new Promise((resolve) => {
-            resolve({ imports, variables, rules });
-        });
+        return Promise.resolve({ imports, variables, rules });
     }
 
     public getPosition(text: string): vscode.Range {
@@ -44,10 +64,6 @@ export class RuleParser {
     }
 }
 
-export interface IRuleTree {
-    variables?: string[];
-
-    imports?: string[];
-
+export interface IRuleTree extends ITokenTree {
     rules?: any[];
 }

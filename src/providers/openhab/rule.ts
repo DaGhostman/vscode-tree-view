@@ -23,48 +23,18 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
         // refresh
     }
 
-    public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
+    public getTokenTree(): Thenable<IRuleTree> {
         const text = vscode.window.activeTextEditor.document.getText();
+        return this.parser.parseSource(text).then((parsed) => {
+            return Promise.resolve(parsed);
+        });
+    }
 
-        return this.parser.parseSource(text).then((parsed: IRuleTree) => {
-            this.tree = {
-                imports: [],
-                variables: [],
-                rules: [],
-            };
+    public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
+        const items: vscode.TreeItem[] = [];
 
-            for (const imp of parsed.imports) {
-                this.tree.imports.push({
-                    name: imp,
-                    position: this.parser.getPosition(imp),
-                } as token.ImportToken);
-            }
-
-            for (const variable of parsed.variables) {
-                this.tree.variables.push({
-                    name: variable,
-                    position: this.parser.getPosition(variable),
-                });
-            }
-
-            for (const rule of parsed.rules) {
-                this.tree.rules.push({
-                    name: rule,
-                    position: this.parser.getPosition(rule),
-                });
-            }
-
-            const items: vscode.TreeItem[] = [];
-            const tree = this.tree;
+        return this.getTokenTree().then((tree) => {
             if (element === undefined) {
-                if (tree.imports && tree.imports.length) {
-                    items.push(new vscode.TreeItem(`Imports`, vscode.TreeItemCollapsibleState.Collapsed));
-                }
-
-                if (tree.variables && tree.variables.length) {
-                    items.push(new vscode.TreeItem(`Variables`, vscode.TreeItemCollapsibleState.Collapsed));
-                }
-
                 if (tree.rules && tree.rules.length) {
                     items.push(new vscode.TreeItem(
                         `Rules`,
@@ -73,33 +43,13 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
                     ));
                 }
             } else {
-                if (element.label === "Imports") {
-                    for (const imp of tree.imports) {
-                        const t = new vscode.TreeItem(
-                            `${imp.name}`,
-                            vscode.TreeItemCollapsibleState.None,
-                        );
-                        t.command = {
-                            arguments: [imp.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(t);
-                    }
-                }
-
                 if (element.label === "Variables") {
                     for (const variable of tree.variables) {
                         const t = new vscode.TreeItem(
                             `${variable.name}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
-                        t.command = {
-                            arguments: [variable.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(t);
+                        items.push(Provider.addItemCommand(t, "extension.treeview.goto", [variable.position]));
                     }
                 }
 
@@ -109,15 +59,11 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
                             `${rule.name}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
-                        t.command = {
-                            arguments: [rule.position],
-                            command: "extension.treeview.goto",
-                            title: "",
-                        };
-                        items.push(Provider.getIcon(
+
+                        items.push(Provider.addItemCommand(Provider.addItemIcon(
                             t,
                             `method`,
-                        ));
+                        ), "extension.treeview.goto", [rule.position]));
                     }
                 }
             }
