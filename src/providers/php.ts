@@ -70,7 +70,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                     const methods = node.body.filter((x) => x.kind === "method");
                     const traits = node.body.filter((x) => x.kind === "traituse");
 
-                    entity.name = (tree.namespace||'')+`\\${node.name}`;
+                    entity.name = (tree.namespace || "") + `\\${node.name}`;
                     entity.traits = traits.length === 0 ? undefined : this.handleUseTraits(traits);
                     entity.constants = constants.length === 0 ? undefined : this.handleConstants(constants);
                     entity.properties = properties.length === 0 ? undefined : this.handleProperties(properties);
