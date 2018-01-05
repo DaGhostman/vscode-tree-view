@@ -16,12 +16,31 @@ function goToDefinition(range: vscode.Range) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    const provider = new Provider([
-        new PhpProvider(),
-        new TypescriptProvider(),
-        new JsonProvider(),
-        new RuleProvider(),
-    ] as Array<IBaseProvider<any>>);
+    const providers: Array<IBaseProvider<string | vscode.TreeItem>> = [];
+    const config = vscode.workspace.getConfiguration("treeview");
+
+    const allowedProviders: string[] = config.has("allowedProviders") ?
+        config.get("allowedProviders") : [];
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("php") !== -1) {
+        providers.push(new PhpProvider());
+    }
+
+    if (allowedProviders.length === 0 ||
+        allowedProviders.indexOf("typescript") !== -1 ||
+        allowedProviders.indexOf("javascript") !== -1) {
+        providers.push(new TypescriptProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("json") !== -1) {
+        providers.push(new JsonProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("openhab") !== -1) {
+        providers.push(new RuleProvider());
+    }
+
+    const provider = new Provider(providers as Array<IBaseProvider<any>>);
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
