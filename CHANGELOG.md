@@ -1,6 +1,12 @@
 # Change Log
 
 _[BC]_ Stands for *B*reaking *C*hange
+## [Unreleased]
+
+### Added
+
+- [ALL] - Make providers loadable on-demand through `treeview.allowedProviders`
+
 ## [1.0.0]
 
 ### Added
