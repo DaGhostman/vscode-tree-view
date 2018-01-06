@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
         providers.push(new RuleProvider());
     }
 
-    const provider = new Provider(providers as Array<IBaseProvider<any>>);
+    const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
