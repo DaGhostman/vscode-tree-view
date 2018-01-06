@@ -38,7 +38,25 @@
                     "name": "Tree"
                 }
             ]
-        }
+        },
+        "configuration":[
+            {
+                "type": "object",
+                "title": "File Tree View root config",
+                "properties": {
+                    "treeview.allowedProviders": {
+                        "type": "array",
+                        "default": [
+                            "javascript",
+                            "json",
+                            "openhab",
+                            "php"
+                        ],
+                        "description": "List of provider identifiers that are allowed for the workspace or in general"
+                    }
+                }
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

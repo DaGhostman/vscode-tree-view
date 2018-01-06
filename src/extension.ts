@@ -26,9 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
         providers.push(new PhpProvider());
     }
 
-    if (allowedProviders.length === 0 ||
-        allowedProviders.indexOf("typescript") !== -1 ||
-        allowedProviders.indexOf("javascript") !== -1) {
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("javascript") !== -1) {
         providers.push(new TypescriptProvider());
     }
 
