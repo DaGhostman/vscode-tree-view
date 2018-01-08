@@ -7,6 +7,7 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 - [ALL] - Make providers loadable on-demand through `treeview.allowedProviders`
 - [PHP] - Make namespace presentation configurable
+- [TS/JS] - `readonly` identifier character is now configurable
 
 ### Changes
 
