@@ -165,7 +165,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     `Variables`,
                     (tree.nodes === undefined || tree.nodes.length === 0) &&
                     (tree.functions === undefined || tree.functions.length === 0) &&
-                    (tree.variables !== undefined || tree.variables.length === 0) ?
+                    (tree.variables.length !== 0) ?
                         vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
                 ));
             }
@@ -174,7 +174,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 items.push(new vscode.TreeItem(
                     `Functions`,
                     (tree.nodes === undefined || tree.nodes.length === 0) &&
-                    (tree.functions !== undefined || tree.functions.length === 0) ?
+                    (tree.functions.length !== 0) ?
                         vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
                 ));
             }
