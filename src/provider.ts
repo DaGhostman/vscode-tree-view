@@ -261,7 +261,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                         if (cls.properties) {
                             for (const property of cls.properties.sort(Provider.sort)) {
                                 const t = new vscode.TreeItem(
-                                    `${property.readonly ? "@" : ""}${property.name}: ${property.type}` +
+                                    `${property.name}: ${property.type}` +
                                         `${property.value !== "" ? ` = ${property.value}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );

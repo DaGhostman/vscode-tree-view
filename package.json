@@ -53,6 +53,39 @@
                             "php"
                         ],
                         "description": "List of provider identifiers that are allowed for the workspace or in general"
+                    },
+                    "treeview.php": {
+                        "type":"object",
+                        "description": "Section for PHP support related configurations",
+                        "properties": {
+                            "namespacePosition": {
+                                "type":"string",
+                                "enum": [
+                                    "suffix",
+                                    "none",
+                                    "fqn"
+                                ],
+                                "default": "suffix",
+                                "description": "Control the position where the current namespace is shown"
+                            }
+                        },
+                        "default": {
+                            "namespacePosition": "suffix"
+                        }
+                    },
+                    "treeview.js": {
+                        "type":"object",
+                        "description": "Section for JS/TS support related configurations",
+                        "properties": {
+                            "readonlyCharacter": {
+                                "type":"string",
+                                "default": "@",
+                                "description": "Character with which to prefix `readonly` properties"
+                            }
+                        },
+                        "default": {
+                            "readonlyCharacter": "@"
+                        }
                     }
                 }
             }
