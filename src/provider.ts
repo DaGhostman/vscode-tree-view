@@ -196,7 +196,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
         } else {
             if (tree.imports !== undefined && element.label.toLowerCase() === "imports") {
-                for (const imp of tree.imports) {
+                for (const imp of tree.imports.sort(Provider.sort)) {
                     const t = new vscode.TreeItem(
                         `${imp.name}${imp.alias !== undefined && imp.alias !== null ? ` as ${imp.alias}` : ""}`,
                         vscode.TreeItemCollapsibleState.None,
@@ -206,7 +206,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
 
             if (tree.variables !== undefined && element.label.toLowerCase() === "variables") {
-                for (const variable of tree.variables) {
+                for (const variable of tree.variables.sort(Provider.sort)) {
                     const t = new vscode.TreeItem(
                         `${variable.name}` +
                         `${variable.type !== undefined ? `: ${variable.type}` : ""}` +
@@ -223,7 +223,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
 
             if (tree.functions !== undefined && element.label.toLowerCase() === "functions") {
-                for (const func of tree.functions) {
+                for (const func of tree.functions.sort(Provider.sort)) {
                     const args = [];
                     for (const arg of func.arguments) {
                         args.push(
@@ -246,10 +246,10 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
 
             if (tree.nodes !== undefined) {
-                for (const cls of tree.nodes) {
+                for (const cls of tree.nodes.sort(Provider.sort)) {
                     if (cls.name === element.label) {
                         if (cls.constants) {
-                            for (const constant of cls.constants) {
+                            for (const constant of cls.constants.sort(Provider.sort)) {
                                 const t = new vscode.TreeItem(
                                     `${constant.name} = ${constant.value}`,
                                     vscode.TreeItemCollapsibleState.None,
@@ -259,7 +259,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                         }
 
                         if (cls.properties) {
-                            for (const property of cls.properties) {
+                            for (const property of cls.properties.sort(Provider.sort)) {
                                 const t = new vscode.TreeItem(
                                     `${property.readonly ? "@" : ""}${property.name}: ${property.type}` +
                                         `${property.value !== "" ? ` = ${property.value}` : ""}`,
@@ -275,14 +275,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                         }
 
                         if (cls.traits) {
-                            for (const trait of cls.traits) {
+                            for (const trait of cls.traits.sort(Provider.sort)) {
                                 const t = new vscode.TreeItem(`${trait.name}`, vscode.TreeItemCollapsibleState.None);
                                 items.push(Provider.addItemIcon(t, "trait"));
                             }
                         }
 
                         if (cls.methods) {
-                            for (const method of cls.methods) {
+                            for (const method of cls.methods.sort(Provider.sort)) {
                                 const args = [];
                                 for (const arg of method.arguments) {
                                     args.push(
