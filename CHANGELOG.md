@@ -1,6 +1,20 @@
 # Change Log
 
 _[BC]_ Stands for *B*reaking *C*hange
+## [1.1.0]
+
+### Added
+
+- [ALL] - Make providers loadable on-demand through `treeview.allowedProviders`
+- [PHP] - Make namespace presentation configurable
+- [TS/JS] - `readonly` identifier character is now configurable
+
+### Changes
+
+- [PHP] - Fix `undefined` when no namespace is defined for class
+- [TS/JS] - Fix missing types for variables and properties
+- [ALL] - Improvements for sections handling and ordering
+
 ## [1.0.0]
 
 ### Added

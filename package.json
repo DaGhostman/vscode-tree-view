@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
@@ -38,7 +38,58 @@
                     "name": "Tree"
                 }
             ]
-        }
+        },
+        "configuration":[
+            {
+                "type": "object",
+                "title": "File Tree View root config",
+                "properties": {
+                    "treeview.allowedProviders": {
+                        "type": "array",
+                        "default": [
+                            "javascript",
+                            "json",
+                            "openhab",
+                            "php"
+                        ],
+                        "description": "List of provider identifiers that are allowed for the workspace or in general"
+                    },
+                    "treeview.php": {
+                        "type":"object",
+                        "description": "Section for PHP support related configurations",
+                        "properties": {
+                            "namespacePosition": {
+                                "type":"string",
+                                "enum": [
+                                    "suffix",
+                                    "none",
+                                    "fqn"
+                                ],
+                                "default": "suffix",
+                                "description": "Control the position where the current namespace is shown"
+                            }
+                        },
+                        "default": {
+                            "namespacePosition": "suffix"
+                        }
+                    },
+                    "treeview.js": {
+                        "type":"object",
+                        "description": "Section for JS/TS support related configurations",
+                        "properties": {
+                            "readonlyCharacter": {
+                                "type":"string",
+                                "default": "@",
+                                "description": "Character with which to prefix `readonly` properties"
+                            }
+                        },
+                        "default": {
+                            "readonlyCharacter": "@"
+                        }
+                    }
+                }
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
