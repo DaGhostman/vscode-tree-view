@@ -194,7 +194,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.imports !== undefined && element.label.toLowerCase() === "imports") {
                 for (const imp of tree.imports) {
                     const t = new vscode.TreeItem(
-                        `${imp.name}${imp.alias !== undefined ? ` as ${imp.alias}` : ""}`,
+                        `${imp.name}${imp.alias !== undefined && imp.alias !== null ? ` as ${imp.alias}` : ""}`,
                         vscode.TreeItemCollapsibleState.None,
                     );
                     items.push(Provider.addItemCommand(t, "extension.treeview.goto", [ imp.position ]));
@@ -257,7 +257,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                         if (cls.properties) {
                             for (const property of cls.properties) {
                                 const t = new vscode.TreeItem(
-                                    `${property.readonly ? "@" : ""}${property.name}` +
+                                    `${property.readonly ? "@" : ""}${property.name}: ${property.type}` +
                                         `${property.value !== "" ? ` = ${property.value}` : ""}`,
                                     vscode.TreeItemCollapsibleState.None,
                                 );

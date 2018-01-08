@@ -62,7 +62,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     tree.variables.push({
                         name: `${dec.isConst ? "@" : ""}${dec.name}`,
                         position: this.generateRangeForSelection(dec.name, dec.start),
-                        type: dec.type === null ? "any" : dec.type,
+                        type: dec.type === undefined ? "any" : dec.type,
                         visibility: dec.isExported === true ? "public" : "protected",
                     } as token.IVariableToken);
                 }
@@ -198,7 +198,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 name: method.name,
                 position: this.generateRangeForSelection(method.name, method.start),
                 static: (def.indexOf("static") > -1),
-                type: method.type === null ? "any" : method.type,
+                type: method.name !== "constructor" ? (method.type === undefined ? "any" : method.type) : undefined,
                 visibility: this.VISIBILITY[method.visibility === undefined ? 2 : method.visibility],
             } as token.IMethodToken);
         }
