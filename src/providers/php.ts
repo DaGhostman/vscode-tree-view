@@ -280,7 +280,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                     ),
                 ),
                 static: method.isStatic,
-                type: (method.nullable ? "?" : "") + ty,
+                type: ["__construct", "__destruct"].indexOf(method.name) === -1 ?
+                    (method.nullable ? "?" : "") + ty : undefined,
                 visibility: method.visibility,
             } as token.IMethodToken);
         }

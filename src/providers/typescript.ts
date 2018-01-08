@@ -198,7 +198,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 name: method.name,
                 position: this.generateRangeForSelection(method.name, method.start),
                 static: (def.indexOf("static") > -1),
-                type: method.type === null ? "any" : method.type,
+                type: method.name !== "constructor" ? (method.type === undefined ? "any" : method.type) : undefined,
                 visibility: this.VISIBILITY[method.visibility === undefined ? 2 : method.visibility],
             } as token.IMethodToken);
         }
