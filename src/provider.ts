@@ -66,6 +66,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (a.visibility && b.visibility) {
             vis = a.visibility.localeCompare(b.visibility);
         }
+
         return  vis === 0 ? a.name.localeCompare(b.name) : vis;
     }
 
@@ -162,7 +163,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.variables !== undefined) {
                 items.push(new vscode.TreeItem(
                     `Variables`,
-                    tree.nodes === undefined && tree.functions !== undefined ?
+                    (tree.nodes === undefined || tree.nodes.length === 0) &&
+                    (tree.functions === undefined || tree.functions.length === 0) &&
+                    (tree.variables !== undefined || tree.variables.length === 0) ?
                         vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
                 ));
             }
@@ -170,7 +173,8 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.functions !== undefined) {
                 items.push(new vscode.TreeItem(
                     `Functions`,
-                    tree.nodes === undefined && tree.functions !== undefined ?
+                    (tree.nodes === undefined || tree.nodes.length === 0) &&
+                    (tree.functions !== undefined || tree.functions.length === 0) ?
                         vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
                 ));
             }
