@@ -1,7 +1,7 @@
 # Change Log
 
 _[BC]_ Stands for *B*reaking *C*hange
-## [Unreleased]
+## [1.1.0]
 
 ### Added
 
