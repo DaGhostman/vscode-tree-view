@@ -152,7 +152,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             } as token.IPropertyToken);
         }
 
-        return properties.sort(Provider.sort);
+        return properties;
     }
 
     private normalizeType(value, type): string {
@@ -203,7 +203,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             } as token.IMethodToken);
         }
 
-        return methods.sort(Provider.sort);
+        return methods;
     }
 
     private handleArguments(children: any[]): token.IVariableToken[] {

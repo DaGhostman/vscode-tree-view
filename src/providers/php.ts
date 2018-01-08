@@ -5,7 +5,7 @@ import { IBaseProvider } from "./base";
 
 export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
     private config;
-    private readonly tokens = [
+    private readonly tokens: string[] = [
         "declare",
         "namespace",
         "class",
@@ -228,7 +228,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
             } as token.IConstantToken);
         }
 
-        return constants.sort(Provider.sort);
+        return constants;
     }
 
     private handleProperties(children: any[]): token.IPropertyToken[] {
@@ -254,7 +254,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
             } as token.IPropertyToken);
         }
 
-        return properties.sort(Provider.sort);
+        return properties;
     }
 
     private handleMethods(children: any[]): token.IMethodToken[] {
@@ -286,7 +286,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
             } as token.IMethodToken);
         }
 
-        return methods.sort(Provider.sort);
+        return methods;
     }
 
     private handleArguments(children: any[]): token.IVariableToken[] {

@@ -7,6 +7,12 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 - [ALL] - Make providers loadable on-demand through `treeview.allowedProviders`
 
+### Changes
+
+- [PHP] - Fix `undefined` when no namespace is defined for class
+- [TS/JS] - Fix missing types for variables and properties
+- [ALL] - Improvements for sections handling and ordering
+
 ## [1.0.0]
 
 ### Added
