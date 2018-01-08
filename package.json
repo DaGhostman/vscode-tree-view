@@ -72,6 +72,20 @@
                         "default": {
                             "namespacePosition": "suffix"
                         }
+                    },
+                    "treeview.js": {
+                        "type":"object",
+                        "description": "Section for JS/TS support related configurations",
+                        "properties": {
+                            "readonlyCharacter": {
+                                "type":"string",
+                                "default": "@",
+                                "description": "Character with which to prefix `readonly` properties"
+                            }
+                        },
+                        "default": {
+                            "readonlyCharacter": "@"
+                        }
                     }
                 }
             }
