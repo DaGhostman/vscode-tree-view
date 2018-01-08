@@ -4,7 +4,7 @@ import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
 export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
-    private config;
+    private config: vscode.WorkspaceConfiguration;
     private readonly tokens: string[] = [
         "declare",
         "namespace",
@@ -20,6 +20,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
     public hasSupport(language: string) { return language.toLowerCase() === "php"; }
 
     public refresh(event?): void {
+        this.config = vscode.workspace.getConfiguration("treeview.php");
+
         if (event !== undefined) {
             this.getTree();
         }
@@ -70,7 +72,17 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                     const methods = node.body.filter((x) => x.kind === "method");
                     const traits = node.body.filter((x) => x.kind === "traituse");
 
-                    entity.name = (tree.namespace || "") + `\\${node.name}`;
+                    entity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    if (this.config.has("namespacePosition")) {
+                        if (this.config.get("namespacePosition") === "suffix") {
+                            entity.name = `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
+                        }
+
+                        if (this.config.get("namespacePosition") === "none") {
+                            entity.name = `${node.name}`;
+                        }
+                    }
+
                     entity.traits = traits.length === 0 ? undefined : this.handleUseTraits(traits);
                     entity.constants = constants.length === 0 ? undefined : this.handleConstants(constants);
                     entity.properties = properties.length === 0 ? undefined : this.handleProperties(properties);
