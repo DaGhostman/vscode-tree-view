@@ -5,7 +5,7 @@ import { IBaseProvider } from "./base";
 
 export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
     private config;
-    private readonly tokens = [
+    private readonly tokens: string[] = [
         "declare",
         "namespace",
         "class",
