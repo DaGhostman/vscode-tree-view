@@ -62,7 +62,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     tree.variables.push({
                         name: `${dec.isConst ? "@" : ""}${dec.name}`,
                         position: this.generateRangeForSelection(dec.name, dec.start),
-                        type: dec.type === null ? "any" : dec.type,
+                        type: dec.type === undefined ? "any" : dec.type,
                         visibility: dec.isExported === true ? "public" : "protected",
                     } as token.IVariableToken);
                 }
