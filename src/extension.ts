@@ -2,7 +2,14 @@
 
 import * as vscode from "vscode";
 import { Provider } from "./provider";
-import { IBaseProvider, JsonProvider, PhpProvider, RuleProvider, TypescriptProvider } from "./providers";
+import {
+    IBaseProvider,
+    JsonProvider,
+    PhpProvider,
+    PythonProvider,
+    RuleProvider,
+    TypescriptProvider,
+} from "./providers";
 
 function goToDefinition(range: vscode.Range) {
     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
@@ -36,6 +43,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("openhab") !== -1) {
         providers.push(new RuleProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("python") !== -1) {
+        providers.push(new PythonProvider());
     }
 
     const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);
