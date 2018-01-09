@@ -32,4 +32,6 @@ See [CONTRIBUTING.md](https://github.com/DaGhostman/vscode-tree-view/blob/develo
 - Libraries:
   - PHP Parser - [php-parsers](https://github.com/glayzzle/php-parser)
   - TypeScript/JavaScript parser - [typescript-parser](https://github.com/TypeScript-Heroes/node-typescript-parser)
+  - JSON parser - [jsonc-parser](https://www.npmjs.com/package/jsonc-parser)
+  - Python parser - [filbert](https://www.npmjs.com/package/filbert)
   - Icons used in Tree View [Google Material Icons](https://material.io/icons/) [Apache License Version 2.0] with slight color-coding modification
