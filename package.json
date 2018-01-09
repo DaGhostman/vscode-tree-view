@@ -51,7 +51,8 @@
                             "javascript",
                             "json",
                             "openhab",
-                            "php"
+                            "php",
+                            "python"
                         ],
                         "description": "List of provider identifiers that are allowed for the workspace or in general"
                     },
