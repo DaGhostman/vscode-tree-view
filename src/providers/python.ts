@@ -89,16 +89,17 @@ export class PythonProvider implements IBaseProvider<string> {
                                 if (funcBody.type === "ExpressionStatement" &&
                                 funcBody.expression.type === "AssignmentExpression") {
                                     if (funcBody.expression.left.type === "MemberExpression") {
+                                        const l = vscode.window.activeTextEditor.document.lineAt(
+                                            funcBody.expression.left.loc.start.line - 1,
+                                        ).text;
+
                                         return PythonProvider.handleArgument(
                                             funcBody.expression.left,
                                             funcBody.expression,
-                                            5,
+                                            l.indexOf("self") !== -1 ? 5 : 0,
                                         ) as token.IPropertyToken;
                                     }
                                 }
-
-                                return undefined;
-
                             }).filter((j) => j !== undefined);
                         }
 
@@ -113,7 +114,7 @@ export class PythonProvider implements IBaseProvider<string> {
                         methods: node.body.map((fu) =>
                             this.handleFunction(fu, node.body[0].id.name)).filter((m) => m !== undefined),
                         name: node.body[0].id.name,
-                        properties: propers,
+                        properties: this.removeDuplicatesBy((x) => x.name, propers),
                     } as token.IEntityToken);
 
                     break;
@@ -134,6 +135,9 @@ export class PythonProvider implements IBaseProvider<string> {
                     }
 
                     this.tree.variables.push(PythonProvider.handleArgument(node.declarations[0], node));
+                    break;
+                default:
+                    // console.log(node.type);
                     break;
             }
         }
@@ -247,4 +251,16 @@ export class PythonProvider implements IBaseProvider<string> {
             ),
         } as token.IMethodToken;
     }
+
+    private removeDuplicatesBy(keyFn, array) {
+        const mySet = new Set();
+        return array.filter((x) => {
+            const key = keyFn(x);
+            const isNew = !mySet.has(key);
+            if (isNew) {
+                mySet.add(key);
+            }
+            return isNew;
+        });
+      }
 }
