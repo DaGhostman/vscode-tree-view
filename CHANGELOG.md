@@ -1,6 +1,13 @@
 # Change Log
 
 _[BC]_ Stands for *B*reaking *C*hange
+
+## [1.2.0]
+
+### Added
+
+- [PY] Initial python support
+
 ## [1.1.0]
 
 ### Added
