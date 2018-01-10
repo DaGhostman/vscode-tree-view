@@ -43,6 +43,7 @@ export class PythonProvider implements IBaseProvider<string> {
 
         if (value.indexOf("{") === 0) { return "dict"; }
         if (value.indexOf("[") === 0) { return "list"; }
+        if (value.indexOf("(") === 0) { return "tuple"; }
 
         return value.match(/^[A-Z]/i) !== null ? value : "any";
     }
