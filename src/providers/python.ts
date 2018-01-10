@@ -102,8 +102,12 @@ export class PythonProvider implements IBaseProvider<string> {
             }
         }
 
+        /*
+         * Check if the first defined block is at the beginning of the file.
+         * We check for `> 1` to allow handling of files that start with a
+         * shebang
+         */
         if (py.body.length > 0 && py.body[0].loc.start.line > 1) {
-            // const line = vscode.window.activeTextEditor.document.lineAt(node.loc.start.line-1);
             for (let i = 0; i < py.body[0].loc.start.line; i++) {
                 const line = vscode.window.activeTextEditor.document.lineAt(i).text;
 
@@ -112,14 +116,24 @@ export class PythonProvider implements IBaseProvider<string> {
                         this.tree.imports = [];
                     }
 
+                    /*
+                     * `filbert` does not provide import nodes, hence this
+                     * hackish solution is necessary in order to normalize
+                     * the "imports" section to the results produced by
+                     * other providers
+                     */
+
+                    // Handle `import X`
                     let importName = line.trim().indexOf("import") === 0 ? line.substr(6).trim() : line.trim();
                     const importAlias = importName.indexOf(" as ") !== -1 ?
                         importName.substr(importName.indexOf(" as ") + 4) : undefined;
 
+                    // Handle `import X as Y`
                     if (importAlias !== undefined) {
                         importName = importName.substr(0, importName.length - (importName.indexOf(importAlias) + 4));
                     }
 
+                    // Handle `from X import Y, Z` imports
                     if (importName.indexOf("from ") === 0) {
                         let n = importName.slice(5, importName.lastIndexOf(" import "));
 
