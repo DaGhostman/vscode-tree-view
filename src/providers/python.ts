@@ -112,11 +112,31 @@ export class PythonProvider implements IBaseProvider<string> {
                         this.tree.imports = [];
                     }
 
+                    let importName = line.trim().indexOf("import") === 0 ? line.substr(6).trim() : line.trim();
+                    const importAlias = importName.indexOf(" as ") !== -1 ?
+                        importName.substr(importName.indexOf(" as ") + 4) : undefined;
+
+                    if (importAlias !== undefined) {
+                        importName = importName.substr(0, importName.length - (importName.indexOf(importAlias) + 4));
+                    }
+
+                    if (importName.indexOf("from ") === 0) {
+                        let n = importName.slice(5, importName.lastIndexOf(" import "));
+
+                        n += `: ` + (importAlias === undefined ?
+                            importName.substr(importName.indexOf(" import ") + 8) : (
+                                importName.slice(importName.indexOf(" import ") + 8, importName.indexOf(" as "))
+                            )).split(",").map((item) => item.trim()).join(", ");
+
+                        importName = n;
+                    }
+
                     this.tree.imports.push({
-                        name: line.trim(),
+                        alias: importAlias,
+                        name: importName,
                         position: new vscode.Range(
                             new vscode.Position(i, 0),
-                            new vscode.Position(i, 0),
+                            new vscode.Position(i, line.length),
                         ),
                     } as token.ImportToken);
                 }
