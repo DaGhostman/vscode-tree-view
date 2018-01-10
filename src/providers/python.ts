@@ -146,8 +146,6 @@ export class PythonProvider implements IBaseProvider<string> {
         return Promise.resolve(this.tree as token.ITokenTree);
     }
 
-    // public handleFunction()
-
     public getChildren(offset?: string): Thenable<string[]> {
         return Promise.resolve([]);
     }
