@@ -6,7 +6,7 @@ import { IBaseProvider } from "./base";
 
 export class PythonProvider implements IBaseProvider<string> {
 
-    private static handleArgument(a, m) {
+    private static handleArgument(a, m, endOffset: number = 0) {
         const line = vscode.window.activeTextEditor.
             document.lineAt(m.loc.start.line - 1).text;
 
@@ -17,13 +17,13 @@ export class PythonProvider implements IBaseProvider<string> {
             val = matches[0].split("=", 2)[1] || "";
         }
 
-        const n = a.name || a.id.name;
+        const n = a.name || (a.id ? a.id.name : undefined) || ( a.property ? a.property.name : undefined);
 
         return {
             name: n,
             position: new vscode.Range(
                 new vscode.Position(a.loc.start.line - 1, a.loc.start.column),
-                new vscode.Position(a.loc.start.line - 1, a.loc.start.column + n.length),
+                new vscode.Position(a.loc.start.line - 1, a.loc.start.column + endOffset + n.length),
             ),
             type: PythonProvider.getType(val.trim()),
             value: val.trim(),
@@ -74,10 +74,45 @@ export class PythonProvider implements IBaseProvider<string> {
                         this.tree.nodes = [];
                     }
 
+                    /*
+                     * A hackish solution in order to identify all properties
+                     * of an object, since `filbert` does not provide a
+                     * reliable way to distinguish the properties, but
+                     * instead we have to traverse the method body in order
+                     * to retrieve all `this.` assignments and use those
+                     */
+                    const propers = [];
+                    const rawProps = node.body.map((prop) => {
+                        if (prop.type === "FunctionDeclaration" && prop.body.type === "BlockStatement") {
+                            return prop.body.body.map((funcBody) => {
+                                if (funcBody.type === "ExpressionStatement" &&
+                                funcBody.expression.type === "AssignmentExpression") {
+                                    if (funcBody.expression.left.type === "MemberExpression") {
+                                        return PythonProvider.handleArgument(
+                                            funcBody.expression.left,
+                                            funcBody.expression,
+                                            5,
+                                        ) as token.IPropertyToken;
+                                    }
+                                }
+
+                                return undefined;
+
+                            }).filter((j) => j !== undefined);
+                        }
+
+                        return undefined;
+                    }).filter((y) => y !== undefined).map((raw) => {
+                        for (const r of raw) {
+                            propers.push(r);
+                        }
+                    });
+
                     this.tree.nodes.push({
                         methods: node.body.map((fu) =>
                             this.handleFunction(fu, node.body[0].id.name)).filter((m) => m !== undefined),
                         name: node.body[0].id.name,
+                        properties: propers,
                     } as token.IEntityToken);
 
                     break;
