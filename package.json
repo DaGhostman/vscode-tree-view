@@ -27,7 +27,8 @@
         "onLanguage:json",
         "onLanguage:javascript",
         "onLanguage:typescript",
-        "onLanguage:openhab"
+        "onLanguage:openhab",
+        "onLanguage:python"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -39,7 +40,7 @@
                 }
             ]
         },
-        "configuration":[
+        "configuration": [
             {
                 "type": "object",
                 "title": "File Tree View root config",
@@ -50,16 +51,17 @@
                             "javascript",
                             "json",
                             "openhab",
-                            "php"
+                            "php",
+                            "python"
                         ],
                         "description": "List of provider identifiers that are allowed for the workspace or in general"
                     },
                     "treeview.php": {
-                        "type":"object",
+                        "type": "object",
                         "description": "Section for PHP support related configurations",
                         "properties": {
                             "namespacePosition": {
-                                "type":"string",
+                                "type": "string",
                                 "enum": [
                                     "suffix",
                                     "none",
@@ -74,11 +76,11 @@
                         }
                     },
                     "treeview.js": {
-                        "type":"object",
+                        "type": "object",
                         "description": "Section for JS/TS support related configurations",
                         "properties": {
                             "readonlyCharacter": {
-                                "type":"string",
+                                "type": "string",
                                 "default": "@",
                                 "description": "Character with which to prefix `readonly` properties"
                             }
@@ -106,8 +108,9 @@
         "tslint": "^5.8.0"
     },
     "dependencies": {
+        "filbert": "^0.1.20",
+        "jsonc-parser": "^1.0.0",
         "php-parser": "^2.1.0",
-        "typescript-parser": "^2.2.0",
-        "jsonc-parser": "^1.0.0"
+        "typescript-parser": "^2.2.0"
     }
 }
