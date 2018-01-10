@@ -2,7 +2,7 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
-## [Unreleased]
+## [1.2.0]
 
 ### Added
 
