@@ -81,18 +81,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         vscode.window.onDidChangeActiveTextEditor((ev) => {
             this.refresh();
         });
-        vscode.workspace.onDidChangeTextDocument((ev) => this.refresh(ev));
+        vscode.workspace.onDidChangeTextDocument((ev) => { this.refresh(ev); });
         vscode.workspace.onDidOpenTextDocument((ev) => this.refresh());
+        vscode.workspace.onDidCloseTextDocument((ev) => this.refresh());
     }
 
     public refresh(event?: vscode.TextDocumentChangeEvent) {
-        if (!vscode.window.activeTextEditor.document) {
-            // prevent event triggering when there is no active window
-            // available or the event gets triggered/raced while the editor
-            // is switching between open windows
-            return void 0;
-        }
-
         try {
             this.getProvider().refresh(event);
         } catch (ex) {
