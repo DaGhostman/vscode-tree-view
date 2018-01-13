@@ -48,7 +48,7 @@ export class PythonProvider implements IBaseProvider<string> {
         return value.match(/^[A-Z]/i) !== null ? value : "any";
     }
 
-    private tree: token.ITokenTree;
+    private tree: token.ITokenTree = {};
     private text: string;
     private editor: vscode.TextEditor;
 
@@ -57,7 +57,7 @@ export class PythonProvider implements IBaseProvider<string> {
     }
 
     public refresh(event?: vscode.TextDocumentChangeEvent): void {
-        // Lol
+        this.tree = {} as token.ITokenTree;
     }
 
     public getTokenTree(): Thenable<token.ITokenTree> {
