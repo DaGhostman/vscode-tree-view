@@ -7,7 +7,6 @@ import { IBaseProvider } from "./base";
 export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
     private config: vscode.WorkspaceConfiguration;
     private parser: ts.TypescriptParser;
-    private tree: token.ITokenTree = {} as token.ITokenTree;
 
     private readonly VISIBILITY = [
         "private", "protected", "public",
