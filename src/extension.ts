@@ -51,6 +51,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);
 
+    if (vscode.window.activeTextEditor.document !== null) {
+        provider.refresh(vscode.window.activeTextEditor.document);
+    }
+
     vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
 }
