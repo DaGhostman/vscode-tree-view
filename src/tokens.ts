@@ -7,6 +7,7 @@ type VISIBILITY_PRIVATE = "private";
 export interface IBaseToken {
     name: string;
     position?: vscode.Range;
+    contextName?: string;
 }
 
 export interface IVariableToken extends IBaseToken {
