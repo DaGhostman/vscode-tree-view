@@ -5,6 +5,8 @@ import { IBaseProvider } from "./base";
 
 export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
     private config: vscode.WorkspaceConfiguration;
+    private tree: token.ITokenTree = {};
+
     private readonly tokens: string[] = [
         "declare",
         "namespace",
@@ -19,32 +21,25 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
 
     public hasSupport(language: string) { return language.toLowerCase() === "php"; }
 
-    public refresh(event?): void {
+    public refresh(document: vscode.TextDocument): void {
         this.config = vscode.workspace.getConfiguration("treeview.php");
+        this.tree = {} as token.ITokenTree;
 
-        if (event !== undefined) {
-            this.getTree();
+        if (document !== undefined) {
+            this.tree = this.walk(
+                require("php-parser").create({ ast: { withPositions: true } })
+                    .parseCode(document.getText()).children,
+            );
         }
     }
 
     public getTokenTree(): Thenable<token.ITokenTree> {
-        return Promise.resolve(this.getTree());
+        return Promise.resolve(this.tree);
     }
 
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> { return element; }
     public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
         return Promise.resolve([]);
-    }
-
-    private getTree(): token.ITokenTree {
-        if (vscode.window.activeTextEditor.document !== undefined) {
-            return this.walk(
-                require("php-parser").create({ ast: { withPositions: true } })
-                    .parseCode(vscode.window.activeTextEditor.document.getText()).children,
-            );
-        }
-
-        return {} as token.ITokenTree;
     }
 
     private walk(ast: any, parentNode?: token.ITokenTree): token.ITokenTree {
@@ -61,34 +56,79 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
 
             switch (node.kind) {
                 case "interface":
-                case "class":
-                case "trait":
-                    if (tree.nodes === undefined) {
-                        tree.nodes = [] as token.IEntityToken[];
+                    if (tree.interfaces === undefined) {
+                        tree.interfaces = [] as token.IClassToken[];
                     }
-                    const entity: token.IEntityToken = {} as token.IEntityToken;
-                    const constants = node.body.filter((x) => x.kind === "classconstant");
-                    const properties = node.body.filter((x) => x.kind === "property");
-                    const methods = node.body.filter((x) => x.kind === "method");
-                    const traits = node.body.filter((x) => x.kind === "traituse");
+                    const interfaceEntity: token.IClassToken = {} as token.IClassToken;
 
-                    entity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    interfaceEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
                     if (this.config.has("namespacePosition")) {
                         if (this.config.get("namespacePosition") === "suffix") {
-                            entity.name = `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
+                            interfaceEntity.name =
+                                `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
                         }
 
                         if (this.config.get("namespacePosition") === "none") {
-                            entity.name = `${node.name}`;
+                            interfaceEntity.name = `${node.name}`;
                         }
                     }
 
-                    entity.traits = traits.length === 0 ? undefined : this.handleUseTraits(traits);
-                    entity.constants = constants.length === 0 ? undefined : this.handleConstants(constants);
-                    entity.properties = properties.length === 0 ? undefined : this.handleProperties(properties);
-                    entity.methods = methods.length === 0 ? undefined : this.handleMethods(methods);
+                    interfaceEntity.constants = this.handleConstants(
+                        node.body.filter((x) => x.kind === "classconstant"),
+                    );
+                    interfaceEntity.methods = this.handleMethods(node.body.filter((x) => x.kind === "method"));
 
-                    tree.nodes.push(entity);
+                    tree.interfaces.push(interfaceEntity);
+                    break;
+                case "class":
+                    if (tree.classes === undefined) {
+                        tree.classes = [] as token.IClassToken[];
+                    }
+                    const classEntity: token.IClassToken = {} as token.IClassToken;
+
+                    classEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    if (this.config.has("namespacePosition")) {
+                        if (this.config.get("namespacePosition") === "suffix") {
+                            classEntity.name =
+                                `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
+                        }
+
+                        if (this.config.get("namespacePosition") === "none") {
+                            classEntity.name = `${node.name}`;
+                        }
+                    }
+
+                    classEntity.traits = this.handleUseTraits(node.body.filter((x) => x.kind === "traituse"));
+                    classEntity.constants = this.handleConstants(node.body.filter((x) => x.kind === "classconstant"));
+                    classEntity.properties = this.handleProperties(node.body.filter((x) => x.kind === "property"));
+                    classEntity.methods = this.handleMethods(node.body.filter((x) => x.kind === "method"));
+
+                    tree.classes.push(classEntity);
+                    break;
+                case "trait":
+                    if (tree.traits === undefined) {
+                        tree.traits = [] as token.IClassToken[];
+                    }
+                    const traitEntity: token.IClassToken = {} as token.IClassToken;
+
+                    traitEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    if (this.config.has("namespacePosition")) {
+                        if (this.config.get("namespacePosition") === "suffix") {
+                            traitEntity.name =
+                                `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
+                        }
+
+                        if (this.config.get("namespacePosition") === "none") {
+                            traitEntity.name = `${node.name}`;
+                        }
+                    }
+
+                    traitEntity.traits = this.handleUseTraits(node.body.filter((x) => x.kind === "traituse"));
+                    traitEntity.constants = this.handleConstants(node.body.filter((x) => x.kind === "classconstant"));
+                    traitEntity.properties = this.handleProperties(node.body.filter((x) => x.kind === "property"));
+                    traitEntity.methods = this.handleMethods(node.body.filter((x) => x.kind === "method"));
+
+                    tree.classes.push(traitEntity);
                     break;
                 case "namespace":
                     tree.namespace = node.kind === "namespace" ? node.name : "\\";
@@ -203,8 +243,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
         return val;
     }
 
-    private handleUseTraits(children: any[]): token.IEntityToken[] {
-        const traits: token.IEntityToken[] = [];
+    private handleUseTraits(children: any[]): token.ITraitToken[] {
+        const traits: token.ITraitToken[] = [];
 
         for (const trait of children) {
             for (const i in trait.traits) {
@@ -218,7 +258,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                         new vscode.Position(trait.loc.start.line - 1, trait.loc.start.column),
                         new vscode.Position(trait.loc.end.line - 1, trait.loc.end.column - 1),
                     ),
-                } as token.IEntityToken);
+                } as token.ITraitToken);
             }
         }
 

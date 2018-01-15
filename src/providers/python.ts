@@ -56,11 +56,7 @@ export class PythonProvider implements IBaseProvider<string> {
         return langId.toLowerCase() === "python";
     }
 
-    public refresh(event?: vscode.TextDocumentChangeEvent): void {
-        this.tree = {} as token.ITokenTree;
-    }
-
-    public getTokenTree(): Thenable<token.ITokenTree> {
+    public refresh(document: vscode.TextDocument): void {
         this.tree = {} as token.ITokenTree;
 
         const py = require("filbert")
@@ -71,8 +67,8 @@ export class PythonProvider implements IBaseProvider<string> {
         for (const node of py.body) {
             switch (node.type) {
                 case "BlockStatement":
-                    if (this.tree.nodes === undefined) {
-                        this.tree.nodes = [];
+                    if (this.tree.classes === undefined) {
+                        this.tree.classes = [];
                     }
 
                     /*
@@ -110,18 +106,18 @@ export class PythonProvider implements IBaseProvider<string> {
                         }
                     });
 
-                    this.tree.nodes.push({
+                    this.tree.classes.push({
                         methods: node.body.map((fu) =>
                             this.handleFunction(fu, node.body[0].id.name)).filter((m) => m !== undefined),
                         name: node.body[0].id.name,
                         properties: this.removeDuplicatesBy((x) => x.name, propers),
-                    } as token.IEntityToken);
+                    } as token.IClassToken);
 
                     break;
 
                 case "FunctionDeclaration":
                     const f = this.handleFunction(node);
-                    if (f && this.tree.nodes !== undefined) {
+                    if (f && this.tree.classes !== undefined) {
                         if (this.tree.functions === undefined) {
                             this.tree.functions = [];
                         }
@@ -196,7 +192,9 @@ export class PythonProvider implements IBaseProvider<string> {
                 }
             }
         }
+    }
 
+    public getTokenTree(): Thenable<token.ITokenTree> {
         return Promise.resolve(this.tree as token.ITokenTree);
     }
 

@@ -7,6 +7,7 @@ import { IBaseProvider } from "./base";
 export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
     private config: vscode.WorkspaceConfiguration;
     private parser: ts.TypescriptParser;
+    private tree: Thenable<token.ITokenTree>;
 
     private readonly VISIBILITY = [
         "private", "protected", "public",
@@ -27,36 +28,44 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             langId.toLowerCase() === "javascript";
     }
 
-    public refresh(event?: vscode.TextDocumentChangeEvent): void {
+    public refresh(document: vscode.TextDocument): void {
         this.config = vscode.workspace.getConfiguration("treeview.js");
-        // console.log("TypeScript/JavaScript Tree View provider refresh triggered")
-    }
+        const useStrict = document.getText().toString().substr(1, 10) === "use strict";
 
-    public getTokenTree(): Thenable<token.ITokenTree> {
-        const text = vscode.window.activeTextEditor.document.getText();
-        const useStrict = text.toString().substr(1, 10) === "use strict";
-
-        return this.parser.parseSource(text).then((raw: ts.File) => {
+        this.tree = this.parser.parseSource(document.getText()).then((raw: ts.File) => {
             const tree = {} as token.ITokenTree;
             tree.strict = useStrict;
 
             for (const dec of raw.declarations) {
-                if (tree.nodes === undefined) {
-                    tree.nodes = [];
-                }
+                if (dec instanceof ts.ClassDeclaration) {
+                    if (tree.classes === undefined) {
+                        tree.classes = [];
+                    }
 
-                if (dec instanceof ts.ClassDeclaration || dec instanceof ts.InterfaceDeclaration) {
                     if (dec instanceof ts.ClassDeclaration && dec.ctor !== undefined) {
                         dec.ctor.name = "constructor";
                         dec.methods.unshift(dec.ctor as ts.MethodDeclaration);
                     }
 
-                    tree.nodes.push({
+                    tree.classes.push({
                         methods: this.handleMethods(dec.methods),
                         name: dec.name,
                         properties: this.handleProperties(dec.properties),
                         visibility: dec.isExported === true ? "public" : "protected",
-                    } as token.IEntityToken);
+                    } as token.IClassToken);
+                }
+
+                if (dec instanceof ts.InterfaceDeclaration) {
+                    if (tree.interfaces === undefined) {
+                        tree.interfaces = [];
+                    }
+                    tree.interfaces.push({
+                        methods: this.handleMethods(dec.methods),
+                        name: dec.name,
+                        properties: this.handleProperties(dec.properties)
+                            .filter((p) => p.visibility === "public"),
+                        visibility: dec.isExported === true ? "public" : "protected",
+                    } as token.IInterfaceToken);
                 }
 
                 if (dec instanceof ts.VariableDeclaration) {
@@ -129,6 +138,10 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
             return Promise.resolve(tree);
         });
+    }
+
+    public getTokenTree(): Thenable<token.ITokenTree> {
+        return this.tree;
     }
 
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
