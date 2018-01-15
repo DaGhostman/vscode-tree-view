@@ -98,6 +98,10 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             vis = a.visibility.localeCompare(b.visibility);
         }
 
+        if (vis === 0 && (!a.static || !b.static)) {
+            vis = b.static && !a.static ? 1 : -1;
+        }
+
         return  vis === 0 ? a.name.localeCompare(b.name) : vis;
     }
 
