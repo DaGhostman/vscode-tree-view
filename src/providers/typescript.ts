@@ -93,10 +93,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     tree.functions.push({
                         arguments: this.handleArguments(dec.parameters),
                         name: dec.name,
-                        position: new vscode.Range(
-                            startPosition,
-                            new vscode.Position(startPosition.line, startPosition.character),
-                        ),
+                        position: this.generateRangeForSelection(dec.name, dec.start),
                         static: true,
                         type: dec.type === null ? "any" : dec.type,
                         visibility: dec.isExported === true ? "public" : "protected",
