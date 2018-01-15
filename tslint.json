@@ -12,7 +12,8 @@
         "align": true,
         "arrow-return-shorthand": true,
         "arrow-parens": true,
-        "ban": true
+        "ban": true,
+        "no-empty-interface": false
     },
     "rulesDirectory": []
 }
