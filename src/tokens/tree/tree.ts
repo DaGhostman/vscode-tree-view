@@ -5,6 +5,7 @@ import {
     IMethodToken,
     ImportToken,
     ITraitToken,
+    ITypeToken,
     IVariableToken,
 } from "./";
 

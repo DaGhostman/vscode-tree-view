@@ -11,5 +11,6 @@ export * from "./member";
 export * from "./method";
 export * from "./property";
 export * from "./trait";
+export * from "./type";
 export * from "./variable";
 export * from "./visibility";
