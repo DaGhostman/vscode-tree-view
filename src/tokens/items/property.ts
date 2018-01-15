@@ -1,5 +1,5 @@
 import { VariableItem } from "./variable";
 
 export class PropertyItem extends VariableItem {
-    public contextValue = "property";
+    public contextValue: string = "property";
 }

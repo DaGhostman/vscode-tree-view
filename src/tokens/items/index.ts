@@ -1,3 +1,4 @@
+export * from "./base";
 export * from "./class";
 export * from "./constant";
 export * from "./function";

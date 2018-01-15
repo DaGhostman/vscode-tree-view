@@ -1,5 +1,5 @@
-import { TreeItem } from "vscode";
+import { BaseItem } from "./base";
 
-export class ImportItem extends TreeItem {
+export class ImportItem extends BaseItem {
     public contextValue: string = "import";
 }

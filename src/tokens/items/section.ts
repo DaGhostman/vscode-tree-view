@@ -1,9 +1,4 @@
-import { TreeItem, TreeItemCollapsibleState } from "vscode";
+import { BaseItem } from "./base";
 
-export class SectionItem extends TreeItem {
-    constructor(label: string, collapsibleState?: TreeItemCollapsibleState, contextValue: string = "section") {
-        super(label, collapsibleState);
-
-        this.contextValue = contextValue;
-    }
+export class SectionItem extends BaseItem {
 }
