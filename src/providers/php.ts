@@ -3,7 +3,7 @@ import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
-export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
+export class PhpProvider implements IBaseProvider<token.BaseItem> {
     private config: vscode.WorkspaceConfiguration;
     private tree: token.ITokenTree = {};
 
@@ -37,8 +37,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
         return Promise.resolve(this.tree);
     }
 
-    public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> { return element; }
-    public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
+    public getTreeItem(element: token.BaseItem): token.BaseItem { return element; }
+    public getChildren(element?: token.BaseItem): Thenable<token.BaseItem[]> {
         return Promise.resolve([]);
     }
 
@@ -173,7 +173,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                             ),
                             new vscode.Position(
                                 node.loc.start.line - 1,
-                                node.loc.end.column + 9 + node.name.length,
+                                node.loc.end.column + 8 + node.name.length,
                             ),
                         ),
                         static: true,
@@ -197,8 +197,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                     tree.variables.push({
                         name: v.name,
                         position: new vscode.Range(
-                            new vscode.Position(v.loc.start.line, v.loc.start.column),
-                            new vscode.Position(v.loc.end.line, v.loc.end.column),
+                            new vscode.Position(v.loc.start.line - 1, v.loc.start.column),
+                            new vscode.Position(v.loc.end.line - 1, v.loc.end.column),
                         ),
                         type: "mixed",
                         value: this.normalizeType(val),
