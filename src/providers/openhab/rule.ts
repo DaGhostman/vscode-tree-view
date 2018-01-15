@@ -42,8 +42,6 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
                 if (tree.rules && tree.rules.length) {
                     items.push(new SectionItem(
                         `Rules`,
-                        tree.variables === undefined &&
-                        tree.imports === undefined &&
                         tree.rules !== undefined ?
                             vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
                         "rule-section",
