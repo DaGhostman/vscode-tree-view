@@ -2,6 +2,12 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [unreleased]
+
+### Changes
+
+- [ALL] - Address issues with tree ghosting when all windows are closed or unsupported document is active
+
 ## [1.2.0]
 
 ### Added
