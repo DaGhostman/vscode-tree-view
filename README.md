@@ -6,6 +6,8 @@
 - Auto-update on file changes
 - Color-coded to speed up navigation
 - Go To definition when clicking on leaf node*
+- Extract Interfaces from class
+- Generate implementations from interfaces
 
 \* Note there might be slight variation in feature's behavior, but those mainly
 come from external library limitations/behavior and will be fixed/normalized ASAP
