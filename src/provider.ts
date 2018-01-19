@@ -237,12 +237,6 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 ns = dotSplit[1].trim();
             }
 
-            if (entityName.indexOf("\\") !== -1) {
-                const nsSplit = entityName.split("\\");
-                entityName = nsSplit.pop();
-                ns = nsSplit.join("\\");
-            }
-
             if (entityName === undefined || entityName.trim() === "") {
                 vscode.window.showWarningMessage("Class name cannot be empty");
                 return false;
@@ -482,6 +476,21 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     constant.position,
                     constant.visibility,
                 );
+                items.push(t);
+            }
+        }
+
+        if (cls.properties !== undefined) {
+            for (const property of cls.properties.sort(Provider.sort)) {
+                const t = new PropertyItem(
+                    `${property.name}: ${property.type}` +
+                    `${property.value !== "" ? ` = ${property.value}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    property.position,
+                    `${property.visibility}${property.static ? "_static" : ""}`,
+                );
+
                 items.push(t);
             }
         }
