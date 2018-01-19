@@ -12,6 +12,14 @@
 \* Note there might be slight variation in feature's behavior, but those mainly
 come from external library limitations/behavior and will be fixed/normalized ASAP
 
+## Languages:
+ - PHP
+ - TypeScript
+ - Javascript (ES6 is the target and while most of ES5 should be compatible)
+ - Python (Still experimental)
+ - JSON
+ - openHAB
+
 ## Attributions
 
 - Contributors:
