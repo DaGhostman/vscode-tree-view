@@ -13,7 +13,8 @@
         "arrow-return-shorthand": true,
         "arrow-parens": true,
         "ban": true,
-        "no-empty-interface": false
+        "no-empty-interface": false,
+        "max-classes-per-file": false
     },
     "rulesDirectory": []
 }
