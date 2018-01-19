@@ -63,8 +63,12 @@ export class JsonProvider implements IBaseProvider<string> {
         return null;
     }
 
-    public select(range: vscode.Range) {
-        this.editor.selection = new vscode.Selection(range.start, range.end);
+    public getDocumentName(name: string, include: boolean = false): Thenable<string> {
+        throw new Error("Unsupported action");
+    }
+
+    public generate(name: string, node: any, include: boolean, options: any = {}): vscode.TextEdit[] {
+        throw new Error("Unsupported action");
     }
 
     private parseTree(document?: vscode.TextDocument): void {

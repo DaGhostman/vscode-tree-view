@@ -40,6 +40,33 @@
                 }
             ]
         },
+        "menus": {
+            "view/item/context": [
+                {
+                    "command": "extension.treeview.extractInterface",
+                    "when": "viewItem == class"
+                },
+                {
+                    "command": "extension.treeview.extractInterface",
+                    "when": "viewItem == trait"
+                },
+                {
+                    "command": "extension.treeview.implementInterface",
+                    "when": "viewItem == interface"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "extension.treeview.extractInterface",
+                "title": "Extract Interface",
+                "category": "Generate"
+            }, {
+                "command": "extension.treeview.implementInterface",
+                "title": "Implement Interface",
+                "category": "Generate"
+            }
+        ],
         "configuration": [
             {
                 "type": "object",
@@ -95,17 +122,19 @@
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
-        "compile": "tslint -p ./ && tsc -p ./",
+        "clean": "rimraf -rf out/*",
+        "compile": "npm run clean && tslint -p ./ && tsc -p ./",
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42",
-        "tslint": "^5.8.0"
+        "@types/node": "^7.0.43",
+        "rimraf": "^2.6.2",
+        "tslint": "^5.8.0",
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6"
     },
     "dependencies": {
         "filbert": "^0.1.20",

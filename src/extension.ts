@@ -1,6 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import { PhpGenerator } from "../out/generators/php";
 import { Provider } from "./provider";
 import {
     IBaseProvider,
@@ -57,6 +58,25 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
+    vscode.commands.registerCommand("extension.treeview.extractInterface", (a: vscode.TreeItem) => {
+        provider.getTokenTree().then((tokenTree) => {
+            tokenTree.classes.map((t) => {
+                if (t.name === a.label) {
+                    provider.generateEntity(t, false);
+                }
+            });
+        });
+    });
+
+    vscode.commands.registerCommand("extension.treeview.implementInterface", (a: vscode.TreeItem) => {
+        provider.getTokenTree().then((tokenTree) => {
+            tokenTree.interfaces.map((t) => {
+                if (t.name === a.label) {
+                    provider.generateEntity(t, true);
+                }
+            });
+        });
+    });
 }
 
 export function deactivate() {

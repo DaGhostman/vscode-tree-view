@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import * as vscode from "vscode";
 import { TreeItem } from "vscode";
 import { IBaseProvider } from "./providers/base";
@@ -33,7 +34,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         return item;
     }
 
-    public static addItemIcon(node: vscode.TreeItem, key: string, visibility: string = "public" ) {
+    public static addItemIcon(node: vscode.TreeItem, key: string, visibility: string = "public") {
         const aliases = {
             function: "method",
             variable: "property",
@@ -102,10 +103,10 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             vis = b.static && !a.static ? 1 : -1;
         }
 
-        return  vis === 0 ? a.name.localeCompare(b.name) : vis;
+        return vis === 0 ? a.name.localeCompare(b.name) : vis;
     }
 
-    public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter <TreeItem | null> =
+    public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<TreeItem | null> =
         new vscode.EventEmitter<TreeItem | null>();
     public readonly onDidChangeTreeData: vscode.Event<TreeItem | null> = this.onDidChangeTreeDataEmitter.event;
 
@@ -119,6 +120,31 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         vscode.workspace.onDidSaveTextDocument((document) => this.refresh(document));
         vscode.workspace.onDidOpenTextDocument((document) => this.refresh(document));
         vscode.workspace.onDidCloseTextDocument((document) => this.refresh(document));
+    }
+
+    public hasSupport(languageId: string) {
+        for (const provider of this.langProviders) {
+            if (provider.hasSupport(languageId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public getTokenTree(): Thenable<ITokenTree> {
+        if (vscode.window.activeTextEditor.document !== undefined) {
+            const document: vscode.TextDocument = vscode.window.activeTextEditor.document;
+
+            if (this.hasSupport(document.languageId)) {
+                const provider = this.getProvider(document);
+                provider.refresh(document);
+
+                return provider.getTokenTree();
+            }
+        }
+
+        return Promise.resolve({} as ITokenTree);
     }
 
     public refresh(document: vscode.TextDocument) {
@@ -185,7 +211,92 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
     }
 
-    protected getProvider(document: vscode.TextDocument): IBaseProvider<(vscode.TreeItem|string)> {
+    public generateEntity(node: IInterfaceToken, includeBody: boolean = false) {
+        const provider: IBaseProvider<any> = this.getProvider(vscode.window.activeTextEditor.document);
+        if (vscode.workspace.workspaceFolders.length === 0) {
+            throw new Error(
+                "Not available outside of workspace",
+            );
+        }
+
+        vscode.window.showInputBox({
+            prompt: "Name of the entity to generate(if namespaced use `EntityName : Namespace` notation)",
+            value: node.name.replace("Interface", ""),
+        }).then((entityName?: string) => {
+            if (entityName === undefined) {
+                vscode.window.showInformationMessage(
+                    "Entity creation canceled",
+                );
+                return false;
+            }
+            let ns: string = "";
+
+            if (entityName.indexOf(":") !== -1) {
+                const dotSplit = entityName.split(":", 2);
+                entityName = dotSplit[0].trim();
+                ns = dotSplit[1].trim();
+            }
+
+            if (entityName.indexOf("\\") !== -1) {
+                const nsSplit = entityName.split("\\");
+                entityName = nsSplit.pop();
+                ns = nsSplit.join("\\");
+            }
+
+            if (entityName === undefined || entityName.trim() === "") {
+                vscode.window.showWarningMessage("Class name cannot be empty");
+                return false;
+            }
+
+            vscode.window.showInputBox({
+                placeHolder: "Directory in which to save the generated file (relative to the workspace root)",
+            }).then((locationInput?: string) => {
+                const cwd: string = vscode.workspace.workspaceFolders[0].uri.path;
+
+                // if (locationInput !== "" && fs.statSync(`${cwd}/${locationInput}`)) {
+                //     vscode.window.showErrorMessage(
+                //         `Directory "${locationInput}" does not exist`,
+                //     );
+                //     return false;
+                // }
+
+                provider.getDocumentName(entityName, includeBody).then((documentName) => {
+
+                    const location: vscode.Uri = vscode.Uri.file(
+                        `${cwd}/${locationInput}/${documentName}`,
+                    );
+
+                    fs.open(location.fsPath, "wx", (err, fd) => {
+                        if (err === null) {
+                            fs.closeSync(fd);
+
+                            const workspaceEdits: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+                            workspaceEdits.set(location, provider.generate(
+                                entityName,
+                                node,
+                                includeBody,
+                                { ns },
+                            ));
+
+                            vscode.workspace.applyEdit(workspaceEdits);
+                            vscode.workspace.openTextDocument(vscode.workspace.asRelativePath(location))
+                                .then((document) =>
+                                    vscode.window.showTextDocument(document, vscode.ViewColumn.Active, true));
+
+                            return void 0;
+                        }
+
+                        vscode.window.showErrorMessage(
+                            `File "${vscode.workspace.asRelativePath(location, false)}" already exists.`,
+                        );
+                    });
+                });
+
+            });
+        });
+    }
+
+    protected getProvider(document: vscode.TextDocument): IBaseProvider<(vscode.TreeItem | string)> {
         if (!document.isClosed) {
             for (const provider of this.langProviders) {
                 if (provider.hasSupport(document.languageId)) {
@@ -232,11 +343,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.interfaces !== undefined) {
                 for (const cls of tree.interfaces) {
                     const collapsed: number =
-                    (tree.traits === undefined || tree.traits.length === 0) &&
-                    (tree.classes === undefined || tree.classes.length === 0) &&
-                    tree.interfaces.indexOf(cls) === 0 ?
-                        vscode.TreeItemCollapsibleState.Expanded :
-                        vscode.TreeItemCollapsibleState.Collapsed;
+                        (tree.traits === undefined || tree.traits.length === 0) &&
+                            (tree.classes === undefined || tree.classes.length === 0) &&
+                            tree.interfaces.indexOf(cls) === 0 ?
+                            vscode.TreeItemCollapsibleState.Expanded :
+                            vscode.TreeItemCollapsibleState.Collapsed;
 
                     items.push(
                         new InterfaceItem(
@@ -253,10 +364,10 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.traits !== undefined) {
                 for (const cls of tree.traits) {
                     const collapsed: number =
-                    (tree.classes === undefined || tree.classes.length === 0) &&
-                    tree.traits.indexOf(cls) === 0 ?
-                        vscode.TreeItemCollapsibleState.Expanded :
-                        vscode.TreeItemCollapsibleState.Collapsed;
+                        (tree.classes === undefined || tree.classes.length === 0) &&
+                            tree.traits.indexOf(cls) === 0 ?
+                            vscode.TreeItemCollapsibleState.Expanded :
+                            vscode.TreeItemCollapsibleState.Collapsed;
 
                     items.push(
                         new TraitItem(
@@ -306,13 +417,13 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                         `${variable.type !== undefined ? `: ${variable.type}` : ""}` +
                         `${variable.value !== undefined ? ` = ${variable.value}` : ""}`;
 
-                        items.push(new VariableItem(
-                            vName,
-                            vscode.TreeItemCollapsibleState.None,
-                            undefined,
-                            variable.position,
-                            `${variable.visibility}_static`,
-                        ));
+                    items.push(new VariableItem(
+                        vName,
+                        vscode.TreeItemCollapsibleState.None,
+                        undefined,
+                        variable.position,
+                        `${variable.visibility}_static`,
+                    ));
                 }
             }
 
@@ -381,12 +492,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 for (const arg of method.arguments) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
-                            `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                        `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
                     );
                 }
                 const t = new MethodItem(
                     `${method.name}(${args.join(", ")})` +
-                        `${method.type !== undefined ? `: ${method.type}` : ""}`,
+                    `${method.type !== undefined ? `: ${method.type}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     method.position,
@@ -420,7 +531,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             for (const property of cls.properties.sort(Provider.sort)) {
                 const t = new PropertyItem(
                     `${property.name}: ${property.type}` +
-                        `${property.value !== "" ? ` = ${property.value}` : ""}`,
+                    `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     property.position,
@@ -437,12 +548,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 for (const arg of method.arguments) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
-                            `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                        `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
                     );
                 }
                 const t = new MethodItem(
                     `${method.name}(${args.join(", ")})` +
-                        `${method.type !== undefined ? `: ${method.type}` : ""}`,
+                    `${method.type !== undefined ? `: ${method.type}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     method.position,
@@ -476,7 +587,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             for (const property of cls.properties.sort(Provider.sort)) {
                 const t = new PropertyItem(
                     `${property.name}: ${property.type}` +
-                        `${property.value !== "" ? ` = ${property.value}` : ""}`,
+                    `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     property.position,
@@ -506,13 +617,13 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 for (const arg of method.arguments) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
-                            `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                        `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
                     );
                 }
 
                 const t = new MethodItem(
                     `${method.name}(${args.join(", ")})` +
-                        `${method.type !== undefined ? `: ${method.type}` : ""}`,
+                    `${method.type !== undefined ? `: ${method.type}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     method.position,

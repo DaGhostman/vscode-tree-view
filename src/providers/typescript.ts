@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as os from "os";
 import * as ts from "typescript-parser";
 import * as vscode from "vscode";
 import { Provider } from "./../provider";
@@ -20,7 +22,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
     get roChar(): string {
         return this.config.has("readonlyCharacter") ?
-        this.config.get("readonlyCharacter") : "@";
+            this.config.get("readonlyCharacter") : "@";
     }
 
     public hasSupport(langId: string): boolean {
@@ -149,6 +151,106 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         return Promise.resolve([]);
     }
 
+    public getDocumentName(entityName: string, includeBodies: boolean = false): Thenable<string> {
+        return vscode.window.showQuickPick([
+            new QuickPickItem("JavaScript", "Will create a `.js` file", "js"),
+            new QuickPickItem("TypeScript", "Will create a `.ts` file", "ts"),
+        ], {
+            ignoreFocusOut: true,
+            placeHolder: "Chose file extension",
+        }).then((r: QuickPickItem) => {
+            return (includeBodies ?
+                `${entityName}.${r.detail}` : `I${entityName}.ts`);
+        });
+    }
+
+    public generate(
+        entityName: string,
+        skeleton: (token.IInterfaceToken | token.IClassToken),
+        includeBodies: boolean,
+        options: any = {},
+    ): vscode.TextEdit[] {
+        const edits: vscode.TextEdit[] = [];
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1024),
+            ),
+            `export ${!includeBodies ? "interface" : "class"} ${entityName} {` + os.EOL,
+        ));
+
+        if (skeleton.constants !== undefined) {
+            const constants = skeleton.constants.filter((c) => c.visibility === "public");
+            for (const constant of constants) {
+                const line = `    ` +
+                    `public static readonly ${constant.name} = ${constant.value};`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length, 0),
+                        new vscode.Position(edits.length, line.length),
+                    ),
+                    line + os.EOL,
+                ));
+
+                if (constants.indexOf(constant) === constants.length - 1 &&
+                    skeleton.methods.length !== 0) {
+                    const constantPosition = skeleton.constants.indexOf(constant);
+                    edits.push(new vscode.TextEdit(
+                        new vscode.Range(
+                            new vscode.Position(edits.length, 0),
+                            new vscode.Position(edits.length, 1),
+                        ),
+                        os.EOL,
+                    ));
+                }
+            }
+        }
+
+        if (skeleton.methods !== undefined) {
+            const methods = skeleton.methods.filter((m) => m.visibility === "public");
+            for (const method of methods) {
+                let body = ";";
+                if (includeBodies) {
+                    body = `${os.EOL}    {` +
+                        `        throw new Error(\"Not implemented\");`
+                        + `${os.EOL}    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+                }
+
+                const args: string[] = [];
+                for (const arg of method.arguments) {
+                    args.push(
+                        `${arg.name}: ${arg.type}${arg.value !== "" ? ` = ${arg.value}` : ""}`,
+                    );
+                }
+                const returnType: string = method.type !== undefined && method.type !== "mixed" ?
+                    method.type : "";
+
+                const line = `    public ${method.name}(${args.join(", ")})` +
+                    `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length + (includeBodies ? 2 : 0), 0),
+                        new vscode.Position(edits.length + (includeBodies ? 2 : 0), line.length),
+                    ),
+                    line + os.EOL,
+                ));
+            }
+        }
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length + (includeBodies ? 2 : 0), 0),
+                new vscode.Position(edits.length + (includeBodies ? 2 : 0), 1024),
+            ),
+            "}" + os.EOL,
+        ));
+
+        return edits;
+    }
+
     private handleProperties(children: any[]): token.IPropertyToken[] {
         const properties: token.IPropertyToken[] = [];
 
@@ -259,4 +361,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             new vscode.Position(startPosition.line, startIndex),
         );
     }
+}
+
+class QuickPickItem implements vscode.QuickPickItem {
+    constructor(public label, public description, public detail?) {}
 }

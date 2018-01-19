@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as os from "os";
 import * as vscode from "vscode";
 import { Provider } from "./../provider";
 import * as token from "./../tokens";
@@ -40,6 +42,126 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
     public getTreeItem(element: token.BaseItem): token.BaseItem { return element; }
     public getChildren(element?: token.BaseItem): Thenable<token.BaseItem[]> {
         return Promise.resolve([]);
+    }
+
+    public getDocumentName(entityName: string, includeBodies: boolean = false): Thenable<string> {
+        return Promise.resolve((entityName + (includeBodies ? "" : "Interface")) + ".php");
+    }
+
+    public generate(
+        entityName: string,
+        skeleton: (token.IInterfaceToken | token.IClassToken),
+        includeBodies: boolean,
+        options: any = {},
+    ): vscode.TextEdit[] {
+        const edits: vscode.TextEdit[] = [
+            new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(0, 0),
+                    new vscode.Position(0, 5),
+                ),
+                "<?php" + os.EOL,
+            ),
+        ];
+        if (options.ns !== undefined) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1),
+                ),
+                `namespace ${options.ns};` + os.EOL,
+            ));
+        }
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1),
+            ),
+            os.EOL,
+        ));
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1024),
+            ),
+            `${!includeBodies ? "interface" : "class"} ${entityName}` + os.EOL,
+        ));
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1024),
+            ),
+            "{" + os.EOL,
+        ));
+
+        const constants = skeleton.constants.filter((c) => c.visibility === "public");
+        for (const constant of constants) {
+            const line = `    ` +
+                `${constant.visibility !== "public" ? `${constant.visibility} ` : ""}const ${constant.name}` +
+                `${constant.value !== undefined ? ` = ${constant.value}` : ""};`;
+
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, line.length),
+                ),
+                line + os.EOL,
+            ));
+
+            if (constants.indexOf(constant) === constants.length - 1 &&
+                skeleton.methods.length !== 0) {
+                const constantPosition = skeleton.constants.indexOf(constant);
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length, 0),
+                        new vscode.Position(edits.length, 1),
+                    ),
+                    os.EOL,
+                ));
+            }
+        }
+
+        const methods = skeleton.methods.filter((m) => m.visibility === "public");
+        for (const method of methods) {
+            let body = ";";
+            if (includeBodies) {
+                body = `${os.EOL}    {${os.EOL}` +
+                    `        throw new \\BadMethodCallException(\"\${__METHOD__} Not implemented\");`
+                    + `${os.EOL}    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+            }
+
+            const args: string[] = [];
+            for (const arg of method.arguments) {
+                args.push(
+                    `${arg.type !== "mixed" ? `${arg.type} ` : ""}` +
+                    `${arg.name}${arg.value !== "" ? ` = ${arg.value}` : ""}`,
+                );
+            }
+            const returnType: string = method.type !== undefined && method.type !== "mixed" ?
+                method.type : "";
+
+            const line = `    public function ${method.name}(${args.join(", ")})` +
+                `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
+
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length + (includeBodies ? 4 : 0), 0),
+                    new vscode.Position(edits.length + (includeBodies ? 4 : 0), line.length),
+                ),
+                line + os.EOL,
+            ));
+        }
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length + (includeBodies ? 4 : 0), 0),
+                new vscode.Position(edits.length + (includeBodies ? 4 : 0), 1024),
+            ),
+            "}" + os.EOL,
+        ));
+        return edits;
     }
 
     private walk(ast: any, parentNode?: token.ITokenTree): token.ITokenTree {

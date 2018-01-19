@@ -206,6 +206,14 @@ export class PythonProvider implements IBaseProvider<string> {
         return offset;
     }
 
+    public getDocumentName(name: string, include: boolean = false): Thenable<string> {
+        throw new Error("Unsupported action");
+    }
+
+    public generate(name: string, node: any, include: boolean, options: any = {}): vscode.TextEdit[] {
+        throw new Error("Unsupported action");
+    }
+
     private handleFunction(m, className?: string) {
         let functionName: string;
         let args: any[];

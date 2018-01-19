@@ -33,6 +33,14 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
         return this.tree;
     }
 
+    public getDocumentName(name: string, include: boolean = false): Thenable<string> {
+        throw new Error("Unsupported action");
+    }
+
+    public generate(name: string, node: any, include: boolean, options: any = {}): vscode.TextEdit[] {
+        throw new Error("Unsupported action");
+    }
+
     public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
         // return Promise.resolve([]);
         const items = [];
