@@ -39,7 +39,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             tree.strict = useStrict;
 
             for (const ns of raw.resources) {
-                if (ns instanceof ts.Namespace) {
+                if (ns instanceof ts.Namespace || ns instanceof ts.Module) {
                     for (const dec of ns.declarations) {
                         this.walk(dec, tree, ns.name);
                     }
@@ -127,7 +127,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             entityName = nsSplit.pop();
             options.ns = nsSplit.join(".");
         }
-        const hasNs = (options.ns !== undefined);
+        const hasNs = (options.ns !== undefined && options.ext === "ts");
 
         const edits: vscode.TextEdit[] = [];
         if (hasNs) {
@@ -136,7 +136,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     new vscode.Position(edits.length, 0),
                     new vscode.Position(edits.length, 1024),
                 ),
-                `export namespace ${options.ns} {` + os.EOL,
+                `export ${this.config.get("defaultNamespaceType")} ${options.ns} {` + os.EOL,
             ));
         }
 
@@ -146,7 +146,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 new vscode.Position(edits.length, 1024),
             ),
             (hasNs ? " ".repeat(4) : "") +
-            `${!hasNs ? "export " : ""}${!includeBodies ? "interface" : "class"} ${entityName} {` + os.EOL,
+            `export ${!includeBodies ? "interface" : "class"} ${entityName} {` + os.EOL,
         ));
 
         if (skeleton.properties !== undefined) {

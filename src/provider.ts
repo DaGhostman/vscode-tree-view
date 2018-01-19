@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from "path";
 import * as vscode from "vscode";
 import { TreeItem } from "vscode";
 import { IBaseProvider } from "./providers/base";
@@ -269,7 +270,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                                 entityName,
                                 node,
                                 includeBody,
-                                { ns },
+                                { ns, ext: path.extname(documentName) },
                             ));
 
                             vscode.workspace.applyEdit(workspaceEdits);
