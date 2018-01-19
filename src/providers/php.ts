@@ -45,7 +45,12 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
     }
 
     public getDocumentName(entityName: string, includeBodies: boolean = false): Thenable<string> {
-        return Promise.resolve((entityName + (includeBodies ? "" : "Interface")) + ".php");
+        let name = entityName;
+        if (name.indexOf("\\") !== -1) {
+            const nsSplit = name.split("\\");
+            name = nsSplit.pop();
+        }
+        return Promise.resolve((name + (includeBodies ? "" : "Interface")) + ".php");
     }
 
     public generate(
@@ -54,6 +59,13 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
         includeBodies: boolean,
         options: any = {},
     ): vscode.TextEdit[] {
+
+        if (entityName.indexOf("\\") !== -1) {
+            const nsSplit = entityName.split("\\");
+            entityName = nsSplit.pop();
+            options.ns = nsSplit.join("\\");
+        }
+
         const edits: vscode.TextEdit[] = [
             new vscode.TextEdit(
                 new vscode.Range(
@@ -96,62 +108,66 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
             "{" + os.EOL,
         ));
 
-        const constants = skeleton.constants.filter((c) => c.visibility === "public");
-        for (const constant of constants) {
-            const line = `    ` +
-                `${constant.visibility !== "public" ? `${constant.visibility} ` : ""}const ${constant.name}` +
-                `${constant.value !== undefined ? ` = ${constant.value}` : ""};`;
+        if (skeleton.constants !== undefined) {
+            const constants = skeleton.constants.filter((c) => c.visibility === "public");
+            for (const constant of constants) {
+                const line = `    ` +
+                    `${constant.visibility !== "public" ? `${constant.visibility} ` : ""}const ${constant.name}` +
+                    `${constant.value !== undefined ? ` = ${constant.value}` : ""};`;
 
-            edits.push(new vscode.TextEdit(
-                new vscode.Range(
-                    new vscode.Position(edits.length, 0),
-                    new vscode.Position(edits.length, line.length),
-                ),
-                line + os.EOL,
-            ));
-
-            if (constants.indexOf(constant) === constants.length - 1 &&
-                skeleton.methods.length !== 0) {
-                const constantPosition = skeleton.constants.indexOf(constant);
                 edits.push(new vscode.TextEdit(
                     new vscode.Range(
                         new vscode.Position(edits.length, 0),
-                        new vscode.Position(edits.length, 1),
+                        new vscode.Position(edits.length, line.length),
                     ),
-                    os.EOL,
+                    line + os.EOL,
                 ));
+
+                if (constants.indexOf(constant) === constants.length - 1 &&
+                    skeleton.methods.length !== 0) {
+                    const constantPosition = skeleton.constants.indexOf(constant);
+                    edits.push(new vscode.TextEdit(
+                        new vscode.Range(
+                            new vscode.Position(edits.length, 0),
+                            new vscode.Position(edits.length, 1),
+                        ),
+                        os.EOL,
+                    ));
+                }
             }
         }
 
-        const methods = skeleton.methods.filter((m) => m.visibility === "public");
-        for (const method of methods) {
-            let body = ";";
-            if (includeBodies) {
-                body = `${os.EOL}    {${os.EOL}` +
-                    `        throw new \\BadMethodCallException(\"\${__METHOD__} Not implemented\");`
-                    + `${os.EOL}    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+        if (skeleton.methods !== undefined) {
+            const methods = skeleton.methods.filter((m) => m.visibility === "public");
+            for (const method of methods) {
+                let body = ";";
+                if (includeBodies) {
+                    body = `${os.EOL}    {${os.EOL}` +
+                        `        throw new \\BadMethodCallException(\"\${__METHOD__} Not implemented\");`
+                        + `${os.EOL}    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+                }
+
+                const args: string[] = [];
+                for (const arg of method.arguments) {
+                    args.push(
+                        `${arg.type !== "mixed" ? `${arg.type} ` : ""}` +
+                        `${arg.name}${arg.value !== "" ? ` = ${arg.value}` : ""}`,
+                    );
+                }
+                const returnType: string = method.type !== undefined && method.type !== "mixed" ?
+                    method.type : "";
+
+                const line = `    public function ${method.name}(${args.join(", ")})` +
+                    `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length + (includeBodies ? 4 : 0), 0),
+                        new vscode.Position(edits.length + (includeBodies ? 4 : 0), line.length),
+                    ),
+                    line + os.EOL,
+                ));
             }
-
-            const args: string[] = [];
-            for (const arg of method.arguments) {
-                args.push(
-                    `${arg.type !== "mixed" ? `${arg.type} ` : ""}` +
-                    `${arg.name}${arg.value !== "" ? ` = ${arg.value}` : ""}`,
-                );
-            }
-            const returnType: string = method.type !== undefined && method.type !== "mixed" ?
-                method.type : "";
-
-            const line = `    public function ${method.name}(${args.join(", ")})` +
-                `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
-
-            edits.push(new vscode.TextEdit(
-                new vscode.Range(
-                    new vscode.Position(edits.length + (includeBodies ? 4 : 0), 0),
-                    new vscode.Position(edits.length + (includeBodies ? 4 : 0), line.length),
-                ),
-                line + os.EOL,
-            ));
         }
 
         edits.push(new vscode.TextEdit(

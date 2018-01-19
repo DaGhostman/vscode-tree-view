@@ -38,69 +38,15 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             const tree = {} as token.ITokenTree;
             tree.strict = useStrict;
 
+            for (const ns of raw.resources) {
+                if (ns instanceof ts.Namespace) {
+                    for (const dec of ns.declarations) {
+                        this.walk(dec, tree, ns.name);
+                    }
+                }
+            }
             for (const dec of raw.declarations) {
-                if (dec instanceof ts.ClassDeclaration) {
-                    if (tree.classes === undefined) {
-                        tree.classes = [];
-                    }
-
-                    if (dec instanceof ts.ClassDeclaration && dec.ctor !== undefined) {
-                        dec.ctor.name = "constructor";
-                        dec.methods.unshift(dec.ctor as ts.MethodDeclaration);
-                    }
-
-                    tree.classes.push({
-                        methods: this.handleMethods(dec.methods),
-                        name: dec.name,
-                        properties: this.handleProperties(dec.properties),
-                        visibility: dec.isExported === true ? "public" : "protected",
-                    } as token.IClassToken);
-                }
-
-                if (dec instanceof ts.InterfaceDeclaration) {
-                    if (tree.interfaces === undefined) {
-                        tree.interfaces = [];
-                    }
-                    tree.interfaces.push({
-                        methods: this.handleMethods(dec.methods),
-                        name: dec.name,
-                        properties: this.handleProperties(dec.properties)
-                            .filter((p) => p.visibility === "public"),
-                        visibility: dec.isExported === true ? "public" : "protected",
-                    } as token.IInterfaceToken);
-                }
-
-                if (dec instanceof ts.VariableDeclaration) {
-                    const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
-
-                    if (tree.variables === undefined) {
-                        tree.variables = [];
-                    }
-
-                    tree.variables.push({
-                        name: `${dec.isConst ? this.roChar : ""}${dec.name}`,
-                        position: this.generateRangeForSelection(dec.name, dec.start),
-                        type: dec.type === undefined ? "any" : dec.type,
-                        visibility: dec.isExported === true ? "public" : "protected",
-                    } as token.IVariableToken);
-                }
-
-                if (dec instanceof ts.FunctionDeclaration) {
-                    const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
-
-                    if (tree.functions === undefined) {
-                        tree.functions = [];
-                    }
-
-                    tree.functions.push({
-                        arguments: this.handleArguments(dec.parameters),
-                        name: dec.name,
-                        position: this.generateRangeForSelection(dec.name, dec.start),
-                        static: true,
-                        type: dec.type === null ? "any" : dec.type,
-                        visibility: dec.isExported === true ? "public" : "protected",
-                    } as token.IMethodToken);
-                }
+                this.walk(dec, tree);
             }
 
             for (const imp of raw.imports) {
@@ -159,8 +105,14 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             ignoreFocusOut: true,
             placeHolder: "Chose file extension",
         }).then((r: QuickPickItem) => {
+            let name = entityName;
+            if (name.indexOf(".") !== -1) {
+                const nsSplit = name.split(".");
+                name = nsSplit.pop();
+            }
+
             return (includeBodies ?
-                `${entityName}.${r.detail}` : `I${entityName}.ts`);
+                `${name}.${r.detail}` : `I${name}.ts`);
         });
     }
 
@@ -170,21 +122,39 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         includeBodies: boolean,
         options: any = {},
     ): vscode.TextEdit[] {
+        if (entityName.indexOf(".") !== -1) {
+            const nsSplit = entityName.split(".");
+            entityName = nsSplit.pop();
+            options.ns = nsSplit.join(".");
+        }
+        const hasNs = (options.ns !== undefined);
+
         const edits: vscode.TextEdit[] = [];
+        if (hasNs) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1024),
+                ),
+                `export namespace ${options.ns} {` + os.EOL,
+            ));
+        }
 
         edits.push(new vscode.TextEdit(
             new vscode.Range(
                 new vscode.Position(edits.length, 0),
                 new vscode.Position(edits.length, 1024),
             ),
-            `export ${!includeBodies ? "interface" : "class"} ${entityName} {` + os.EOL,
+            (hasNs ? " ".repeat(4) : "") +
+            `${!hasNs ? "export " : ""}${!includeBodies ? "interface" : "class"} ${entityName} {` + os.EOL,
         ));
 
-        if (skeleton.constants !== undefined) {
-            const constants = skeleton.constants.filter((c) => c.visibility === "public");
+        if (skeleton.properties !== undefined) {
+            const constants = skeleton.properties.filter((c) => c.visibility === "public");
             for (const constant of constants) {
-                const line = `    ` +
-                    `public static readonly ${constant.name} = ${constant.value};`;
+                const line = (hasNs ? " ".repeat(4) : "") + `    ` +
+                    `${includeBodies ? "public " : ""}${constant.name}` +
+                    `${constant.value !== "" ? `= ${constant.value}` : ""};`;
 
                 edits.push(new vscode.TextEdit(
                     new vscode.Range(
@@ -213,9 +183,12 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             for (const method of methods) {
                 let body = ";";
                 if (includeBodies) {
-                    body = `${os.EOL}    {` +
-                        `        throw new Error(\"Not implemented\");`
-                        + `${os.EOL}    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+                    body = (hasNs ? " ".repeat(4) : "") +
+                    `${os.EOL}    {` +
+                    (hasNs ? " ".repeat(4) : "") +
+                    `        throw new Error(\"Not implemented\");` +
+                    (hasNs ? " ".repeat(4) : "") +
+                    `${os.EOL}    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
                 }
 
                 const args: string[] = [];
@@ -227,7 +200,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 const returnType: string = method.type !== undefined && method.type !== "mixed" ?
                     method.type : "";
 
-                const line = `    public ${method.name}(${args.join(", ")})` +
+                const line = (hasNs ? " ".repeat(4) : "") +
+                    `    ${includeBodies ? "public " : ""}${method.name}(${args.join(", ")})` +
                     `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
 
                 edits.push(new vscode.TextEdit(
@@ -245,10 +219,110 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 new vscode.Position(edits.length + (includeBodies ? 2 : 0), 0),
                 new vscode.Position(edits.length + (includeBodies ? 2 : 0), 1024),
             ),
-            "}" + os.EOL,
+            (hasNs ? " ".repeat(4) : "") + "}" + os.EOL,
         ));
 
+        if (hasNs) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1024),
+                ),
+                "}",
+            ));
+        }
+
         return edits;
+    }
+
+    private walk(dec: ts.Declaration, tree: token.ITokenTree, namespace?: string) {
+        if (dec instanceof ts.ClassDeclaration) {
+            if (tree.classes === undefined) {
+                tree.classes = [];
+            }
+
+            if (dec instanceof ts.ClassDeclaration && dec.ctor !== undefined) {
+                dec.ctor.name = "constructor";
+                dec.methods.unshift(dec.ctor as ts.MethodDeclaration);
+            }
+
+            let entityName = (namespace !== undefined ? `${namespace}.` : "") + `${dec.name}`;
+            if (this.config.has("namespacePosition")) {
+                if (this.config.get("namespacePosition") === "suffix") {
+                    entityName =
+                        `${dec.name}${namespace !== undefined ? `: ${namespace}` : ""}`;
+                }
+
+                if (this.config.get("namespacePosition") === "none") {
+                    entityName = `${dec.name}`;
+                }
+            }
+
+            tree.classes.push({
+                methods: this.handleMethods(dec.methods),
+                name: entityName,
+                properties: this.handleProperties(dec.properties),
+                visibility: dec.isExported === true ? "public" : "protected",
+            } as token.IClassToken);
+        }
+
+        if (dec instanceof ts.InterfaceDeclaration) {
+            if (tree.interfaces === undefined) {
+                tree.interfaces = [];
+            }
+
+            let entityName = (namespace !== undefined ? `${namespace}.` : "") + `${dec.name}`;
+            if (this.config.has("namespacePosition")) {
+                if (this.config.get("namespacePosition") === "suffix") {
+                    entityName =
+                        `${dec.name}${namespace !== undefined ? `: ${namespace}` : ""}`;
+                }
+
+                if (this.config.get("namespacePosition") === "none") {
+                    entityName = `${dec.name}`;
+                }
+            }
+
+            tree.interfaces.push({
+                methods: this.handleMethods(dec.methods),
+                name: entityName,
+                properties: this.handleProperties(dec.properties)
+                    .filter((p) => p.visibility === "public"),
+                visibility: dec.isExported === true ? "public" : "protected",
+            } as token.IInterfaceToken);
+        }
+
+        if (dec instanceof ts.VariableDeclaration) {
+            const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
+
+            if (tree.variables === undefined) {
+                tree.variables = [];
+            }
+
+            tree.variables.push({
+                name: `${dec.isConst ? this.roChar : ""}${dec.name}`,
+                position: this.generateRangeForSelection(dec.name, dec.start),
+                type: dec.type === undefined ? "any" : dec.type,
+                visibility: dec.isExported === true ? "public" : "protected",
+            } as token.IVariableToken);
+        }
+
+        if (dec instanceof ts.FunctionDeclaration) {
+            const startPosition = vscode.window.activeTextEditor.document.positionAt(dec.start);
+
+            if (tree.functions === undefined) {
+                tree.functions = [];
+            }
+
+            tree.functions.push({
+                arguments: this.handleArguments(dec.parameters),
+                name: dec.name,
+                position: this.generateRangeForSelection(dec.name, dec.start),
+                static: true,
+                type: dec.type === null ? "any" : dec.type,
+                visibility: dec.isExported === true ? "public" : "protected",
+            } as token.IMethodToken);
+        }
     }
 
     private handleProperties(children: any[]): token.IPropertyToken[] {
