@@ -75,6 +75,16 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                 "<?php" + os.EOL,
             ),
         ];
+
+        if (options.strict !== undefined && options.strict === true) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 25),
+                ),
+                "declare(strict_types=1);" + os.EOL,
+            ));
+        }
         if (options.ns !== undefined) {
             edits.push(new vscode.TextEdit(
                 new vscode.Range(

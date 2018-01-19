@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
         provider.getTokenTree().then((tokenTree) => {
             tokenTree.classes.map((t) => {
                 if (t.name === a.label) {
-                    provider.generateEntity(t, false);
+                    provider.generateEntity(t, false, tokenTree.strict);
                 }
             });
         });
@@ -72,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
         provider.getTokenTree().then((tokenTree) => {
             tokenTree.interfaces.map((t) => {
                 if (t.name === a.label) {
-                    provider.generateEntity(t, true);
+                    provider.generateEntity(t, true, tokenTree.strict);
                 }
             });
         });

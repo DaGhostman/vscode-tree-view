@@ -212,7 +212,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
     }
 
-    public generateEntity(node: IInterfaceToken, includeBody: boolean = false) {
+    public generateEntity(node: IInterfaceToken, includeBody: boolean = false, strict: boolean = false) {
         const provider: IBaseProvider<any> = this.getProvider(vscode.window.activeTextEditor.document);
         if (vscode.workspace.workspaceFolders.length === 0) {
             throw new Error(
@@ -270,7 +270,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                                 entityName,
                                 node,
                                 includeBody,
-                                { ns, ext: path.extname(documentName) },
+                                {
+                                    ext: path.extname(documentName),
+                                    ns,
+                                    strict,
+                                },
                             ));
 
                             vscode.workspace.applyEdit(workspaceEdits);

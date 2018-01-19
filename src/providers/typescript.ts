@@ -130,6 +130,17 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         const hasNs = (options.ns !== undefined && options.ext === "ts");
 
         const edits: vscode.TextEdit[] = [];
+
+        if (options.strict !== undefined && options.strict === true) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 13),
+                ),
+                "\"use strict\"" + os.EOL,
+            ));
+        }
+
         if (hasNs) {
             edits.push(new vscode.TextEdit(
                 new vscode.Range(
