@@ -1,15 +1,5 @@
 # File Tree View
 
-A simple extension that adds an explorer view outlining the main symbols of the currently open file
-
-![PHP-editing](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/php.treeview.gif?raw=true)
-
-![JSON-navigation](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/json.treeview.gif?raw=true)
-
-![JS/TS](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/js_ts.treeview.gif?raw=true)
-
-![openHAB](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/openhab.treeview.gif?raw=true)
-
 ## Features
 
 - Preview file imports
@@ -19,10 +9,6 @@ A simple extension that adds an explorer view outlining the main symbols of the 
 
 \* Note there might be slight variation in feature's behavior, but those mainly
 come from external library limitations/behavior and will be fixed/normalized ASAP
-
-## Contributions
-
-See [CONTRIBUTING.md](https://github.com/DaGhostman/vscode-tree-view/blob/develop/CONTRIBUTING.md)
 
 ## Attributions
 
@@ -35,3 +21,19 @@ See [CONTRIBUTING.md](https://github.com/DaGhostman/vscode-tree-view/blob/develo
   - JSON parser - [jsonc-parser](https://www.npmjs.com/package/jsonc-parser)
   - Python parser - [filbert](https://www.npmjs.com/package/filbert)
   - Icons used in Tree View [Google Material Icons](https://material.io/icons/) [Apache License Version 2.0] with slight color-coding modification
+
+## Screenshots
+
+A simple extension that adds an explorer view outlining the main symbols of the currently open file
+
+![PHP-editing](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/php.treeview.gif?raw=true)
+
+![JSON-navigation](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/json.treeview.gif?raw=true)
+
+![JS/TS](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/js_ts.treeview.gif?raw=true)
+
+![openHAB](https://github.com/DaGhostman/vscode-tree-view/blob/master/images/openhab.treeview.gif?raw=true)
+
+## Contributions
+
+See [CONTRIBUTING.md](https://github.com/DaGhostman/vscode-tree-view/blob/develop/CONTRIBUTING.md)
