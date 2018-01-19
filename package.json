@@ -110,10 +110,19 @@
                                 "type": "string",
                                 "default": "@",
                                 "description": "Character with which to prefix `readonly` properties"
+                            },
+                            "defaultNamespaceType": {
+                                "type": "string",
+                                "enum": [
+                                    "internal",
+                                    "external"
+                                ],
+                                "description": "The default type of modules to generate for when it will be using "
                             }
                         },
                         "default": {
-                            "readonlyCharacter": "@"
+                            "readonlyCharacter": "@",
+                            "defaultNamespaceType": "internal"
                         }
                     }
                 }
