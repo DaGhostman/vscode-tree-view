@@ -278,7 +278,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                             ));
 
                             vscode.workspace.applyEdit(workspaceEdits);
-                            vscode.workspace.openTextDocument(vscode.workspace.asRelativePath(location))
+                            vscode.workspace.openTextDocument(location)
                                 .then((document) =>
                                     vscode.window.showTextDocument(document, vscode.ViewColumn.Active, true));
 
@@ -515,7 +515,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     method.position,
-                    `${method.visibility}${method.static ? "_static" : ""}`,
+                    `${method.visibility || "public"}${method.static ? "_static" : ""}`,
                 );
 
                 items.push(t);
@@ -571,7 +571,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     method.position,
-                    `${method.visibility}${method.static ? "_static" : ""}`,
+                    `${method.visibility || "public"}${method.static ? "_static" : ""}`,
                 );
 
                 items.push(t);
@@ -641,7 +641,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     method.position,
-                    `${method.visibility}${method.static ? "_static" : ""}`,
+                    `${method.visibility || "public"}${method.static ? "_static" : ""}`,
                 );
 
                 items.push(t);
