@@ -161,8 +161,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         ));
 
         if (skeleton.properties !== undefined) {
-            const constants = skeleton.properties.filter((c) => c.visibility === "public");
-            for (const constant of constants) {
+            const properties = skeleton.properties.filter((c) => c.visibility === "public");
+            for (const constant of properties) {
                 const line = (hasNs ? " ".repeat(4) : "") + `    ` +
                     `${includeBodies ? "public " : ""}${constant.name}` +
                     `${constant.value !== "" ? `= ${constant.value}` : ""};`;
@@ -175,7 +175,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     line + os.EOL,
                 ));
 
-                if (constants.indexOf(constant) === constants.length - 1 &&
+                if (properties.indexOf(constant) === properties.length - 1 &&
                     skeleton.methods.length !== 0) {
                     const constantPosition = skeleton.constants.indexOf(constant);
                     edits.push(new vscode.TextEdit(
