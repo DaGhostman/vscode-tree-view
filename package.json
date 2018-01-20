@@ -61,7 +61,8 @@
                 "command": "extension.treeview.extractInterface",
                 "title": "Extract Interface",
                 "category": "Generate"
-            }, {
+            },
+            {
                 "command": "extension.treeview.implementInterface",
                 "title": "Implement Interface",
                 "category": "Generate"
