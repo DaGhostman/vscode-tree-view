@@ -6,18 +6,22 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 ### Notes
 
- - If you have configured a list of enabled providers, you must update your configuration to include `java` if you want to enable support for it
+- If you have configured a list of enabled providers, you must update your configuration to include `java` if you want to enable support for it
 
 ### Added
 
- - [JAVA] - Initial Java support
- - [ALL] - Centralized common code parts (icon, command, character prefixes)
- - [ALL] - Add context menu for interface creation and skeleton creation
- - [ALL] - Introduce value objects for different tree items
- - [PHP/JS/TS] - Add handling for `abstract` and `final` keyword
- - [CONFIG] - Replaced `treeview.js.readonlyCharacter` with `treeview.readonlyCharacter` to consistently configure global symbols
- - [CONFIG] - Add `treeview.abstractCharacter` for consistent global configuration of `abstract` prefix
- - [JAVA] - Add `treeview.java.namespacePosition` for namespace positioning
+- [JAVA] - Initial Java support
+- [ALL] - Add context menu for interface creation and skeleton creation
+- [PHP/JS/TS] - Add handling for `abstract` and `final` keyword
+- [CONFIG] - Add `treeview.abstractCharacter` for consistent global configuration of `abstract` prefix
+- [JAVA] - Add `treeview.java.namespacePosition` for namespace positioning
+
+### Changes
+
+- [ALL] - Switch value objects for different tree items
+- [ALL] - Address issues with tree ghosting when all windows are closed or unsupported document is active
+- [ALL] - Centralized common code parts (icon, command, character prefixes)
+- [CONFIG] - Replaced `treeview.js.readonlyCharacter` with `treeview.readonlyCharacter` to consistently configure global symbols
 
 ## [1.2.0]
 
