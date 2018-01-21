@@ -182,7 +182,7 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
                         return {
                             name,
                             position,
-                            readonly: p.modifiers.filter((m) => m.keyowrd === "final").length !== 0,
+                            readonly: p.modifiers.filter((m) => m.keyword === "final").length !== 0,
                             static: p.modifiers.filter((m) => m.keyword === "static").length !== 0,
                             type,
                             value,
