@@ -32,6 +32,7 @@ come from external library limitations/behavior and will be fixed/normalized ASA
   - TypeScript/JavaScript parser - [typescript-parser](https://github.com/TypeScript-Heroes/node-typescript-parser)
   - JSON parser - [jsonc-parser](https://www.npmjs.com/package/jsonc-parser)
   - Python parser - [filbert](https://www.npmjs.com/package/filbert)
+  - Java Parser - [java-parser](https://github.com/mazko/jsjavaparser)
   - Icons used in Tree View [Google Material Icons](https://material.io/icons/) [Apache License Version 2.0] with slight color-coding modification
 
 ## Screenshots
