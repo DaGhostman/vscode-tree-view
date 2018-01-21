@@ -346,7 +346,8 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
                 const returnType: string = method.type !== undefined && method.type !== "mixed" ?
                     method.type : "";
 
-                const line = `    public ${method.static ? "static " : ""}${method.readonly ? "final " : ""}` +
+                const line = `    public ${method.static ? "static " : ""}` +
+                `${method.readonly ? "final " : ""}` +
                 `${returnType} ${method.name}(${args.join(", ")})${body}`;
 
                 edits.push(new vscode.TextEdit(

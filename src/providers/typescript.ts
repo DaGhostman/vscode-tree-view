@@ -187,6 +187,9 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         if (skeleton.methods !== undefined) {
             const methods = skeleton.methods.filter((m) => m.visibility === "public");
             for (const method of methods) {
+                if (!includeBodies && method.static) {
+                    continue;
+                }
                 let body = ";";
                 if (includeBodies) {
                     body = (hasNs ? " ".repeat(4) : "") +
@@ -207,7 +210,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     method.type : "";
 
                 const line = (hasNs ? " ".repeat(4) : "") +
-                    `    ${includeBodies ? "public " : ""}${method.name}(${args.join(", ")})` +
+                    `    ${includeBodies ? `public ${method.static ? "static " : ""}` : ""}` +
+                    `${method.name}(${args.join(", ")})` +
                     `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
 
                 edits.push(new vscode.TextEdit(

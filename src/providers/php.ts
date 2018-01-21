@@ -152,6 +152,10 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
         if (skeleton.methods !== undefined) {
             const methods = skeleton.methods.filter((m) => m.visibility === "public");
             for (const method of methods) {
+                if (!includeBodies && method.static) {
+                    continue;
+                }
+
                 let body = ";";
                 if (includeBodies) {
                     body = `${os.EOL}    {${os.EOL}` +
@@ -169,7 +173,8 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                 const returnType: string = method.type !== undefined && method.type !== "mixed" ?
                     method.type : "";
 
-                const line = `    public function ${method.name}(${args.join(", ")})` +
+                const line = `    public ${includeBodies && method.static ? "static " : ""}` +
+                    `function ${method.name}(${args.join(", ")})` +
                     `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
 
                 edits.push(new vscode.TextEdit(
