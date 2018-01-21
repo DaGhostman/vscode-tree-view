@@ -8,4 +8,5 @@ export interface IInterfaceToken extends IBaseToken, IMemberToken {
     constants?: IConstantToken[];
     properties?: IPropertyToken[];
     methods?: IMethodToken[];
+    readonly?: boolean;
 }
