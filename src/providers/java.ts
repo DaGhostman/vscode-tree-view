@@ -1,3 +1,4 @@
+import * as os from "os";
 import * as vscode from "vscode";
 import * as token from "../tokens";
 import { IBaseProvider } from "./base";
@@ -256,14 +257,121 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
 
     public generate(
         entityName: string,
-        node: (token.IInterfaceToken | token.IClassToken),
+        node: (token.IClassToken | token.IInterfaceToken),
         includeBody: boolean,
         options?: any,
     ): vscode.TextEdit[] {
-        return [] as vscode.TextEdit[];
+        if (entityName.indexOf(".") !== -1) {
+            const nsSplit = entityName.split(".");
+            entityName = nsSplit.pop();
+            options.ns = nsSplit.join(".");
+        }
+        const edits: vscode.TextEdit[] = [];
+        if (options.ns !== undefined) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1024),
+                ),
+                `package ${options.ns};${os.EOL}${os.EOL}`,
+            ));
+        }
+
+        if (includeBody && node.name.indexOf(":")) {
+            // Attempt to import the interface
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1024),
+                ),
+                `import ${node.name.split(":").reverse().join(".")};${os.EOL}${os.EOL}`,
+            ));
+        }
+
+        let definitionLine = `${node.visibility} ${node.readonly ? "final " : ""}` +
+        `${!includeBody ? "interface" : "class"} ${entityName}`;
+        if (includeBody) {
+            definitionLine += " implements " + node.name.split(":").shift().split(".").pop();
+        }
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1024),
+            ),
+             `${definitionLine} {${os.EOL}`,
+        ));
+
+        if (node.constants !== undefined) {
+            const constants = node.constants.filter((c) => c.visibility === "public");
+            for (const constant of constants) {
+                const line = `    ` +
+                    `public static final ${constant.type} ${constant.name} = ${constant.value};`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length, 0),
+                        new vscode.Position(edits.length, line.length),
+                    ),
+                    line + os.EOL,
+                ));
+
+                if (constants.indexOf(constant) === constants.length - 1 &&
+                    node.methods.length !== 0) {
+                    const constantPosition = node.constants.indexOf(constant);
+                    edits.push(new vscode.TextEdit(
+                        new vscode.Range(
+                            new vscode.Position(edits.length, 0),
+                            new vscode.Position(edits.length, 1),
+                        ),
+                        os.EOL,
+                    ));
+                }
+            }
+        }
+
+        if (node.methods !== undefined) {
+            const methods = node.methods.filter((m) => m.visibility === "public");
+            for (const method of methods) {
+                let body = ";";
+                if (includeBody) {
+                    body = ` {${os.EOL}` +
+                        `        throw new java.lang.IllegalStateException(\"Not implemented\");${os.EOL}` +
+                        `    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+                }
+
+                const args: string[] = [];
+                for (const arg of method.arguments) {
+                    args.push(`${arg.type} ${arg.name}`);
+                }
+                const returnType: string = method.type !== undefined && method.type !== "mixed" ?
+                    method.type : "";
+
+                const line = `    public ${method.static ? "static " : ""}${method.readonly ? "final " : ""}` +
+                `${returnType} ${method.name}(${args.join(", ")})${body}`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length + (includeBody ? 3 : 0), 0),
+                        new vscode.Position(edits.length + (includeBody ? 3 : 0), line.length),
+                    ),
+                    line + os.EOL,
+                ));
+            }
+        }
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length + (includeBody ? 3 : 0), 0),
+                new vscode.Position(edits.length + (includeBody ? 3 : 0), 1),
+            ),
+            `}`,
+        ));
+
+        return edits as vscode.TextEdit[];
     }
+
     public getDocumentName(entityName: string, includeBody: boolean): Thenable<string> {
-        return Promise.resolve(`${entityName}${includeBody ? "" : "Interface"}.java`);
+        return Promise.resolve(`${entityName}.java`);
     }
 
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
