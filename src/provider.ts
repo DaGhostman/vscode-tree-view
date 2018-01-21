@@ -113,9 +113,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
     private langProviders: Array<IBaseProvider<any>>;
 
-    public get roChar(): string {
+    protected get roChar(): string {
         return vscode.workspace.getConfiguration("treeview")
-            .get("readonlyCharacter");
+            .get("readonlyCharacter") as string;
+    }
+
+    protected get absChar(): string {
+        return vscode.workspace.getConfiguration("treeview")
+            .get("abstractCharacter") as string;
     }
 
     public constructor(langProviders: Array<IBaseProvider<any>>) {
@@ -397,7 +402,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
                     items.push(
                         new ClassItem(
-                            (cls.readonly ? this.roChar : "") + cls.name,
+                            (cls.readonly ? this.roChar : (cls.abstract ? this.absChar : "")) + cls.name,
                             collapsed,
                             undefined,
                             cls.position,
@@ -469,7 +474,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
 
             if (element.contextValue === "class") {
-                const cls = tree.classes.find((t: IClassToken) => t.name === element.label.replace(this.roChar, ""));
+                const cls = tree.classes.find((t: IClassToken) =>
+                    t.name === element.label
+                    .replace(this.roChar, "")
+                    .replace(this.absChar, ""),
+                );
 
                 items = items.concat(this.handleClass(cls));
             }
@@ -647,7 +656,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 }
 
                 const t = new MethodItem(
-                    (method.readonly ? this.roChar : "") +
+                    (method.readonly ? this.roChar : (method.abstract ? this.absChar : "")) +
                     `${method.name}(${args.join(", ")})` +
                     `${method.type !== undefined ? `: ${method.type}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,

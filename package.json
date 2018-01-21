@@ -87,10 +87,15 @@
                         "description": "List of provider identifiers that are allowed for the workspace or in general"
                     },
                     "treeview.readonlyCharacter": {
-                            "type": "string",
-                            "description": "Character with which to prefix `final` properties",
-                            "default": "@"
-                        },
+                        "type": "string",
+                        "description": "Character with which to prefix `final` members",
+                        "default": "@"
+                    },
+                    "treeview.abstractCharacter": {
+                        "type": "string",
+                        "description": "Character with which to prefix `abstract` members",
+                        "default": "~"
+                    },
                     "treeview.java": {
                         "type": "object",
                         "description": "Section for Java specific configurations",
