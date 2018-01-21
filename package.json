@@ -88,7 +88,6 @@
                     },
                     "treeview.readonlyCharacter": {
                             "type": "string",
-                            "default": "@",
                             "description": "Character with which to prefix `final` properties",
                             "default": "@"
                         },

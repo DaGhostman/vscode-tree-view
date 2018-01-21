@@ -158,7 +158,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             try {
                 this.getProvider(document).refresh(document);
             } catch (ex) {
-                console.log(ex);
+                // console.log(ex);
             }
         }
 
