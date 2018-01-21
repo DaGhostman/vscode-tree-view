@@ -2,6 +2,18 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.0.2]
+
+### Changes
+
+- [JAVA] - Include `java-parser` in list of dependencies (prevented)
+
+## [2.0.1]
+
+### Changes
+
+- [ALL] - Remove leftover import that prevented building
+
 ## [2.0.0]
 
 ### Notes
