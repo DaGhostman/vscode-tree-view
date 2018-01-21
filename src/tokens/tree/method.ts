@@ -5,4 +5,5 @@ import { IVariableToken } from "./variable";
 export interface IMethodToken extends IFunctionToken, IMemberToken {
     arguments?: IVariableToken[];
     readonly?: boolean;
+    abstract?: boolean;
 }
