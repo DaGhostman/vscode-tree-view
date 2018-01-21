@@ -1,12 +1,16 @@
 import * as json from "jsonc-parser";
 import * as vscode from "vscode";
 import { Provider } from "./../../provider";
-import * as token from "./../../tokens";
+import {
+    ITokenTree,
+    SectionItem,
+    TraitItem,
+} from "./../../tokens";
 import { IBaseProvider } from "./../base";
 import { IRuleTree, RuleParser } from "./ruleParser";
 
 export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
-    private tree: any;
+    private tree: Thenable<ITokenTree>;
     private parser: RuleParser;
     private text: string;
     private editor: vscode.TextEditor;
@@ -19,50 +23,49 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
             vscode.window.activeTextEditor.document.fileName.endsWith("rules");
     }
 
-    public refresh(event?: vscode.TextDocumentChangeEvent): void {
-        // refresh
-    }
-
-    public getTokenTree(): Thenable<IRuleTree> {
-        const text = vscode.window.activeTextEditor.document.getText();
-        return this.parser.parseSource(text).then((parsed) => {
+    public refresh(document: vscode.TextDocument): void {
+        this.tree = this.parser.parseSource(document.getText()).then((parsed) => {
             return Promise.resolve(parsed);
         });
     }
 
+    public getTokenTree(): Thenable<IRuleTree> {
+        return this.tree;
+    }
+
+    public getDocumentName(name: string, include: boolean = false): Thenable<string> {
+        throw new Error("Unsupported action");
+    }
+
+    public generate(name: string, node: any, include: boolean, options: any = {}): vscode.TextEdit[] {
+        throw new Error("Unsupported action");
+    }
+
     public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
-        const items: vscode.TreeItem[] = [];
+        // return Promise.resolve([]);
+        const items = [];
 
         return this.getTokenTree().then((tree) => {
             if (element === undefined) {
                 if (tree.rules && tree.rules.length) {
-                    items.push(new vscode.TreeItem(
+                    items.push(new SectionItem(
                         `Rules`,
-                        tree.nodes === undefined && tree.rules !== undefined ?
+                        tree.rules !== undefined ?
                             vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
+                        "rule-section",
                     ));
                 }
             } else {
-                if (element.label === "Variables") {
-                    for (const variable of tree.variables) {
-                        const t = new vscode.TreeItem(
-                            `${variable.name}`,
-                            vscode.TreeItemCollapsibleState.None,
-                        );
-                        items.push(Provider.addItemCommand(t, "extension.treeview.goto", [variable.position]));
-                    }
-                }
-
-                if (element.label === "Rules" && tree.rules !== undefined) {
+                if (element.contextValue === "rule-section") {
                     for (const rule of tree.rules) {
-                        const t = new vscode.TreeItem(
+                        const t = new TraitItem(
                             `${rule.name}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
 
                         items.push(Provider.addItemCommand(Provider.addItemIcon(
                             t,
-                            `method`,
+                            `use`,
                         ), "extension.treeview.goto", [rule.position]));
                     }
                 }
@@ -73,6 +76,6 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
     }
 
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
-        return element;
+    return element;
     }
 }

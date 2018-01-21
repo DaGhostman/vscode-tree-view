@@ -13,8 +13,8 @@ export class JsonProvider implements IBaseProvider<string> {
         return langId.toLowerCase() === "json";
     }
 
-    public refresh(event?: vscode.TextDocumentChangeEvent): void {
-        this.parseTree(event ? event.document : vscode.window.activeTextEditor.document);
+    public refresh(document: vscode.TextDocument): void {
+        this.parseTree(document);
     }
 
     public getTokenTree(): Thenable<token.ITokenTree> {
@@ -22,9 +22,6 @@ export class JsonProvider implements IBaseProvider<string> {
     }
 
     public getChildren(offset?: string): Thenable<string[]> {
-        if (!this.tree) {
-            this.refresh();
-        }
         if (offset) {
             const p = json.getLocation(this.text, parseInt(offset, 10)).path;
             const node = json.findNodeAtLocation(this.tree, p);
@@ -66,8 +63,12 @@ export class JsonProvider implements IBaseProvider<string> {
         return null;
     }
 
-    public select(range: vscode.Range) {
-        this.editor.selection = new vscode.Selection(range.start, range.end);
+    public getDocumentName(name: string, include: boolean = false): Thenable<string> {
+        throw new Error("Unsupported action");
+    }
+
+    public generate(name: string, node: any, include: boolean, options: any = {}): vscode.TextEdit[] {
+        throw new Error("Unsupported action");
     }
 
     private parseTree(document?: vscode.TextDocument): void {

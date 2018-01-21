@@ -1,6 +1,5 @@
-import * as json from "jsonc-parser";
+import * as os from "os";
 import * as vscode from "vscode";
-import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
@@ -48,7 +47,7 @@ export class PythonProvider implements IBaseProvider<string> {
         return value.match(/^[A-Z]/i) !== null ? value : "any";
     }
 
-    private tree: token.ITokenTree;
+    private tree: token.ITokenTree = {};
     private text: string;
     private editor: vscode.TextEditor;
 
@@ -56,11 +55,7 @@ export class PythonProvider implements IBaseProvider<string> {
         return langId.toLowerCase() === "python";
     }
 
-    public refresh(event?: vscode.TextDocumentChangeEvent): void {
-        // Lol
-    }
-
-    public getTokenTree(): Thenable<token.ITokenTree> {
+    public refresh(document: vscode.TextDocument): void {
         this.tree = {} as token.ITokenTree;
 
         const py = require("filbert")
@@ -71,8 +66,8 @@ export class PythonProvider implements IBaseProvider<string> {
         for (const node of py.body) {
             switch (node.type) {
                 case "BlockStatement":
-                    if (this.tree.nodes === undefined) {
-                        this.tree.nodes = [];
+                    if (this.tree.classes === undefined) {
+                        this.tree.classes = [];
                     }
 
                     /*
@@ -110,18 +105,19 @@ export class PythonProvider implements IBaseProvider<string> {
                         }
                     });
 
-                    this.tree.nodes.push({
-                        methods: node.body.map((fu) =>
-                            this.handleFunction(fu, node.body[0].id.name)).filter((m) => m !== undefined),
+                    this.tree.classes.push({
+                        methods: node.body.map((fu)  =>
+                            (this.handleFunction(fu, node.body[0].id.name)) as token.IMethodToken)
+                                .filter((m) => m !== undefined),
                         name: node.body[0].id.name,
                         properties: this.removeDuplicatesBy((x) => x.name, propers),
-                    } as token.IEntityToken);
+                    } as token.IClassToken);
 
                     break;
 
                 case "FunctionDeclaration":
                     const f = this.handleFunction(node);
-                    if (f && this.tree.nodes !== undefined) {
+                    if (f && this.tree.classes !== undefined) {
                         if (this.tree.functions === undefined) {
                             this.tree.functions = [];
                         }
@@ -196,7 +192,9 @@ export class PythonProvider implements IBaseProvider<string> {
                 }
             }
         }
+    }
 
+    public getTokenTree(): Thenable<token.ITokenTree> {
         return Promise.resolve(this.tree as token.ITokenTree);
     }
 
@@ -206,6 +204,123 @@ export class PythonProvider implements IBaseProvider<string> {
 
     public getTreeItem(offset: any): vscode.TreeItem {
         return offset;
+    }
+
+    public getDocumentName(name: string, include: boolean = false): Thenable<string> {
+        return Promise.resolve(`${name}.py`);
+    }
+
+    public generate(
+        entityName: string,
+        skeleton: (token.IInterfaceToken | token.IClassToken),
+        includeBodies: boolean,
+        options: any = {},
+    ): vscode.TextEdit[] {
+
+        const edits: vscode.TextEdit[] = [];
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1024),
+            ),
+            `class ${entityName}${!includeBodies ? `(${skeleton.name})` : ""}:` + os.EOL,
+        ));
+
+        if (skeleton.constants !== undefined) {
+            const constants = skeleton.constants.filter((c) => c.visibility === "public" || c.visibility === undefined);
+            for (const constant of constants) {
+                const line = `    ` +
+                    `${constant.name}` +
+                    `${constant.value !== undefined ? ` = ${constant.value}` : ""}`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length, 0),
+                        new vscode.Position(edits.length, line.length),
+                    ),
+                    line + os.EOL,
+                ));
+
+                if (constants.indexOf(constant) === constants.length - 1 &&
+                    skeleton.methods.length !== 0) {
+                    const constantPosition = skeleton.constants.indexOf(constant);
+                    edits.push(new vscode.TextEdit(
+                        new vscode.Range(
+                            new vscode.Position(edits.length, 0),
+                            new vscode.Position(edits.length, 1),
+                        ),
+                        os.EOL,
+                    ));
+                }
+            }
+        }
+
+        if (skeleton.properties !== undefined) {
+            const properties = skeleton.properties
+                .filter((p) => p.visibility === "public" || p.visibility === undefined);
+            for (const prop of properties) {
+                const line = `    ${prop.name}${prop.value !== "" ? `= ${prop.value}` : ""}`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length, 0),
+                        new vscode.Position(edits.length, line.length),
+                    ),
+                    line + os.EOL,
+                ));
+
+                if (properties.indexOf(prop) === properties.length - 1 &&
+                    skeleton.methods.length !== 0) {
+                    const constantPosition = skeleton.constants.indexOf(prop);
+                    edits.push(new vscode.TextEdit(
+                        new vscode.Range(
+                            new vscode.Position(edits.length, 0),
+                            new vscode.Position(edits.length, 1),
+                        ),
+                        os.EOL,
+                    ));
+                }
+            }
+        }
+
+        if (skeleton.methods !== undefined) {
+            const methods = skeleton.methods.filter((m) => m.visibility === "public" || m.visibility === undefined);
+            for (const method of methods) {
+                let body = os.EOL + " ".repeat(8) + "pass" + os.EOL;
+                if (includeBodies) {
+                    body = `${os.EOL}        raise Exception(\"Not implemented\")` +
+                        `${os.EOL}        pass` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+                }
+
+                const args: string[] = [];
+                for (const arg of method.arguments) {
+                    args.push(
+                        `${arg.name}${arg.value !== "" ? ` = ${arg.value}` : ""}`,
+                    );
+                }
+                const returnType: string = method.type !== undefined && method.type !== "mixed" ?
+                    method.type : "";
+
+                const line = `    def ${method.name}(${args.join(", ")})${body}`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length + (includeBodies ? 1 : 0), 0),
+                        new vscode.Position(edits.length + (includeBodies ? 1 : 0), line.length),
+                    ),
+                    line + os.EOL,
+                ));
+            }
+        }
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length + (includeBodies ? 1 : 0), 0),
+                new vscode.Position(edits.length + (includeBodies ? 1 : 0), 1024),
+            ),
+            "pass" + os.EOL,
+        ));
+        return edits;
     }
 
     private handleFunction(m, className?: string) {
@@ -249,6 +364,7 @@ export class PythonProvider implements IBaseProvider<string> {
                     m.loc.start.column + functionName.length + typeOffset,
                 ),
             ),
+            visibility: "public",
         } as token.IMethodToken;
     }
 
