@@ -1,6 +1,5 @@
 import * as os from "os";
 import * as vscode from "vscode";
-import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
