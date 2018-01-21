@@ -66,8 +66,8 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("extension.treeview.extractInterface", (a: vscode.TreeItem) => {
         provider.getTokenTree().then((tokenTree) => {
             tokenTree.classes.map((t) => {
-                if (t.name === a.label) {
-                    provider.generateEntity(t, false, tokenTree.strict);
+                if (t.name === a.label.replace("@", "")) {
+                    provider.generateEntity(t, false, tokenTree.namespace, tokenTree.strict);
                 }
             });
         });
@@ -77,7 +77,7 @@ export function activate(context: vscode.ExtensionContext) {
         provider.getTokenTree().then((tokenTree) => {
             tokenTree.interfaces.map((t) => {
                 if (t.name === a.label) {
-                    provider.generateEntity(t, true, tokenTree.strict);
+                    provider.generateEntity(t, true, tokenTree.namespace, tokenTree.strict);
                 }
             });
         });

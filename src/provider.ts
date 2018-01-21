@@ -217,7 +217,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
     }
 
-    public generateEntity(node: IInterfaceToken, includeBody: boolean = false, strict: boolean = false) {
+    public generateEntity(
+        node: IInterfaceToken,
+        includeBody: boolean = false,
+        ns: string = "",
+        strict: boolean = false,
+    ) {
         const provider: IBaseProvider<any> = this.getProvider(vscode.window.activeTextEditor.document);
         if (vscode.workspace.workspaceFolders.length === 0) {
             throw new Error(
@@ -235,7 +240,6 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 );
                 return false;
             }
-            let ns: string = "";
 
             if (entityName.indexOf(":") !== -1) {
                 const dotSplit = entityName.split(":", 2);
