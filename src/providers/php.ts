@@ -91,24 +91,26 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     new vscode.Position(edits.length, 0),
                     new vscode.Position(edits.length, 1),
                 ),
-                `namespace ${options.ns};` + os.EOL,
+                `namespace ${options.ns};` + os.EOL + os.EOL,
+            ));
+        }
+
+        if (includeBodies && skeleton.name.indexOf(":")) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1),
+                ),
+                `use ${skeleton.name.split(":").reverse().join("\\")}` + os.EOL + os.EOL,
             ));
         }
 
         edits.push(new vscode.TextEdit(
             new vscode.Range(
                 new vscode.Position(edits.length, 0),
-                new vscode.Position(edits.length, 1),
-            ),
-            os.EOL,
-        ));
-
-        edits.push(new vscode.TextEdit(
-            new vscode.Range(
-                new vscode.Position(edits.length, 0),
                 new vscode.Position(edits.length, 1024),
             ),
-            `${!includeBodies ? "interface" : "class"} ${entityName}` + os.EOL,
+            `${skeleton.readonly ? "final " : ""}${!includeBodies ? "interface" : "class"} ${entityName}` + os.EOL,
         ));
         edits.push(new vscode.TextEdit(
             new vscode.Range(
