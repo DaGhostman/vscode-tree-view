@@ -1,7 +1,6 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { PhpGenerator } from "../out/generators/php";
 import { Provider } from "./provider";
 import {
     IBaseProvider,
