@@ -2,11 +2,24 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.0.0]
+
+### Added
+
+ - [JAVA] - Initial Java support
+ - [ALL] - Centralized common code parts (icon, command, character prefixes)
+ - [ALL] - Add context menu for interface creation and skeleton creation
+ - [ALL] - Introduce value objects for different tree items
+ - [PHP/JS/TS] - Add handling for `abstract` and `final` keyword
+ - [CONFIG] - Replaced `treeview.js.readonlyCharacter` with `treeview.readonlyCharacter` to consistently configure global symbols
+ - [CONFIG] - Add `treeview.abstractCharacter` for consistent global configuration of `abstract` prefix
+ - [JAVA] - Add `treeview.java.namespacePosition` for namespace positioning
+
 ## [1.2.0]
 
 ### Added
 
-- [PY] Initial python support
+- [PY] - Initial python support
 
 ## [1.1.0]
 
