@@ -105,12 +105,17 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
             ));
         }
 
+        const defLine = (!includeBodies ?
+            "interface" : (skeleton.readonly
+                ? "final " : (skeleton.abstract ? "abstract " : "") + "class")) +
+        `${entityName}` + os.EOL;
+
         edits.push(new vscode.TextEdit(
             new vscode.Range(
                 new vscode.Position(edits.length, 0),
                 new vscode.Position(edits.length, 1024),
             ),
-            `${skeleton.readonly ? "final " : ""}${!includeBodies ? "interface" : "class"} ${entityName}` + os.EOL,
+            defLine,
         ));
         edits.push(new vscode.TextEdit(
             new vscode.Range(
@@ -173,7 +178,10 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                 const returnType: string = method.type !== undefined && method.type !== "mixed" ?
                     method.type : "";
 
-                const line = `    public ${includeBodies && method.static ? "static " : ""}` +
+                const line = `    public ` + (includeBodies ? (
+                    method.abstract ? "abstract " : ( method.readonly ? "final " : "")
+                ) : "") +
+                    `${!method.abstract && method.static ? "static " : ""}` +
                     `function ${method.name}(${args.join(", ")})` +
                     `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
 
@@ -475,6 +483,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
             }
 
             methods.push({
+                abstract: method.isAbstract,
                 arguments: this.handleArguments(method.arguments),
                 name: (method.byref ? "&" : "") + method.name,
                 position: new vscode.Range(

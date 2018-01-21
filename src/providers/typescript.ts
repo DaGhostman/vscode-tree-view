@@ -152,7 +152,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 new vscode.Position(edits.length, 1024),
             ),
             (hasNs ? " ".repeat(4) : "") +
-            `export ${!includeBodies ? "interface" : "class"} ${entityName} {` + os.EOL,
+            `export ${!includeBodies ? "interface" : `${skeleton.abstract ? "abstract " : ""}class`}` +
+                `${entityName} {` + os.EOL,
         ));
 
         if (skeleton.properties !== undefined) {
@@ -210,9 +211,10 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                     method.type : "";
 
                 const line = (hasNs ? " ".repeat(4) : "") +
-                    `    ${includeBodies ? `public ${method.static ? "static " : ""}` : ""}` +
-                    `${method.name}(${args.join(", ")})` +
-                    `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
+                    `    ${includeBodies ? `public ${skeleton.abstract ? "abstract " : ""}` +
+                        `${method.static ? "static " : ""}` : ""}` +
+                        `${method.name}(${args.join(", ")})` +
+                        `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
 
                 edits.push(new vscode.TextEdit(
                     new vscode.Range(
@@ -268,7 +270,13 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 }
             }
 
+            const def = vscode.window.activeTextEditor.document.getText(new vscode.Range(
+                this.offsetToPosition(dec.start),
+                this.offsetToPosition(dec.end),
+            )).split(" ").slice(0, 5);
+
             tree.classes.push({
+                abstract: (def.indexOf("abstract") > -1),
                 methods: this.handleMethods(dec.methods),
                 name: entityName,
                 properties: this.handleProperties(dec.properties),
@@ -397,6 +405,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             )).split(" ").slice(0, 5);
 
             methods.push({
+                abstract: (def.indexOf("abstract") > -1),
                 arguments: this.handleArguments(method.parameters),
                 name: method.name,
                 position: this.generateRangeForSelection(method.name, method.start),

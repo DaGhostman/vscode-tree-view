@@ -87,6 +87,8 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
 
                 entityDefinition.visibility = entity.modifiers
                     .filter((m) => ["public", "protected", "private"].indexOf(m.keyword) !== -1).pop().keyword;
+                entityDefinition.abstract = entity.modifiers
+                    .filter((m) => "abstract" === m.keyword).length > 0;
 
                 entityDefinition.methods = entity.bodyDeclarations
                     .filter((m) => m.node === "MethodDeclaration")
@@ -288,8 +290,9 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
             ));
         }
 
-        let definitionLine = `${node.visibility} ${node.readonly ? "final " : ""}` +
-        `${!includeBody ? "interface" : "class"} ${entityName}`;
+        let definitionLine = `${node.visibility} ${includeBody && node.abstract ? "abstract " : ""}` +
+            `${node.readonly ? "final " : ""}` +
+            `${!includeBody ? "interface" : "class"} ${entityName}`;
         if (includeBody) {
             definitionLine += " implements " + node.name.split(":").shift().split(".").pop();
         }
@@ -346,9 +349,10 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
                 const returnType: string = method.type !== undefined && method.type !== "mixed" ?
                     method.type : "";
 
-                const line = `    public ${method.static ? "static " : ""}` +
-                `${method.readonly ? "final " : ""}` +
-                `${returnType} ${method.name}(${args.join(", ")})${body}`;
+                const line = `    public ${includeBody && method.abstract ? "abstract " : ""}` +
+                    `${method.static ? "static " : ""}` +
+                    `${!method.abstract && method.readonly ? "final " : ""}` +
+                    `${returnType} ${method.name}(${args.join(", ")})${body}`;
 
                 edits.push(new vscode.TextEdit(
                     new vscode.Range(
