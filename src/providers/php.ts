@@ -1,10 +1,14 @@
+import * as fs from "fs";
+import * as os from "os";
 import * as vscode from "vscode";
 import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
 
-export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
+export class PhpProvider implements IBaseProvider<token.BaseItem> {
     private config: vscode.WorkspaceConfiguration;
+    private tree: token.ITokenTree = {};
+
     private readonly tokens: string[] = [
         "declare",
         "namespace",
@@ -19,32 +23,186 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
 
     public hasSupport(language: string) { return language.toLowerCase() === "php"; }
 
-    public refresh(event?): void {
+    public refresh(document: vscode.TextDocument): void {
         this.config = vscode.workspace.getConfiguration("treeview.php");
+        this.tree = {} as token.ITokenTree;
 
-        if (event !== undefined) {
-            this.getTree();
+        if (document !== undefined) {
+            this.tree = this.walk(
+                require("php-parser").create({ ast: { withPositions: true } })
+                    .parseCode(document.getText()).children,
+            );
         }
     }
 
     public getTokenTree(): Thenable<token.ITokenTree> {
-        return Promise.resolve(this.getTree());
+        return Promise.resolve(this.tree);
     }
 
-    public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> { return element; }
-    public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
+    public getTreeItem(element: token.BaseItem): token.BaseItem { return element; }
+    public getChildren(element?: token.BaseItem): Thenable<token.BaseItem[]> {
         return Promise.resolve([]);
     }
 
-    private getTree(): token.ITokenTree {
-        if (vscode.window.activeTextEditor.document !== undefined) {
-            return this.walk(
-                require("php-parser").create({ ast: { withPositions: true } })
-                    .parseCode(vscode.window.activeTextEditor.document.getText()).children,
-            );
+    public getDocumentName(entityName: string, includeBodies: boolean = false): Thenable<string> {
+        let name = entityName;
+        if (name.indexOf("\\") !== -1) {
+            const nsSplit = name.split("\\");
+            name = nsSplit.pop();
+        }
+        return Promise.resolve((name + (includeBodies ? "" : "Interface")) + ".php");
+    }
+
+    public generate(
+        entityName: string,
+        skeleton: (token.IInterfaceToken | token.IClassToken),
+        includeBodies: boolean,
+        options: any = {},
+    ): vscode.TextEdit[] {
+
+        if (entityName.indexOf("\\") !== -1) {
+            const nsSplit = entityName.split("\\");
+            entityName = nsSplit.pop();
+            options.ns = nsSplit.join("\\");
         }
 
-        return {} as token.ITokenTree;
+        const edits: vscode.TextEdit[] = [
+            new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(0, 0),
+                    new vscode.Position(0, 5),
+                ),
+                "<?php" + os.EOL,
+            ),
+        ];
+
+        if (options.strict !== undefined && options.strict === true) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 25),
+                ),
+                "declare(strict_types=1);" + os.EOL,
+            ));
+        }
+        if (options.ns !== undefined) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1),
+                ),
+                `namespace ${options.ns};` + os.EOL + os.EOL,
+            ));
+        }
+
+        if (includeBodies && skeleton.name.indexOf(":")) {
+            edits.push(new vscode.TextEdit(
+                new vscode.Range(
+                    new vscode.Position(edits.length, 0),
+                    new vscode.Position(edits.length, 1),
+                ),
+                `use ${skeleton.name.split(":").reverse().join("\\")}` + os.EOL + os.EOL,
+            ));
+        }
+
+        const defLine = (!includeBodies ?
+            "interface" : (skeleton.readonly
+                ? "final " : (skeleton.abstract ? "abstract " : "") + "class")) +
+        `${entityName}` + os.EOL;
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1024),
+            ),
+            defLine,
+        ));
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length, 0),
+                new vscode.Position(edits.length, 1024),
+            ),
+            "{" + os.EOL,
+        ));
+
+        if (skeleton.constants !== undefined) {
+            const constants = skeleton.constants.filter((c) => c.visibility === "public");
+            for (const constant of constants) {
+                const line = `    ` +
+                    `${constant.visibility !== "public" ? `${constant.visibility} ` : ""}const ${constant.name}` +
+                    `${constant.value !== undefined ? ` = ${constant.value}` : ""};`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length, 0),
+                        new vscode.Position(edits.length, line.length),
+                    ),
+                    line + os.EOL,
+                ));
+
+                if (constants.indexOf(constant) === constants.length - 1 &&
+                    skeleton.methods.length !== 0) {
+                    const constantPosition = skeleton.constants.indexOf(constant);
+                    edits.push(new vscode.TextEdit(
+                        new vscode.Range(
+                            new vscode.Position(edits.length, 0),
+                            new vscode.Position(edits.length, 1),
+                        ),
+                        os.EOL,
+                    ));
+                }
+            }
+        }
+
+        if (skeleton.methods !== undefined) {
+            const methods = skeleton.methods.filter((m) => m.visibility === "public");
+            for (const method of methods) {
+                if (!includeBodies && method.static) {
+                    continue;
+                }
+
+                let body = ";";
+                if (includeBodies) {
+                    body = `${os.EOL}    {${os.EOL}` +
+                        `        throw new \\BadMethodCallException(\"\${__METHOD__} Not implemented\");`
+                        + `${os.EOL}    }` + (methods.indexOf(method) === methods.length - 1 ? "" : os.EOL);
+                }
+
+                const args: string[] = [];
+                for (const arg of method.arguments) {
+                    args.push(
+                        `${arg.type !== "mixed" ? `${arg.type} ` : ""}` +
+                        `${arg.name}${arg.value !== "" ? ` = ${arg.value}` : ""}`,
+                    );
+                }
+                const returnType: string = method.type !== undefined && method.type !== "mixed" ?
+                    method.type : "";
+
+                const line = `    public ` + (includeBodies ? (
+                    method.abstract ? "abstract " : ( method.readonly ? "final " : "")
+                ) : "") +
+                    `${!method.abstract && method.static ? "static " : ""}` +
+                    `function ${method.name}(${args.join(", ")})` +
+                    `${returnType !== "" ? `: ${returnType}` : ""}${body}`;
+
+                edits.push(new vscode.TextEdit(
+                    new vscode.Range(
+                        new vscode.Position(edits.length + (includeBodies ? 4 : 0), 0),
+                        new vscode.Position(edits.length + (includeBodies ? 4 : 0), line.length),
+                    ),
+                    line + os.EOL,
+                ));
+            }
+        }
+
+        edits.push(new vscode.TextEdit(
+            new vscode.Range(
+                new vscode.Position(edits.length + (includeBodies ? 4 : 0), 0),
+                new vscode.Position(edits.length + (includeBodies ? 4 : 0), 1024),
+            ),
+            "}" + os.EOL,
+        ));
+        return edits;
     }
 
     private walk(ast: any, parentNode?: token.ITokenTree): token.ITokenTree {
@@ -61,34 +219,80 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
 
             switch (node.kind) {
                 case "interface":
-                case "class":
-                case "trait":
-                    if (tree.nodes === undefined) {
-                        tree.nodes = [] as token.IEntityToken[];
+                    if (tree.interfaces === undefined) {
+                        tree.interfaces = [] as token.IClassToken[];
                     }
-                    const entity: token.IEntityToken = {} as token.IEntityToken;
-                    const constants = node.body.filter((x) => x.kind === "classconstant");
-                    const properties = node.body.filter((x) => x.kind === "property");
-                    const methods = node.body.filter((x) => x.kind === "method");
-                    const traits = node.body.filter((x) => x.kind === "traituse");
+                    const interfaceEntity: token.IClassToken = {} as token.IClassToken;
 
-                    entity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    interfaceEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
                     if (this.config.has("namespacePosition")) {
                         if (this.config.get("namespacePosition") === "suffix") {
-                            entity.name = `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
+                            interfaceEntity.name =
+                                `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
                         }
 
                         if (this.config.get("namespacePosition") === "none") {
-                            entity.name = `${node.name}`;
+                            interfaceEntity.name = `${node.name}`;
                         }
                     }
 
-                    entity.traits = traits.length === 0 ? undefined : this.handleUseTraits(traits);
-                    entity.constants = constants.length === 0 ? undefined : this.handleConstants(constants);
-                    entity.properties = properties.length === 0 ? undefined : this.handleProperties(properties);
-                    entity.methods = methods.length === 0 ? undefined : this.handleMethods(methods);
+                    interfaceEntity.constants = this.handleConstants(
+                        node.body.filter((x) => x.kind === "classconstant"),
+                    );
+                    interfaceEntity.methods = this.handleMethods(node.body.filter((x) => x.kind === "method"));
 
-                    tree.nodes.push(entity);
+                    tree.interfaces.push(interfaceEntity);
+                    break;
+                case "class":
+                    if (tree.classes === undefined) {
+                        tree.classes = [] as token.IClassToken[];
+                    }
+                    const classEntity: token.IClassToken = {} as token.IClassToken;
+
+                    classEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    classEntity.readonly = node.isFinal || false;
+                    if (this.config.has("namespacePosition")) {
+                        if (this.config.get("namespacePosition") === "suffix") {
+                            classEntity.name =
+                                `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
+                        }
+
+                        if (this.config.get("namespacePosition") === "none") {
+                            classEntity.name = `${node.name}`;
+                        }
+                    }
+
+                    classEntity.traits = this.handleUseTraits(node.body.filter((x) => x.kind === "traituse"));
+                    classEntity.constants = this.handleConstants(node.body.filter((x) => x.kind === "classconstant"));
+                    classEntity.properties = this.handleProperties(node.body.filter((x) => x.kind === "property"));
+                    classEntity.methods = this.handleMethods(node.body.filter((x) => x.kind === "method"));
+
+                    tree.classes.push(classEntity);
+                    break;
+                case "trait":
+                    if (tree.traits === undefined) {
+                        tree.traits = [] as token.IClassToken[];
+                    }
+                    const traitEntity: token.IClassToken = {} as token.IClassToken;
+
+                    traitEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    if (this.config.has("namespacePosition")) {
+                        if (this.config.get("namespacePosition") === "suffix") {
+                            traitEntity.name =
+                                `${node.name}${tree.namespace !== undefined ? `: ${tree.namespace}` : ""}`;
+                        }
+
+                        if (this.config.get("namespacePosition") === "none") {
+                            traitEntity.name = `${node.name}`;
+                        }
+                    }
+
+                    traitEntity.traits = this.handleUseTraits(node.body.filter((x) => x.kind === "traituse"));
+                    traitEntity.constants = this.handleConstants(node.body.filter((x) => x.kind === "classconstant"));
+                    traitEntity.properties = this.handleProperties(node.body.filter((x) => x.kind === "property"));
+                    traitEntity.methods = this.handleMethods(node.body.filter((x) => x.kind === "method"));
+
+                    tree.classes.push(traitEntity);
                     break;
                 case "namespace":
                     tree.namespace = node.kind === "namespace" ? node.name : "\\";
@@ -133,7 +337,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                             ),
                             new vscode.Position(
                                 node.loc.start.line - 1,
-                                node.loc.end.column + 9 + node.name.length,
+                                node.loc.end.column + 8 + node.name.length,
                             ),
                         ),
                         static: true,
@@ -157,8 +361,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                     tree.variables.push({
                         name: v.name,
                         position: new vscode.Range(
-                            new vscode.Position(v.loc.start.line, v.loc.start.column),
-                            new vscode.Position(v.loc.end.line, v.loc.end.column),
+                            new vscode.Position(v.loc.start.line - 1, v.loc.start.column),
+                            new vscode.Position(v.loc.end.line - 1, v.loc.end.column),
                         ),
                         type: "mixed",
                         value: this.normalizeType(val),
@@ -203,8 +407,8 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
         return val;
     }
 
-    private handleUseTraits(children: any[]): token.IEntityToken[] {
-        const traits: token.IEntityToken[] = [];
+    private handleUseTraits(children: any[]): token.ITraitToken[] {
+        const traits: token.ITraitToken[] = [];
 
         for (const trait of children) {
             for (const i in trait.traits) {
@@ -218,7 +422,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                         new vscode.Position(trait.loc.start.line - 1, trait.loc.start.column),
                         new vscode.Position(trait.loc.end.line - 1, trait.loc.end.column - 1),
                     ),
-                } as token.IEntityToken);
+                } as token.ITraitToken);
             }
         }
 
@@ -279,6 +483,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
             }
 
             methods.push({
+                abstract: method.isAbstract,
                 arguments: this.handleArguments(method.arguments),
                 name: (method.byref ? "&" : "") + method.name,
                 position: new vscode.Range(
@@ -291,6 +496,7 @@ export class PhpProvider implements IBaseProvider<vscode.TreeItem> {
                         method.loc.start.column + 9 + method.name.length,
                     ),
                 ),
+                readonly: method.isFinal,
                 static: method.isStatic,
                 type: ["__construct", "__destruct"].indexOf(method.name) === -1 ?
                     (method.nullable ? "?" : "") + ty : undefined,

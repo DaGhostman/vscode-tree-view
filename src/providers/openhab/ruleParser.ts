@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import { ImportToken, ITokenTree, IVariableToken } from "../base";
+import { IInterfaceToken as InterfaceToken, ImportToken, ITokenTree, IVariableToken } from "../../tokens";
 
 export class RuleParser {
     private text: string;
 
-    public parseSource(text: string): Thenable<IRuleTree> {
+    public parseSource(text: string): Thenable<ITokenTree> {
         this.text = text;
         // Remove comments
         text = text.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, "$1");
@@ -48,7 +48,7 @@ export class RuleParser {
                 } as IVariableToken;
                 }) || [];
 
-        return Promise.resolve({ imports, variables, rules });
+        return Promise.resolve({ imports, variables, rules } as IRuleTree);
     }
 
     public getPosition(text: string): vscode.Range {
@@ -65,5 +65,5 @@ export class RuleParser {
 }
 
 export interface IRuleTree extends ITokenTree {
-    rules?: any[];
+    rules?: IVariableToken[];
 }

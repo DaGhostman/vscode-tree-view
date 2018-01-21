@@ -1,7 +1,26 @@
+import * as fs from "fs";
+import * as path from "path";
 import * as vscode from "vscode";
 import { TreeItem } from "vscode";
-import { IBaseProvider, ITokenTree } from "./providers/base";
-import * as token from "./tokens";
+import { IBaseProvider } from "./providers/base";
+import {
+    BaseItem,
+    ClassItem,
+    ConstantItem,
+    FunctionItem,
+    IClassToken,
+    IInterfaceToken,
+    ImportItem,
+    InterfaceItem,
+    ITokenTree,
+    ITraitToken,
+    IVariableToken,
+    MethodItem,
+    PropertyItem,
+    SectionItem,
+    TraitItem,
+    VariableItem,
+} from "./tokens";
 
 export class Provider implements vscode.TreeDataProvider<TreeItem> {
     public static readonly config: vscode.WorkspaceConfiguration;
@@ -16,7 +35,16 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         return item;
     }
 
-    public static addItemIcon(node: vscode.TreeItem, key: string, visibility: string = "public" ) {
+    public static addItemIcon(node: vscode.TreeItem, key: string, visibility: string = "public") {
+        const aliases = {
+            function: "method",
+            variable: "property",
+        };
+
+        if (aliases[key] !== undefined) {
+            key = aliases[key];
+        }
+
         const icons = {
             class: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
@@ -28,195 +56,391 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 protected: vscode.Uri.file(__dirname + "/../assets/ic_constant_protected_24px.svg"),
                 public: vscode.Uri.file(__dirname + "/../assets/ic_constant_public_24px.svg"),
             },
+            interface: {
+                private: vscode.Uri.file(__dirname + "/../assets/ic_interface_private_24px.svg"),
+                public: vscode.Uri.file(__dirname + "/../assets/ic_interface_public_24px.svg"),
+            },
             list: {
                 public: vscode.Uri.file(__dirname + "/../assets/ic_list_24px.svg"),
             },
             method: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_method_private_24px.svg"),
+                private_static: vscode.Uri.file(__dirname + "/../assets/ic_static_method_private_24px.svg"),
                 protected: vscode.Uri.file(__dirname + "/../assets/ic_method_protected_24px.svg"),
+                protected_static: vscode.Uri.file(__dirname + "/../assets/ic_static_method_protected_24px.svg"),
                 public: vscode.Uri.file(__dirname + "/../assets/ic_method_public_24px.svg"),
-            },
-            method_static: {
-                private: vscode.Uri.file(__dirname + "/../assets/ic_static_method_private_24px.svg"),
-                protected: vscode.Uri.file(__dirname + "/../assets/ic_static_method_protected_24px.svg"),
-                public: vscode.Uri.file(__dirname + "/../assets/ic_static_method_public_24px.svg"),
+                public_static: vscode.Uri.file(__dirname + "/../assets/ic_static_method_public_24px.svg"),
             },
             property: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_property_private_24px.svg"),
+                private_static: vscode.Uri.file(__dirname + "/../assets/ic_static_property_private_24px.svg"),
                 protected: vscode.Uri.file(__dirname + "/../assets/ic_property_protected_24px.svg"),
+                protected_static: vscode.Uri.file(__dirname + "/../assets/ic_static_property_protected_24px.svg"),
                 public: vscode.Uri.file(__dirname + "/../assets/ic_property_public_24px.svg"),
-            },
-            property_static: {
-                private: vscode.Uri.file(__dirname + "/../assets/ic_static_property_private_24px.svg"),
-                protected: vscode.Uri.file(__dirname + "/../assets/ic_static_property_protected_24px.svg"),
-                public: vscode.Uri.file(__dirname + "/../assets/ic_static_property_public_24px.svg"),
+                public_static: vscode.Uri.file(__dirname + "/../assets/ic_static_property_public_24px.svg"),
             },
             trait: {
+                public: vscode.Uri.file(__dirname + "/../assets/ic_trait_public_24px.svg"),
+            },
+            use: {
                 public: vscode.Uri.file(__dirname + "/../assets/ic_trait_24px.svg"),
             },
         };
 
-        node.iconPath = icons[key][visibility];
+        if (icons[key] !== undefined) {
+            node.iconPath = icons[key][visibility];
+        }
 
         return node;
     }
 
-    public static sort(a: token.IVariableToken, b: token.IVariableToken): number {
+    public static sort(a: IVariableToken, b: IVariableToken): number {
         let vis: number = 0;
         if (a.visibility && b.visibility) {
             vis = a.visibility.localeCompare(b.visibility);
         }
 
-        return  vis === 0 ? a.name.localeCompare(b.name) : vis;
+        if (vis === 0 && (!a.static || !b.static)) {
+            vis = b.static && !a.static ? 1 : -1;
+        }
+
+        return vis === 0 ? a.name.localeCompare(b.name) : vis;
     }
 
-    public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter <TreeItem | null> =
+    public readonly onDidChangeTreeDataEmitter: vscode.EventEmitter<TreeItem | null> =
         new vscode.EventEmitter<TreeItem | null>();
     public readonly onDidChangeTreeData: vscode.Event<TreeItem | null> = this.onDidChangeTreeDataEmitter.event;
 
     private langProviders: Array<IBaseProvider<any>>;
 
+    protected get roChar(): string {
+        return vscode.workspace.getConfiguration("treeview")
+            .get("readonlyCharacter") as string;
+    }
+
+    protected get absChar(): string {
+        return vscode.workspace.getConfiguration("treeview")
+            .get("abstractCharacter") as string;
+    }
+
     public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
-        vscode.window.onDidChangeActiveTextEditor((ev) => {
-            this.refresh();
+        vscode.window.onDidChangeActiveTextEditor((ev: vscode.TextEditor) => {
+            this.refresh(ev.document);
         });
-        vscode.workspace.onDidChangeTextDocument((ev) => { this.refresh(ev); });
-        vscode.workspace.onDidOpenTextDocument((ev) => this.refresh());
-        vscode.workspace.onDidCloseTextDocument((ev) => this.refresh());
+        vscode.workspace.onDidSaveTextDocument((document) => this.refresh(document));
+        vscode.workspace.onDidOpenTextDocument((document) => this.refresh(document));
+        vscode.workspace.onDidCloseTextDocument((document) => this.refresh(document));
     }
 
-    public refresh(event?: vscode.TextDocumentChangeEvent) {
-        try {
-            this.getProvider().refresh(event);
-        } catch (ex) {
-            // Don't do anything
-        }
-        this.onDidChangeTreeDataEmitter.fire(void 0);
-    }
-
-    public getProvider(): IBaseProvider<(vscode.TreeItem|string)> {
-        let lang = "none";
-        if (vscode.window.activeTextEditor !== undefined) {
-            lang = vscode.window.activeTextEditor.document.languageId;
-            for (const provider of this.langProviders) {
-                if (provider.hasSupport(lang)) {
-                    return provider;
-                }
+    public hasSupport(languageId: string) {
+        for (const provider of this.langProviders) {
+            if (provider.hasSupport(languageId)) {
+                return true;
             }
         }
 
-        throw new Error(`No provider available to handle "${lang}"`);
+        return false;
     }
 
-    public getTreeItem(element: TreeItem): TreeItem | Thenable<TreeItem> {
-        try {
-            return this.getProvider().getTreeItem(element);
-        } catch (ex) {
-            return Promise.resolve({} as vscode.TreeItem);
+    public getTokenTree(): Thenable<ITokenTree> {
+        if (vscode.window.activeTextEditor.document !== undefined) {
+            const document: vscode.TextDocument = vscode.window.activeTextEditor.document;
+
+            if (this.hasSupport(document.languageId)) {
+                const provider = this.getProvider(document);
+                provider.refresh(document);
+
+                return provider.getTokenTree();
+            }
         }
+
+        return Promise.resolve({} as ITokenTree);
+    }
+
+    public refresh(document: vscode.TextDocument) {
+        if (!document.isClosed && !document.isDirty) {
+            try {
+                this.getProvider(document).refresh(document);
+            } catch (ex) {
+                // console.log(ex);
+            }
+        }
+
+        this.onDidChangeTreeDataEmitter.fire(void 0);
+    }
+
+    public getTreeItem(element: BaseItem): TreeItem | Thenable<TreeItem> {
+        try {
+            if (element !== undefined && vscode.window.activeTextEditor.document !== undefined) {
+                if (element.position !== undefined) {
+                    element = Provider.addItemCommand(element, "extension.treeview.goto", [element.position]);
+                }
+
+                if (element.contextValue !== undefined && element.contextValue.indexOf("section") === -1) {
+                    element = Provider.addItemIcon(
+                        element,
+                        element.contextValue,
+                        element.visibility || "public",
+                    );
+                }
+
+                return this.getProvider(vscode.window.activeTextEditor.document)
+                    .getTreeItem(element);
+            }
+        } catch (ex) {
+            return Promise.resolve(element as vscode.TreeItem);
+        }
+
+        return Promise.resolve({} as vscode.TreeItem);
     }
 
     public getChildren(element?: TreeItem): Thenable<TreeItem[]> {
         try {
-            const provider: IBaseProvider<any> = this.getProvider();
+            if (vscode.window.activeTextEditor.document !== undefined) {
+                const provider: IBaseProvider<any> =
+                    this.getProvider(vscode.window.activeTextEditor.document);
 
-            return provider.getTokenTree().then((tree) => {
-                if (Object.keys(tree).length !== 0) {
-                    const items = this.getBaseChildren(tree, element);
-                    const providerItems = provider.getChildren(element) as Thenable<vscode.TreeItem[]>;
+                return provider.getTokenTree().then((tree) => {
+                    if (Object.keys(tree).length !== 0) {
+                        const items = this.getBaseChildren(tree, element);
+                        const providerItems = provider.getChildren(element) as Thenable<vscode.TreeItem[]>;
 
-                    return providerItems.then((x) => {
-                        return items.concat(x).filter((y) => {
-                            return items.indexOf(y) === items.lastIndexOf(y);
+                        return providerItems.then((x) => {
+                            return items.concat(x).filter((y) => {
+                                return items.indexOf(y) === items.lastIndexOf(y);
+                            });
                         });
-                    });
-                }
+                    }
 
-                return provider.getChildren(element);
-            });
+                    return provider.getChildren(element);
+                });
+            }
         } catch (ex) {
             vscode.window.showErrorMessage(ex);
             return Promise.resolve([]);
         }
     }
 
+    public generateEntity(
+        node: IInterfaceToken,
+        includeBody: boolean = false,
+        ns: string = "",
+        strict: boolean = false,
+    ) {
+        const provider: IBaseProvider<any> = this.getProvider(vscode.window.activeTextEditor.document);
+        if (vscode.workspace.workspaceFolders.length === 0) {
+            throw new Error(
+                "Not available outside of workspace",
+            );
+        }
+
+        vscode.window.showInputBox({
+            prompt: "Name of the entity to generate(if namespaced use `EntityName : Namespace` notation)",
+            value: node.name.replace("Interface", ""),
+        }).then((entityName?: string) => {
+            if (entityName === undefined) {
+                vscode.window.showInformationMessage(
+                    "Entity creation canceled",
+                );
+                return false;
+            }
+
+            if (entityName.indexOf(":") !== -1) {
+                const dotSplit = entityName.split(":", 2);
+                entityName = dotSplit[0].trim();
+                ns = dotSplit[1].trim();
+            }
+
+            if (entityName === undefined || entityName.trim() === "") {
+                vscode.window.showWarningMessage("Class name cannot be empty");
+                return false;
+            }
+
+            vscode.window.showInputBox({
+                placeHolder: "Directory in which to save the generated file (relative to the workspace root)",
+            }).then((locationInput?: string) => {
+                const cwd: string = vscode.workspace.workspaceFolders[0].uri.path;
+
+                // if (locationInput !== "" && fs.statSync(`${cwd}/${locationInput}`)) {
+                //     vscode.window.showErrorMessage(
+                //         `Directory "${locationInput}" does not exist`,
+                //     );
+                //     return false;
+                // }
+
+                provider.getDocumentName(entityName, includeBody).then((documentName) => {
+
+                    const location: vscode.Uri = vscode.Uri.file(
+                        `${cwd}/${locationInput}/${documentName}`,
+                    );
+
+                    fs.open(location.fsPath, "wx", (err, fd) => {
+                        if (err === null) {
+                            fs.closeSync(fd);
+
+                            const workspaceEdits: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+                            workspaceEdits.set(location, provider.generate(
+                                entityName,
+                                node,
+                                includeBody,
+                                {
+                                    ext: path.extname(documentName),
+                                    ns,
+                                    strict,
+                                },
+                            ));
+
+                            vscode.workspace.applyEdit(workspaceEdits);
+                            vscode.workspace.openTextDocument(location)
+                                .then((document) =>
+                                    vscode.window.showTextDocument(document, vscode.ViewColumn.Active, true));
+
+                            return void 0;
+                        }
+
+                        vscode.window.showErrorMessage(
+                            `File "${vscode.workspace.asRelativePath(location, false)}" already exists.`,
+                        );
+                    });
+                });
+
+            });
+        });
+    }
+
+    protected getProvider(document: vscode.TextDocument): IBaseProvider<(vscode.TreeItem | string)> {
+        if (!document.isClosed) {
+            for (const provider of this.langProviders) {
+                if (provider.hasSupport(document.languageId)) {
+                    return provider;
+                }
+            }
+        }
+
+        throw new Error(`No provider available to handle "${document.languageId}"`);
+    }
+
     private getBaseChildren(tree: ITokenTree, element?: TreeItem): TreeItem[] {
-        const items: TreeItem[] = [];
+        let items: TreeItem[] = [];
         if (element === undefined) {
-            if (tree.strict !== undefined) {
-                items.push(new vscode.TreeItem(
-                    `Strict: ${tree.strict ? "Yes" : "No"}`,
+            items.push(new vscode.TreeItem(
+                `Strict: ${tree.strict !== undefined && tree.strict ? "Yes" : "No"}`,
+            ));
+
+            if (tree.imports !== undefined) {
+                items.push(new SectionItem(
+                    `Imports`,
+                    vscode.TreeItemCollapsibleState.Collapsed,
+                    "import-section",
                 ));
             }
 
-            if (tree.imports !== undefined) {
-                items.push(new vscode.TreeItem(`Imports`, vscode.TreeItemCollapsibleState.Collapsed));
-            }
-
             if (tree.variables !== undefined) {
-                items.push(new vscode.TreeItem(
+                items.push(new SectionItem(
                     `Variables`,
-                    (tree.nodes === undefined || tree.nodes.length === 0) &&
-                    (tree.functions === undefined || tree.functions.length === 0) &&
-                    (tree.variables.length !== 0) ?
-                        vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
+                    vscode.TreeItemCollapsibleState.Collapsed,
+                    "variables-section",
                 ));
             }
 
             if (tree.functions !== undefined) {
-                items.push(new vscode.TreeItem(
+                items.push(new SectionItem(
                     `Functions`,
-                    (tree.nodes === undefined || tree.nodes.length === 0) &&
                     (tree.functions.length !== 0) ?
                         vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
+                    "functions-section",
                 ));
             }
 
-            if (tree.nodes !== undefined) {
-                for (const cls of tree.nodes) {
-                    const collapsed: number = tree.nodes.indexOf(cls) === 0 ?
-                        vscode.TreeItemCollapsibleState.Expanded :
-                        vscode.TreeItemCollapsibleState.Collapsed;
+            if (tree.interfaces !== undefined) {
+                for (const cls of tree.interfaces) {
+                    const collapsed: number =
+                        (tree.traits === undefined || tree.traits.length === 0) &&
+                            (tree.classes === undefined || tree.classes.length === 0) &&
+                            tree.interfaces.indexOf(cls) === 0 ?
+                            vscode.TreeItemCollapsibleState.Expanded :
+                            vscode.TreeItemCollapsibleState.Collapsed;
 
                     items.push(
-                        Provider.addItemIcon(
-                            new vscode.TreeItem(cls.name, collapsed),
-                            "class",
+                        new InterfaceItem(
+                            cls.name,
+                            collapsed,
+                            undefined,
+                            cls.position,
                             cls.visibility,
                         ),
                     );
                 }
             }
+
+            if (tree.traits !== undefined) {
+                for (const cls of tree.traits) {
+                    const collapsed: number =
+                        (tree.classes === undefined || tree.classes.length === 0) &&
+                            tree.traits.indexOf(cls) === 0 ?
+                            vscode.TreeItemCollapsibleState.Expanded :
+                            vscode.TreeItemCollapsibleState.Collapsed;
+
+                    items.push(
+                        new TraitItem(
+                            cls.name,
+                            collapsed,
+                            undefined,
+                            cls.position,
+                            cls.visibility,
+                        ),
+                    );
+                }
+            }
+
+            if (tree.classes !== undefined) {
+                for (const cls of tree.classes) {
+                    const collapsed: number = tree.classes.indexOf(cls) === 0 ?
+                        vscode.TreeItemCollapsibleState.Expanded :
+                        vscode.TreeItemCollapsibleState.Collapsed;
+
+                    items.push(
+                        new ClassItem(
+                            (cls.readonly ? this.roChar : (cls.abstract ? this.absChar : "")) + cls.name,
+                            collapsed,
+                            undefined,
+                            cls.position,
+                            `${cls.visibility || "public"}`,
+                        ),
+                    );
+                }
+            }
         } else {
-            if (tree.imports !== undefined && element.label.toLowerCase() === "imports") {
+            if (element.contextValue === "import-section") {
                 for (const imp of tree.imports.sort(Provider.sort)) {
-                    const t = new vscode.TreeItem(
+                    const t = new ImportItem(
                         `${imp.name}${imp.alias !== undefined && imp.alias !== null ? ` as ${imp.alias}` : ""}`,
                         vscode.TreeItemCollapsibleState.None,
+                        undefined,
+                        imp.position,
                     );
-                    items.push(Provider.addItemCommand(t, "extension.treeview.goto", [ imp.position ]));
+                    items.push(t);
                 }
             }
 
-            if (tree.variables !== undefined && element.label.toLowerCase() === "variables") {
+            if (element.contextValue === "variables-section") {
                 for (const variable of tree.variables.sort(Provider.sort)) {
-                    const t = new vscode.TreeItem(
-                        `${variable.name}` +
+                    const vName: string = `${variable.name}` +
                         `${variable.type !== undefined ? `: ${variable.type}` : ""}` +
-                        `${variable.value !== undefined ? ` = ${variable.value}` : ""}`,
-                        vscode.TreeItemCollapsibleState.None,
-                    );
+                        `${variable.value !== undefined ? ` = ${variable.value}` : ""}`;
 
-                    items.push(Provider.addItemCommand(Provider.addItemIcon(
-                        t,
-                        `property_static`,
-                        variable.visibility === undefined ? variable.visibility : "public",
-                    ), "extension.treeview.goto", [variable.position]));
+                    items.push(new VariableItem(
+                        vName,
+                        vscode.TreeItemCollapsibleState.None,
+                        undefined,
+                        variable.position,
+                        `${variable.visibility}_static`,
+                    ));
                 }
             }
 
-            if (tree.functions !== undefined && element.label.toLowerCase() === "functions") {
+            if (element.contextValue === "functions-section") {
                 for (const func of tree.functions.sort(Provider.sort)) {
                     const args = [];
                     for (const arg of func.arguments) {
@@ -225,80 +449,223 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                             `${arg.name}${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
                         );
                     }
-                    const t = new vscode.TreeItem(
+
+                    items.push(new FunctionItem(
                         `${func.name}(${args.join(", ")})` +
                         `${func.type !== undefined ? `: ${func.type}` : ""}`,
                         vscode.TreeItemCollapsibleState.None,
-                    );
-
-                    items.push(Provider.addItemCommand(Provider.addItemIcon(
-                        t,
-                        `method${func.static ? "_static" : ""}`,
-                        func.visibility,
-                    ), "extension.treeview.goto", [func.position]));
+                        undefined,
+                        func.position,
+                        `${func.visibility}_static`,
+                    ));
                 }
             }
 
-            if (tree.nodes !== undefined) {
-                for (const cls of tree.nodes.sort(Provider.sort)) {
-                    if (cls.name === element.label) {
-                        if (cls.constants) {
-                            for (const constant of cls.constants.sort(Provider.sort)) {
-                                const t = new vscode.TreeItem(
-                                    `${constant.name} = ${constant.value}`,
-                                    vscode.TreeItemCollapsibleState.None,
-                                );
-                                items.push(Provider.addItemIcon(t, "constant"));
-                            }
-                        }
+            if (element.contextValue === "interface") {
+                const cls = tree.interfaces.find((t: IInterfaceToken) => t.name === element.label);
 
-                        if (cls.properties) {
-                            for (const property of cls.properties.sort(Provider.sort)) {
-                                const t = new vscode.TreeItem(
-                                    `${property.name}: ${property.type}` +
-                                        `${property.value !== "" ? ` = ${property.value}` : ""}`,
-                                    vscode.TreeItemCollapsibleState.None,
-                                );
+                items = items.concat(this.handleInterface(cls));
+            }
 
-                                items.push(Provider.addItemCommand(Provider.addItemIcon(
-                                    t,
-                                    `property${property.static ? "_static" : ""}`,
-                                    property.visibility,
-                                ), "extension.treeview.goto", [property.position]));
-                            }
-                        }
+            if (element.contextValue === "trait") {
+                const cls = tree.traits.find((t: ITraitToken) => t.name === element.label);
 
-                        if (cls.traits) {
-                            for (const trait of cls.traits.sort(Provider.sort)) {
-                                const t = new vscode.TreeItem(`${trait.name}`, vscode.TreeItemCollapsibleState.None);
-                                items.push(Provider.addItemIcon(t, "trait"));
-                            }
-                        }
+                items = items.concat(this.handleInterface(cls));
+            }
 
-                        if (cls.methods) {
-                            for (const method of cls.methods.sort(Provider.sort)) {
-                                const args = [];
-                                for (const arg of method.arguments) {
-                                    args.push(
-                                        `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
-                                            `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
-                                    );
-                                }
-                                const t = new vscode.TreeItem(
-                                    `${method.name}(${args.join(", ")})` +
-                                        `${method.type !== undefined ? `: ${method.type}` : ""}`,
-                                    vscode.TreeItemCollapsibleState.None,
-                                );
+            if (element.contextValue === "class") {
+                const cls = tree.classes.find((t: IClassToken) =>
+                    t.name === element.label
+                    .replace(this.roChar, "")
+                    .replace(this.absChar, ""),
+                );
 
-                                items.push(Provider.addItemCommand(Provider.addItemIcon(
-                                    t,
-                                    `method${method.static ? "_static" : ""}`,
-                                    method.visibility,
-                                ), "extension.treeview.goto", [method.position]));
-                            }
-                        }
-                    }
+                items = items.concat(this.handleClass(cls));
+            }
+        }
+
+        return items;
+    }
+
+    private handleInterface(cls: IInterfaceToken): TreeItem[] {
+        const items: TreeItem[] = [];
+
+        if (cls.constants !== undefined) {
+            for (const constant of cls.constants.sort(Provider.sort)) {
+                const t = new ConstantItem(
+                    `${constant.name} = ${constant.value}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    constant.position,
+                    constant.visibility,
+                );
+                items.push(t);
+            }
+        }
+
+        if (cls.properties !== undefined) {
+            for (const property of cls.properties.sort(Provider.sort)) {
+                const t = new PropertyItem(
+                    `${property.name}: ${property.type}` +
+                    `${property.value !== "" ? ` = ${property.value}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    property.position,
+                    `${property.visibility}${property.static ? "_static" : ""}`,
+                );
+
+                items.push(t);
+            }
+        }
+
+        if (cls.methods !== undefined) {
+            for (const method of cls.methods.sort(Provider.sort)) {
+                const args = [];
+                for (const arg of method.arguments) {
+                    args.push(
+                        `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
+                        `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                    );
                 }
+                const t = new MethodItem(
+                    `${method.name}(${args.join(", ")})` +
+                    `${method.type !== undefined ? `: ${method.type}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    method.position,
+                    `${method.visibility || "public"}${method.static ? "_static" : ""}`,
+                );
+
+                items.push(t);
+            }
+        }
+
+        return items;
+    }
+
+    private handleTrait(cls: ITraitToken): TreeItem[] {
+        const items: TreeItem[] = [];
+
+        if (cls.constants !== undefined) {
+            for (const constant of cls.constants.sort(Provider.sort)) {
+                const t = new ConstantItem(
+                    `${constant.name} = ${constant.value}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    constant.position,
+                    constant.visibility,
+                );
+                items.push(t);
+            }
+        }
+
+        if (cls.properties !== undefined) {
+            for (const property of cls.properties.sort(Provider.sort)) {
+                const t = new PropertyItem(
+                    `${property.name}: ${property.type}` +
+                    `${property.value !== "" ? ` = ${property.value}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    property.position,
+                    `${property.visibility}${property.static ? "_static" : ""}`,
+                );
+
+                items.push(t);
+            }
+        }
+
+        if (cls.methods !== undefined) {
+            for (const method of cls.methods.sort(Provider.sort)) {
+                const args = [];
+                for (const arg of method.arguments) {
+                    args.push(
+                        `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
+                        `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                    );
+                }
+                const t = new MethodItem(
+                    (method.readonly ? this.roChar : "") +
+                    `${method.name}(${args.join(", ")})` +
+                    `${method.type !== undefined ? `: ${method.type}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    method.position,
+                    `${method.visibility || "public"}${method.static ? "_static" : ""}`,
+                );
+
+                items.push(t);
+            }
+        }
+
+        return items;
+    }
+
+    private handleClass(cls: IClassToken): TreeItem[] {
+        const items: TreeItem[] = [];
+
+        if (cls.constants !== undefined) {
+            for (const constant of cls.constants.sort(Provider.sort)) {
+                const t = new ConstantItem(
+                    `${constant.name} = ${constant.value}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    constant.position,
+                    constant.visibility,
+                );
+                items.push(t);
+            }
+        }
+
+        if (cls.properties !== undefined) {
+            for (const property of cls.properties.sort(Provider.sort)) {
+                const t = new PropertyItem(
+                    (property.readonly ? this.roChar : "") +
+                    `${property.name}: ${property.type}` +
+                    `${property.value !== "" ? ` = ${property.value}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    property.position,
+                    `${property.visibility}${property.static ? "_static" : ""}`,
+                );
+
+                items.push(t);
+            }
+        }
+
+        if (cls.traits !== undefined) {
+            for (const trait of cls.traits.sort(Provider.sort)) {
+                const t = new TraitItem(
+                    `${trait.name}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    "use",
+                    trait.position,
+                    "public",
+                );
+                items.push(t);
+            }
+        }
+
+        if (cls.methods !== undefined) {
+            for (const method of cls.methods.sort(Provider.sort)) {
+                const args = [];
+                for (const arg of method.arguments) {
+                    args.push(
+                        `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
+                        `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
+                    );
+                }
+
+                const t = new MethodItem(
+                    (method.readonly ? this.roChar : (method.abstract ? this.absChar : "")) +
+                    `${method.name}(${args.join(", ")})` +
+                    `${method.type !== undefined ? `: ${method.type}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    undefined,
+                    method.position,
+                    `${method.visibility || "public"}${method.static ? "_static" : ""}`,
+                );
+
+                items.push(t);
             }
         }
 
