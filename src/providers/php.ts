@@ -235,6 +235,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     const classEntity: token.IClassToken = {} as token.IClassToken;
 
                     classEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
+                    classEntity.readonly = node.isFinal || false;
                     if (this.config.has("namespacePosition")) {
                         if (this.config.get("namespacePosition") === "suffix") {
                             classEntity.name =
@@ -479,6 +480,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                         method.loc.start.column + 9 + method.name.length,
                     ),
                 ),
+                readonly: method.isFinal,
                 static: method.isStatic,
                 type: ["__construct", "__destruct"].indexOf(method.name) === -1 ?
                     (method.nullable ? "?" : "") + ty : undefined,

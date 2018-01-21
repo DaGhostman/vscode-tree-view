@@ -20,11 +20,6 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         this.config = vscode.workspace.getConfiguration("treeview.js");
     }
 
-    get roChar(): string {
-        return this.config.has("readonlyCharacter") ?
-            this.config.get("readonlyCharacter") : "@";
-    }
-
     public hasSupport(langId: string): boolean {
         return langId.toLowerCase() === "typescript" ||
             langId.toLowerCase() === "javascript";
@@ -311,7 +306,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             }
 
             tree.variables.push({
-                name: `${dec.isConst ? this.roChar : ""}${dec.name}`,
+                name: `${dec.name}`,
                 position: this.generateRangeForSelection(dec.name, dec.start),
                 type: dec.type === undefined ? "any" : dec.type,
                 visibility: dec.isExported === true ? "public" : "protected",
@@ -346,7 +341,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
             )).split(" ").slice(0, 5);
 
             properties.push({
-                name: (def.indexOf("readonly") > -1 ? this.roChar : "") + property.name,
+                name: property.name,
                 position: this.generateRangeForSelection(property.name, property.start),
                 readonly: (def.indexOf("readonly") > -1),
                 static: (def.indexOf("static") > -1),

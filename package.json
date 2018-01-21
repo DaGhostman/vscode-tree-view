@@ -28,7 +28,8 @@
         "onLanguage:javascript",
         "onLanguage:typescript",
         "onLanguage:openhab",
-        "onLanguage:python"
+        "onLanguage:python",
+        "onLanguage:java"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -76,6 +77,7 @@
                     "treeview.allowedProviders": {
                         "type": "array",
                         "default": [
+                            "java",
                             "javascript",
                             "json",
                             "openhab",
@@ -84,9 +86,35 @@
                         ],
                         "description": "List of provider identifiers that are allowed for the workspace or in general"
                     },
+                    "treeview.readonlyCharacter": {
+                            "type": "string",
+                            "default": "@",
+                            "description": "Character with which to prefix `final` properties",
+                            "default": "@"
+                        },
+                    "treeview.java": {
+                        "type": "object",
+                        "description": "Section for Java specific configurations",
+                        "properties": {
+                            "namespacePosition": {
+                                "type": "string",
+                                "enum": [
+                                    "suffix",
+                                    "none",
+                                    "fqn"
+                                ],
+                                "default": "suffix",
+                                "description": "Control the position where the current namespace is shown"
+                            }
+                        },
+                        "default": {
+                            "namespacePosition": "suffix",
+                            "readonlyCharacter": "@"
+                        }
+                    },
                     "treeview.php": {
                         "type": "object",
-                        "description": "Section for PHP support related configurations",
+                        "description": "Section for PHP specific configurations",
                         "properties": {
                             "namespacePosition": {
                                 "type": "string",
@@ -105,24 +133,19 @@
                     },
                     "treeview.js": {
                         "type": "object",
-                        "description": "Section for JS/TS support related configurations",
+                        "description": "Section for JS/TS specific configuration",
                         "properties": {
-                            "readonlyCharacter": {
-                                "type": "string",
-                                "default": "@",
-                                "description": "Character with which to prefix `readonly` properties"
-                            },
                             "defaultNamespaceType": {
                                 "type": "string",
                                 "enum": [
                                     "internal",
                                     "external"
                                 ],
-                                "description": "The default type of modules to generate for when it will be using "
+                                "description": "The default type of modules to generate for when it will be using",
+                                "default": "internal"
                             }
                         },
                         "default": {
-                            "readonlyCharacter": "@",
                             "defaultNamespaceType": "internal"
                         }
                     }

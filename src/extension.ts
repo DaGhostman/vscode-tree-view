@@ -5,6 +5,7 @@ import { PhpGenerator } from "../out/generators/php";
 import { Provider } from "./provider";
 import {
     IBaseProvider,
+    JavaProvider,
     JsonProvider,
     PhpProvider,
     PythonProvider,
@@ -15,12 +16,12 @@ import {
 function goToDefinition(range: vscode.Range) {
     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
 
-        // Center the method in the document
-        editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
-        // Select the method name
-        editor.selection = new vscode.Selection(range.start, range.end);
-        // Swap the focus to the editor
-        vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+    // Center the method in the document
+    editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+    // Select the method name
+    editor.selection = new vscode.Selection(range.start, range.end);
+    // Swap the focus to the editor
+    vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -40,6 +41,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("json") !== -1) {
         providers.push(new JsonProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("java") !== -1) {
+        providers.push(new JavaProvider());
     }
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("openhab") !== -1) {

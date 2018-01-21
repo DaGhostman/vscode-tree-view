@@ -113,6 +113,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
     private langProviders: Array<IBaseProvider<any>>;
 
+    public get roChar(): string {
+        return vscode.workspace.getConfiguration("treeview")
+            .get("readonlyCharacter");
+    }
+
     public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
         vscode.window.onDidChangeActiveTextEditor((ev: vscode.TextEditor) => {
@@ -153,7 +158,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             try {
                 this.getProvider(document).refresh(document);
             } catch (ex) {
-                // Don't do anything
+                console.log(ex);
             }
         }
 
@@ -388,7 +393,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
                     items.push(
                         new ClassItem(
-                            cls.name,
+                            (cls.readonly ? this.roChar : "") + cls.name,
                             collapsed,
                             undefined,
                             cls.position,
@@ -460,7 +465,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
 
             if (element.contextValue === "class") {
-                const cls = tree.classes.find((t: IClassToken) => t.name === element.label);
+                const cls = tree.classes.find((t: IClassToken) => t.name === element.label.replace(this.roChar, ""));
 
                 items = items.concat(this.handleClass(cls));
             }
@@ -566,6 +571,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     );
                 }
                 const t = new MethodItem(
+                    (method.readonly ? this.roChar : "") +
                     `${method.name}(${args.join(", ")})` +
                     `${method.type !== undefined ? `: ${method.type}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
@@ -600,6 +606,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
                 const t = new PropertyItem(
+                    (property.readonly ? this.roChar : "") +
                     `${property.name}: ${property.type}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
@@ -636,6 +643,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 }
 
                 const t = new MethodItem(
+                    (method.readonly ? this.roChar : "") +
                     `${method.name}(${args.join(", ")})` +
                     `${method.type !== undefined ? `: ${method.type}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
