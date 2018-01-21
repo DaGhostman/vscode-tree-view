@@ -4,6 +4,10 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 ## [2.0.0]
 
+### Notes
+
+ - If you have configured a list of enabled providers, you must update your configuration to include `java` if you want to enable support for it
+
 ### Added
 
  - [JAVA] - Initial Java support
