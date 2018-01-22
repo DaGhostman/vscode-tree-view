@@ -22,6 +22,10 @@ come from external library limitations/behavior and will be fixed/normalized ASA
 - Python (Still experimental)
 - TypeScript
 
+## Known issues
+
+- Having 2 classes with the exact same name in the exact file but with different namespace will the second one to mirror the first one when the `namespacePosition` configuration is set to `none` (although it might be only applicable to PHP files, others langs might also be affected)
+
 ## Attributions
 
 - Contributors:
