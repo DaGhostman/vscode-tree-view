@@ -2,6 +2,12 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [Unreleased]
+
+### Changes
+
+- [PHP] - Add missing logic for `abstract` PHP classes
+
 ## [2.0.2]
 
 ### Changes

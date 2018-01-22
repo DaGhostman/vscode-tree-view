@@ -251,6 +251,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
 
                     classEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
                     classEntity.readonly = node.isFinal || false;
+                    classEntity.abstract = node.isAbstract || false;
                     if (this.config.has("namespacePosition")) {
                         if (this.config.get("namespacePosition") === "suffix") {
                             classEntity.name =
