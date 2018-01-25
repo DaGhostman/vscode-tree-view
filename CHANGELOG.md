@@ -10,6 +10,7 @@ _[BC]_ Stands for *B*reaking *C*hange
 - [ALL] - Fix sorting of class members to properly handle statics
 - [ALL] - Changed the command group to `TreeView` from `Generate`
 - [ALL] - Added GUI warnings when invoking the "generate" commands from palette
+- [PHP] - Handle constants as default values for methods/functions
 
 ## [2.0.2]
 

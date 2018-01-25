@@ -377,7 +377,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
     }
 
     private normalizeType(value): string {
-        if (value === null) { return ""; }
+        if (value == null) { return ""; }
 
         let val;
         switch (value.kind) {
@@ -400,6 +400,20 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                 break;
             case "constref":
                 val = value.name.name;
+                break;
+            case "number":
+                val = value.value;
+                break;
+            case "staticlookup":
+                let qn: string = value.what.name;
+                if (this.tree.imports !== undefined) {
+                    const filteredImports: token.ImportToken[] = this.tree.imports.filter((i) => i.name === qn);
+                    if (filteredImports.length > 0) {
+                        qn = qn.split("\\").pop();
+                    }
+                }
+
+                val = `${qn}::${value.offset.name}`;
                 break;
             default:
                 val = value.value;
