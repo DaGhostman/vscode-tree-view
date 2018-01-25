@@ -2,18 +2,21 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
-## [Unreleased]
+## [2.0.3]
+
+### Added
+
+- [ALL] - GUI warnings when invoking the "generate" commands from palette
+- [PHP] - Attempt to fetch type of untyped variables instead of showing all of them as `mixed`
 
 ### Changes
 
 - [PHP] - Add missing logic for `abstract` PHP classes
 - [ALL] - Fix sorting of class members to properly handle statics
 - [ALL] - Changed the command group to `TreeView` from `Generate`
-- [ALL] - Added GUI warnings when invoking the "generate" commands from palette
 - [PHP] - Handle constants as default values for methods/functions
 - [PHP] - Improve variable value handling
 - [PHP] - Fix cases where assigning to external variable will be shown in the list as `unknown`
-- [PHP] - Attempt to fetch type of untyped variables instead of showing all of them as `mixed`
 
 ## [2.0.2]
 
