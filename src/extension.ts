@@ -62,7 +62,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
-    vscode.commands.registerCommand("extension.treeview.extractInterface", (a: vscode.TreeItem) => {
+    vscode.commands.registerCommand("extension.treeview.extractInterface", (a?: vscode.TreeItem) => {
+        if (a === undefined) {
+            vscode.window.showWarningMessage("The selected command is limited only to context menu");
+            return false;
+        }
+
         provider.getTokenTree().then((tokenTree) => {
             tokenTree.classes.map((t) => {
                 if (t.name === a.label.replace("@", "")) {
@@ -72,7 +77,12 @@ export function activate(context: vscode.ExtensionContext) {
         });
     });
 
-    vscode.commands.registerCommand("extension.treeview.implementInterface", (a: vscode.TreeItem) => {
+    vscode.commands.registerCommand("extension.treeview.implementInterface", (a?: vscode.TreeItem) => {
+        if (a === undefined) {
+            vscode.window.showWarningMessage("The selected command is limited only to context menu");
+            return false;
+        }
+
         provider.getTokenTree().then((tokenTree) => {
             tokenTree.interfaces.map((t) => {
                 if (t.name === a.label) {
