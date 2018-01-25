@@ -13,6 +13,7 @@ _[BC]_ Stands for *B*reaking *C*hange
 - [PHP] - Handle constants as default values for methods/functions
 - [PHP] - Improve variable value handling
 - [PHP] - Fix cases where assigning to external variable will be shown in the list as `unknown`
+- [PHP] - Attempt to fetch type of untyped variables instead of showing all of them as `mixed`
 
 ## [2.0.2]
 

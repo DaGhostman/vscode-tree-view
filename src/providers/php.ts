@@ -368,7 +368,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                             new vscode.Position(v.loc.start.line - 1, v.loc.start.column),
                             new vscode.Position(v.loc.end.line - 1, v.loc.end.column),
                         ),
-                        type: "mixed",
+                        type: this.getUntypedType(val),
                         value: this.normalizeType(val),
                         visibility: "public",
                     } as token.IVariableToken);
@@ -430,6 +430,33 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                 val = value.value;
                 break;
         }
+        return val;
+    }
+
+    private getUntypedType(value) {
+        if (!(value instanceof Object) || value == null) {
+            return "mixed";
+        }
+
+        let val = "mixed";
+        switch (value.kind) {
+            case "array":
+                val = "array";
+                break;
+            case "string":
+                val = "string";
+                break;
+            case "number":
+                val = "int";
+                break;
+            case "float":
+                val = "float";
+                break;
+            case "boolean":
+                val = "boolean";
+                break;
+        }
+
         return val;
     }
 
