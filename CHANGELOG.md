@@ -7,6 +7,7 @@ _[BC]_ Stands for *B*reaking *C*hange
 ### Changes
 
 - [PHP] - Add missing logic for `abstract` PHP classes
+- [ALL] - Fix sorting of class members to properly handle statics
 
 ## [2.0.2]
 
