@@ -251,6 +251,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
 
                     classEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
                     classEntity.readonly = node.isFinal || false;
+                    classEntity.abstract = node.isAbstract || false;
                     if (this.config.has("namespacePosition")) {
                         if (this.config.get("namespacePosition") === "suffix") {
                             classEntity.name =
@@ -352,9 +353,12 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     if (tree.variables === undefined) {
                         tree.variables = [];
                     }
-
                     const val = node.right !== undefined ?
-                        (node.right.value === undefined ? node.right.name : node.right) : "null";
+                        (node.right.value === undefined ? (node.right.name || node.right) : node.right) : "null";
+
+                    if (node.left && node.left.kind === "offsetlookup") {
+                        continue;
+                    }
 
                     const v = node.left !== undefined ? node.left : node;
 
@@ -364,7 +368,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                             new vscode.Position(v.loc.start.line - 1, v.loc.start.column),
                             new vscode.Position(v.loc.end.line - 1, v.loc.end.column),
                         ),
-                        type: "mixed",
+                        type: this.getUntypedType(val),
                         value: this.normalizeType(val),
                         visibility: "public",
                     } as token.IVariableToken);
@@ -376,23 +380,31 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
     }
 
     private normalizeType(value): string {
-        if (value === null) { return ""; }
+        if (!(value instanceof Object)) {
+            return value;
+        }
+        if (value == null) { return ""; }
 
         let val;
         switch (value.kind) {
             case "array":
-                let arr: any = [];
+                const arr: string[] = [];
                 for (const x of value.items) {
+                    if (value.items.indexOf(x) === 2) {
+                        arr.push("..");
+                        break;
+                    }
+                    if (x.value.items !== undefined) {
+                        x.value.value = "[..]";
+                    }
                     if (x.key === null) {
-                        if (arr === undefined) { arr = []; }
                         arr.push(x.value.value);
                     } else {
-                        if (arr === undefined) { arr = {}; }
-                        arr[x.key] = x.value.value;
+                        arr.push(`${x.key.value}: ${this.normalizeType(x.value.value)}`);
                     }
                 }
 
-                val = JSON.stringify(arr);
+                val = `[${arr.join(", ")}]`;
                 break;
             case "string":
                 val = `"${value.value}"`;
@@ -400,10 +412,57 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
             case "constref":
                 val = value.name.name;
                 break;
+            case "number":
+                val = value.value;
+                break;
+            case "staticlookup":
+                let qn: string = value.what.name;
+                if (this.tree.imports !== undefined) {
+                    const filteredImports: token.ImportToken[] = this.tree.imports.filter((i) => i.name === qn);
+                    if (filteredImports.length > 0) {
+                        qn = qn.split("\\").pop();
+                    }
+                }
+
+                val = `${qn}::${value.offset.name}`;
+                break;
+            case "new":
+                val = `new ${value.what.name}`;
+                break;
             default:
                 val = value.value;
                 break;
         }
+        return val;
+    }
+
+    private getUntypedType(value) {
+        if (!(value instanceof Object) || value == null) {
+            return "mixed";
+        }
+
+        let val = "mixed";
+        switch (value.kind) {
+            case "array":
+                val = "array";
+                break;
+            case "string":
+                val = "string";
+                break;
+            case "number":
+                val = "int";
+                break;
+            case "float":
+                val = "float";
+                break;
+            case "boolean":
+                val = "boolean";
+                break;
+            case "new":
+                val = value.what.name;
+                break;
+        }
+
         return val;
     }
 

@@ -96,11 +96,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
     public static sort(a: IVariableToken, b: IVariableToken): number {
         let vis: number = 0;
-        if (a.visibility && b.visibility) {
+        if (a.visibility && b.visibility && a.visibility !== b.visibility) {
             vis = a.visibility.localeCompare(b.visibility);
         }
 
-        if (vis === 0 && (!a.static || !b.static)) {
+        if (vis === 0 && (a.static || b.static) && !(a.static && b.static)) {
             vis = b.static && !a.static ? 1 : -1;
         }
 
@@ -261,14 +261,6 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 placeHolder: "Directory in which to save the generated file (relative to the workspace root)",
             }).then((locationInput?: string) => {
                 const cwd: string = vscode.workspace.workspaceFolders[0].uri.path;
-
-                // if (locationInput !== "" && fs.statSync(`${cwd}/${locationInput}`)) {
-                //     vscode.window.showErrorMessage(
-                //         `Directory "${locationInput}" does not exist`,
-                //     );
-                //     return false;
-                // }
-
                 provider.getDocumentName(entityName, includeBody).then((documentName) => {
 
                     const location: vscode.Uri = vscode.Uri.file(

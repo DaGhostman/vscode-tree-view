@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
@@ -61,12 +61,12 @@
             {
                 "command": "extension.treeview.extractInterface",
                 "title": "Extract Interface",
-                "category": "Generate"
+                "category": "TreeView"
             },
             {
                 "command": "extension.treeview.implementInterface",
                 "title": "Implement Interface",
-                "category": "Generate"
+                "category": "TreeView"
             }
         ],
         "configuration": [
