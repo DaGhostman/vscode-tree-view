@@ -11,6 +11,8 @@ _[BC]_ Stands for *B*reaking *C*hange
 - [ALL] - Changed the command group to `TreeView` from `Generate`
 - [ALL] - Added GUI warnings when invoking the "generate" commands from palette
 - [PHP] - Handle constants as default values for methods/functions
+- [PHP] - Improve variable value handling
+- [PHP] - Fix cases where assigning to external variable will be shown in the list as `unknown`
 
 ## [2.0.2]
 

@@ -353,9 +353,12 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     if (tree.variables === undefined) {
                         tree.variables = [];
                     }
-
                     const val = node.right !== undefined ?
-                        (node.right.value === undefined ? node.right.name : node.right) : "null";
+                        (node.right.value === undefined ? (node.right.name || node.right) : node.right) : "null";
+
+                    if (node.left && node.left.kind === "offsetlookup") {
+                        continue;
+                    }
 
                     const v = node.left !== undefined ? node.left : node;
 
@@ -377,23 +380,31 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
     }
 
     private normalizeType(value): string {
+        if (!(value instanceof Object)) {
+            return value;
+        }
         if (value == null) { return ""; }
 
         let val;
         switch (value.kind) {
             case "array":
-                let arr: any = [];
+                const arr: string[] = [];
                 for (const x of value.items) {
+                    if (value.items.indexOf(x) === 2) {
+                        arr.push("..");
+                        break;
+                    }
+                    if (x.value.items !== undefined) {
+                        x.value.value = "[..]";
+                    }
                     if (x.key === null) {
-                        if (arr === undefined) { arr = []; }
                         arr.push(x.value.value);
                     } else {
-                        if (arr === undefined) { arr = {}; }
-                        arr[x.key] = x.value.value;
+                        arr.push(`${x.key.value}: ${this.normalizeType(x.value.value)}`);
                     }
                 }
 
-                val = JSON.stringify(arr);
+                val = `[${arr.join(", ")}]`;
                 break;
             case "string":
                 val = `"${value.value}"`;
