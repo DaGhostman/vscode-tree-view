@@ -8,6 +8,7 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 - [PHP] - Add missing logic for `abstract` PHP classes
 - [ALL] - Fix sorting of class members to properly handle statics
+- [ALL] - Changed the command group to `TreeView` from `Generate`
 
 ## [2.0.2]
 
