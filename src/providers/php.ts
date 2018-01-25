@@ -426,6 +426,9 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
 
                 val = `${qn}::${value.offset.name}`;
                 break;
+            case "new":
+                val = `new ${value.what.name}`;
+                break;
             default:
                 val = value.value;
                 break;
@@ -454,6 +457,9 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                 break;
             case "boolean":
                 val = "boolean";
+                break;
+            case "new":
+                val = value.what.name;
                 break;
         }
 
