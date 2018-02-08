@@ -7,20 +7,20 @@ import {
     TraitItem,
 } from "./../../tokens";
 import { IBaseProvider } from "./../base";
-import { IRuleTree, RuleParser } from "./ruleParser";
+import { IItemsTree, ItemsParser } from "./itemsParser";
 
-export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
+export class ItemsProvider implements IBaseProvider<vscode.TreeItem> {
     private tree: Thenable<ITokenTree>;
-    private parser: RuleParser;
+    private parser: ItemsParser;
     private text: string;
     private editor: vscode.TextEditor;
 
     public constructor() {
-        this.parser = new RuleParser();
+        this.parser = new ItemsParser();
     }
     public hasSupport(langId: string) {
         return langId.toLowerCase() === "openhab" &&
-            vscode.window.activeTextEditor.document.fileName.endsWith("rules");
+            vscode.window.activeTextEditor.document.fileName.endsWith("items");
     }
 
     public refresh(document: vscode.TextDocument): void {
@@ -29,7 +29,7 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
         });
     }
 
-    public getTokenTree(): Thenable<IRuleTree> {
+    public getTokenTree(): Thenable<IItemsTree> {
         return this.tree;
     }
 
@@ -46,26 +46,26 @@ export class RuleProvider implements IBaseProvider<vscode.TreeItem> {
 
         return this.getTokenTree().then((tree) => {
             if (element === undefined) {
-                if (tree.rules && tree.rules.length) {
+                if (tree.items && tree.items.length) {
                     items.push(new SectionItem(
-                        `Rules`,
-                        tree.rules !== undefined ?
+                        `Items`,
+                        tree.items !== undefined ?
                             vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
-                        "rule-section",
+                        "items-section",
                     ));
                 }
             } else {
-                if (element.contextValue === "rule-section") {
-                    for (const rule of tree.rules) {
+                if (element.contextValue === "items-section") {
+                    for (const item of tree.items) {
                         const t = new TraitItem(
-                            `${rule.name}`,
+                            `${item.name}`,
                             vscode.TreeItemCollapsibleState.None,
                         );
 
                         items.push(Provider.addItemCommand(Provider.addItemIcon(
                             t,
                             `use`,
-                        ), "extension.treeview.goto", [rule.position]));
+                        ), "extension.treeview.goto", [item.position]));
                     }
                 }
             }
