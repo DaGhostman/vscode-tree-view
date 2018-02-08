@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { Provider } from "./provider";
 import {
     IBaseProvider,
+    ItemsProvider,
     JavaProvider,
     JsonProvider,
     PhpProvider,
@@ -48,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("openhab") !== -1) {
         providers.push(new RuleProvider());
+        providers.push(new ItemsProvider());
     }
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("python") !== -1) {
