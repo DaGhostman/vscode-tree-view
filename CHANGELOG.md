@@ -4,7 +4,7 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 ## [2.1.0]
 
-- [ALL] - Item representing the docblock to allow attaching a doc block to the item it represents
+- [ALL] - Add `doc` to `tokens/tree` to represent item docblock
 
 ### Changes
 
