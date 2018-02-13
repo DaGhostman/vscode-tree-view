@@ -2,6 +2,15 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.1.0]
+
+- [ALL] - Item representing the docblock to allow attaching a doc block to the item it represents
+
+### Changes
+
+- [PHP] - Fix wrong handling of PHP traits
+- [PHP] - Fix default values always being null, event when not set
+
 ## [2.0.3]
 
 ### Added
