@@ -2,6 +2,12 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.0.4]
+
+### Changes
+
+- [PHP] - Fix issues with trait handling
+
 ## [2.0.3]
 
 ### Added
