@@ -462,7 +462,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (element.contextValue === "trait") {
                 const cls = tree.traits.find((t: ITraitToken) => t.name === element.label);
 
-                items = items.concat(this.handleInterface(cls));
+                items = items.concat(this.handleTrait(cls));
             }
 
             if (element.contextValue === "class") {

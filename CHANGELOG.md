@@ -4,12 +4,16 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 ## [2.1.0]
 
-- [ALL] - Add `doc` to `tokens/tree` to represent item docblock
-
 ### Changes
 
 - [PHP] - Fix wrong handling of PHP traits
 - [PHP] - Fix default values always being null, event when not set
+
+## [2.0.4]
+
+### Changes
+
+- [PHP] - Fix issues with trait handling
 
 ## [2.0.3]
 
