@@ -63,14 +63,46 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
     vscode.commands.registerCommand("extension.treeview.extractInterface", (a?: vscode.TreeItem) => {
-        if (a === undefined) {
-            vscode.window.showWarningMessage("The selected command is limited only to context menu");
-            return false;
-        }
-
+        const conf = vscode.workspace.getConfiguration("treeview");
         provider.getTokenTree().then((tokenTree) => {
-            tokenTree.classes.map((t) => {
-                if (t.name === a.label.replace("@", "")) {
+            if (tokenTree.classes.length === 0) {
+                vscode.window.showWarningMessage("No classes found in file");
+                return false;
+            }
+
+            const entities = (tokenTree.classes || []).concat(tokenTree.traits || []);
+
+            if (a === undefined) {
+                if (entities.length === 1) {
+                    entities.map((t) => {
+                        provider.generateEntity(t, false, tokenTree.namespace, tokenTree.strict);
+                    });
+
+                    return true;
+                } else {
+                    vscode.window.showQuickPick(entities.map((e) => e.name))
+                        .then((label) => {
+                            label = label
+                                .replace(conf.get("readonlyCharacter"), "")
+                                .replace(conf.get("abstractCharacter"), "");
+
+                            entities.map((t) => {
+                                if (t.name === label) {
+                                    provider.generateEntity(t, false, tokenTree.namespace, tokenTree.strict);
+                                }
+                            });
+                        });
+                }
+
+                return true;
+            }
+
+            entities.map((t) => {
+                const label = a.label
+                    .replace(conf.get("readonlyCharacter"), "")
+                    .replace(conf.get("abstractCharacter"), "");
+
+                if (t.name === label) {
                     provider.generateEntity(t, false, tokenTree.namespace, tokenTree.strict);
                 }
             });
@@ -78,14 +110,39 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand("extension.treeview.implementInterface", (a?: vscode.TreeItem) => {
-        if (a === undefined) {
-            vscode.window.showWarningMessage("The selected command is limited only to context menu");
-            return false;
-        }
-
         provider.getTokenTree().then((tokenTree) => {
+            const conf = vscode.workspace.getConfiguration("treeview");
+            if (tokenTree.interfaces.length === 0) {
+                vscode.window.showWarningMessage("No interfaces found in file");
+                return false;
+            }
+
+            if (a === undefined) {
+                if (tokenTree.interfaces.length === 1) {
+                    tokenTree.interfaces.map((t) => {
+                        provider.generateEntity(t, true, tokenTree.namespace, tokenTree.strict);
+                    });
+
+                } else {
+                    vscode.window.showQuickPick(tokenTree.interfaces.map((e) => e.name))
+                        .then((label) => {
+                            tokenTree.interfaces.map((t) => {
+                                if (t.name === label) {
+                                    provider.generateEntity(t, true, tokenTree.namespace, tokenTree.strict);
+                                }
+                            });
+                        });
+                }
+
+                return true;
+            }
+
             tokenTree.interfaces.map((t) => {
-                if (t.name === a.label) {
+                const label = a.label
+                    .replace(conf.get("readonlyCharacter"), "")
+                    .replace(conf.get("abstractCharacter"), "");
+
+                if (t.name === label) {
                     provider.generateEntity(t, true, tokenTree.namespace, tokenTree.strict);
                 }
             });
