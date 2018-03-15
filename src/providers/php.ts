@@ -155,7 +155,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
         }
 
         if (skeleton.methods !== undefined) {
-            const methods = skeleton.methods.filter((m) => m.visibility === "public");
+            const methods = skeleton.methods.filter((m) => m.visibility === "public" && m.name.search(/^__/i) === -1);
             for (const method of methods) {
                 if (!includeBodies && method.static) {
                     continue;
