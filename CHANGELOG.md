@@ -4,10 +4,17 @@ _[BC]_ Stands for *B*reaking *C*hange
 
 ## [2.1.0]
 
+### Added
+
+- [ALL] - Execute 'Extract interface' and 'Implement Interface' commands from palette
+- [ALL] - Inline actions for Extract/Implement commands (With new icons)
+- [openHAB] - Add base support for "Items"
+
 ### Changes
 
 - [PHP] - Fix wrong handling of PHP traits
 - [PHP] - Fix default values always being null, event when not set
+- [ALL] - 'Extract Interface' now properly supports traits
 
 ## [2.0.4]
 
