@@ -2,6 +2,13 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.1.0]
+
+### Changes
+
+- [PHP] - Fix wrong handling of PHP traits
+- [PHP] - Fix default values always being null, event when not set
+
 ## [2.0.4]
 
 ### Changes

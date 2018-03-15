@@ -235,9 +235,20 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             );
         }
 
+        let value = node.name;
+        if (includeBody) {
+            value = value.replace("Interface", "");
+        } else {
+            if (value.indexOf("Trait") !== -1) {
+                value = value.replace("Trait", "Interface");
+            } else {
+                value = value.replace(":", "Interface:");
+            }
+        }
+
         vscode.window.showInputBox({
             prompt: "Name of the entity to generate(if namespaced use `EntityName : Namespace` notation)",
-            value: node.name.replace("Interface", ""),
+            value,
         }).then((entityName?: string) => {
             if (entityName === undefined) {
                 vscode.window.showInformationMessage(
@@ -462,7 +473,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (element.contextValue === "trait") {
                 const cls = tree.traits.find((t: ITraitToken) => t.name === element.label);
 
-                items = items.concat(this.handleInterface(cls));
+                items = items.concat(this.handleTrait(cls));
             }
 
             if (element.contextValue === "class") {

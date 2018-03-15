@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "2.0.4",
+    "version": "2.1.0",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
@@ -45,15 +45,18 @@
             "view/item/context": [
                 {
                     "command": "extension.treeview.extractInterface",
-                    "when": "viewItem == class"
+                    "when": "viewItem == class",
+                    "group": "inline"
                 },
                 {
                     "command": "extension.treeview.extractInterface",
-                    "when": "viewItem == trait"
+                    "when": "viewItem == trait",
+                    "group": "inline"
                 },
                 {
                     "command": "extension.treeview.implementInterface",
-                    "when": "viewItem == interface"
+                    "when": "viewItem == interface",
+                    "group": "inline"
                 }
             ]
         },
@@ -61,12 +64,20 @@
             {
                 "command": "extension.treeview.extractInterface",
                 "title": "Extract Interface",
-                "category": "TreeView"
+                "category": "TreeView",
+                "icon": {
+                    "dark": "assets/ic_extract_dark_24px.svg",
+                    "light": "assets/ic_extract_light_24px.svg"
+                }
             },
             {
                 "command": "extension.treeview.implementInterface",
                 "title": "Implement Interface",
-                "category": "TreeView"
+                "category": "TreeView",
+                "icon": {
+                    "dark": "assets/ic_generate_dark_24px.svg",
+                    "light": "assets/ic_generate_light_24px.svg"
+                }
             }
         ],
         "configuration": [

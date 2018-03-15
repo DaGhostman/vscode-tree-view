@@ -1,6 +1,8 @@
 import { Range, TreeItem, TreeItemCollapsibleState } from "vscode";
 
 export class BaseItem extends TreeItem {
+    public tooltip?: string;
+
     constructor(
         label: string,
         collapsibleState?: TreeItemCollapsibleState,
@@ -11,5 +13,6 @@ export class BaseItem extends TreeItem {
         super(label, collapsibleState);
 
         this.contextValue = contextValue === undefined ? this.contextValue : contextValue;
+        this.tooltip = label;
     }
 }

@@ -272,9 +272,9 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     break;
                 case "trait":
                     if (tree.traits === undefined) {
-                        tree.traits = [] as token.IClassToken[];
+                        tree.traits = [] as token.ITraitToken[];
                     }
-                    const traitEntity: token.IClassToken = {} as token.IClassToken;
+                    const traitEntity: token.ITraitToken = {} as token.ITraitToken;
 
                     traitEntity.name = (tree.namespace !== undefined ? `${tree.namespace}\\` : "") + `${node.name}`;
                     if (this.config.has("namespacePosition")) {
@@ -293,7 +293,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     traitEntity.properties = this.handleProperties(node.body.filter((x) => x.kind === "property"));
                     traitEntity.methods = this.handleMethods(node.body.filter((x) => x.kind === "method"));
 
-                    tree.classes.push(traitEntity);
+                    tree.traits.push(traitEntity);
                     break;
                 case "namespace":
                     tree.namespace = node.kind === "namespace" ? node.name : "\\";
@@ -380,9 +380,6 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
     }
 
     private normalizeType(value): string {
-        if (!(value instanceof Object)) {
-            return value;
-        }
         if (value == null) { return ""; }
 
         let val;
