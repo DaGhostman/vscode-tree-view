@@ -101,7 +101,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     new vscode.Position(edits.length, 0),
                     new vscode.Position(edits.length, 1),
                 ),
-                `use ${skeleton.name.trim().split(":").reverse().join("\\")};` + os.EOL + os.EOL,
+                `use ${skeleton.name.split(":").reverse().join("\\").trim()};` + os.EOL + os.EOL,
             ));
         }
 
