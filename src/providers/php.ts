@@ -380,9 +380,6 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
     }
 
     private normalizeType(value): string {
-        if (!(value instanceof Object)) {
-            return value;
-        }
         if (value == null) { return ""; }
 
         let val;
