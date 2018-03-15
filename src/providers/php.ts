@@ -108,7 +108,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
         const defLine = (!includeBodies ?
             "interface" : (skeleton.readonly
                 ? "final " : (skeleton.abstract ? "abstract " : "") + "class")) +
-        `${entityName}` + os.EOL;
+        ` ${entityName}` + os.EOL;
 
         edits.push(new vscode.TextEdit(
             new vscode.Range(
