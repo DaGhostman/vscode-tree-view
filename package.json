@@ -54,6 +54,16 @@
                     "group": "inline"
                 },
                 {
+                    "command": "extension.treeview.duplicateEntity",
+                    "when": "viewItem == class",
+                    "group": "inline"
+                },
+                {
+                    "command": "extension.treeview.duplicateEntity",
+                    "when": "viewItem == trait",
+                    "group": "inline"
+                },
+                {
                     "command": "extension.treeview.implementInterface",
                     "when": "viewItem == interface",
                     "group": "inline"
@@ -68,6 +78,15 @@
                 "icon": {
                     "dark": "assets/ic_extract_dark_24px.svg",
                     "light": "assets/ic_extract_light_24px.svg"
+                }
+            },
+            {
+                "command": "extension.treeview.duplicateEntity",
+                "title": "Duplicate Entity",
+                "category": "TreeView",
+                "icon": {
+                    "dark": "assets/ic_copy_dark_24px.svg",
+                    "light": "assets/ic_copy_light_24px.svg"
                 }
             },
             {
