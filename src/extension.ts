@@ -67,12 +67,12 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("extension.treeview.extractInterface", (a?: vscode.TreeItem) => {
         const conf = vscode.workspace.getConfiguration("treeview");
         provider.getTokenTree().then((tokenTree) => {
-            if (tokenTree.classes.length === 0) {
-                vscode.window.showWarningMessage("No classes found in file");
+            const entities = (tokenTree.classes || []).concat(tokenTree.traits || []);
+
+            if (entities.length === 0) {
+                vscode.window.showWarningMessage("No suitable entities found in file");
                 return false;
             }
-
-            const entities = (tokenTree.classes || []).concat(tokenTree.traits || []);
 
             if (a === undefined) {
                 if (entities.length === 1) {
