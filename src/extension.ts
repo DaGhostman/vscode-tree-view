@@ -111,6 +111,53 @@ export function activate(context: vscode.ExtensionContext) {
         });
     });
 
+
+    vscode.commands.registerCommand("extension.treeview.duplicateEntity", (a?: vscode.TreeItem) => {
+        const conf = vscode.workspace.getConfiguration("treeview");
+        provider.getTokenTree().then((tokenTree) => {
+            const entities = (tokenTree.classes || []).concat(tokenTree.traits || []);
+            if (entities.length === 0) {
+                vscode.window.showWarningMessage("No suitable entities found in file");
+                return false;
+            }
+
+            if (a === undefined) {
+                if (entities.length === 1) {
+                    entities.map((t) => {
+                        provider.generateEntity(t, true, tokenTree.namespace, tokenTree.strict);
+                    });
+
+                    return true;
+                } else {
+                    vscode.window.showQuickPick(entities.map((e) => e.name))
+                        .then((label) => {
+                            label = label
+                                .replace(conf.get("readonlyCharacter"), "")
+                                .replace(conf.get("abstractCharacter"), "");
+
+                            entities.map((t) => {
+                                if (t.name === label) {
+                                    provider.generateEntity(t, true, tokenTree.namespace, tokenTree.strict);
+                                }
+                            });
+                        });
+                }
+
+                return true;
+            }
+
+            entities.map((t) => {
+                const label = a.label
+                    .replace(conf.get("readonlyCharacter"), "")
+                    .replace(conf.get("abstractCharacter"), "");
+
+                if (t.name === label) {
+                    provider.generateEntity(t, true, tokenTree.namespace, tokenTree.strict);
+                }
+            });
+        });
+    });
+
     vscode.commands.registerCommand("extension.treeview.implementInterface", (a?: vscode.TreeItem) => {
         provider.getTokenTree().then((tokenTree) => {
             const conf = vscode.workspace.getConfiguration("treeview");
