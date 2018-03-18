@@ -111,7 +111,6 @@ export function activate(context: vscode.ExtensionContext) {
         });
     });
 
-
     vscode.commands.registerCommand("extension.treeview.duplicateEntity", (a?: vscode.TreeItem) => {
         const conf = vscode.workspace.getConfiguration("treeview");
         provider.getTokenTree().then((tokenTree) => {
