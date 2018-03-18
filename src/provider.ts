@@ -268,32 +268,40 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     );
 
                     fs.open(location.fsPath, "wx", (err, fd) => {
-                        if (err === null) {
-                            fs.closeSync(fd);
-
-                            const workspaceEdits: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
-                            workspaceEdits.set(location, provider.generate(
-                                entityName,
-                                node,
-                                includeBody,
-                                {
-                                    ext: path.extname(documentName),
-                                    ns,
-                                    strict,
-                                },
-                            ));
-
-                            vscode.workspace.applyEdit(workspaceEdits);
-                            vscode.workspace.openTextDocument(location)
-                                .then((document) =>
-                                    vscode.window.showTextDocument(document, vscode.ViewColumn.Active, true));
+                        if (err !== null) {
+                            vscode.window.showErrorMessage(
+                                `File "${location.fsPath}" already exists. ${err.message}`,
+                            );
 
                             return void 0;
                         }
+                        fs.closeSync(fd);
 
-                        vscode.window.showErrorMessage(
-                            `File "${vscode.workspace.asRelativePath(location, false)}" already exists.`,
-                        );
+                        const workspaceEdits: vscode.WorkspaceEdit = new vscode.WorkspaceEdit();
+                        workspaceEdits.set(location, provider.generate(
+                            entityName,
+                            node,
+                            includeBody,
+                            {
+                                ext: path.extname(documentName),
+                                ns,
+                                strict,
+                            },
+                        ));
+
+                        vscode.workspace.applyEdit(workspaceEdits);
+                        vscode.workspace.openTextDocument(location)
+                            .then((document) => {
+                                document.save().then((saved) => {
+                                    const loc = location.fsPath.substr(cwd.length).replace(/\\/, "/");
+                                    if (saved) {
+                                        vscode.window.showInformationMessage(`Successfully created "${loc}"`);
+                                    } else {
+                                        vscode.window.showErrorMessage(`Unable to save "${loc}".`);
+                                    }
+
+                                });
+                            });
                     });
                 });
 
