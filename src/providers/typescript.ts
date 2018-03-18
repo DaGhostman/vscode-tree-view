@@ -152,7 +152,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 new vscode.Position(edits.length, 1024),
             ),
             (hasNs ? " ".repeat(4) : "") +
-            `export ${!includeBodies ? "interface" : `${skeleton.abstract ? "abstract " : ""}class`}` +
+            `export ${!includeBodies ? "interface" : `${skeleton.abstract ? "abstract " : ""}class`} ` +
                 `${entityName} {` + os.EOL,
         ));
 

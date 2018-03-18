@@ -101,14 +101,14 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     new vscode.Position(edits.length, 0),
                     new vscode.Position(edits.length, 1),
                 ),
-                `use ${skeleton.name.split(":").reverse().join("\\")}` + os.EOL + os.EOL,
+                `use ${skeleton.name.split(":").reverse().join("\\").trim()};` + os.EOL + os.EOL,
             ));
         }
 
         const defLine = (!includeBodies ?
             "interface" : (skeleton.readonly
                 ? "final " : (skeleton.abstract ? "abstract " : "") + "class")) +
-        `${entityName}` + os.EOL;
+        ` ${entityName}` + os.EOL;
 
         edits.push(new vscode.TextEdit(
             new vscode.Range(
@@ -155,7 +155,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
         }
 
         if (skeleton.methods !== undefined) {
-            const methods = skeleton.methods.filter((m) => m.visibility === "public");
+            const methods = skeleton.methods.filter((m) => m.visibility === "public" && m.name.search(/^__/i) === -1);
             for (const method of methods) {
                 if (!includeBodies && method.static) {
                     continue;
