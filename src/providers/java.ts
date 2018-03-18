@@ -275,7 +275,7 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
                     new vscode.Position(edits.length, 0),
                     new vscode.Position(edits.length, 1024),
                 ),
-                `package ${options.ns};${os.EOL}${os.EOL}`,
+                `package ${options.ns};${os.EOL}${os.EOL};`,
             ));
         }
 
@@ -286,7 +286,7 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
                     new vscode.Position(edits.length, 0),
                     new vscode.Position(edits.length, 1024),
                 ),
-                `import ${node.name.split(":").reverse().join(".")};${os.EOL}${os.EOL}`,
+                `import ${node.name.split(":").reverse().join(".")};${os.EOL}${os.EOL};`,
             ));
         }
 
