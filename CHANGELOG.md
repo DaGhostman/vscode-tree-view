@@ -2,6 +2,22 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.2.0]
+
+### Added
+
+- [ALL] - Duplicate command to duplicate classes and traits
+
+### Changes
+
+- [ALL] - Show notification instead of opening a generated file (file conflicts with WS copy)
+- [ALL] - Remove wrong filename suffix
+- [ALL] - Fix invalid code generation
+- [ALL] - Allow generation of interface from trait in files which do not have classes defined in them
+- [ALL] - Updated Extract and Generate commands' icons to not be oversized
+- [PHP] - Correct type resolution that showed `= null` in signatures without default values
+- [PHP] - Fix handling of `abstract` classes
+
 ## [2.1.0]
 
 ### Added
