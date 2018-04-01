@@ -18,12 +18,13 @@ come from external library limitations/behavior and will be fixed/normalized ASA
 
 ## Languages
 
+- CSS & Less CSS (note that Less is a little experimental)
 - JAVA
 - Javascript (ES6 is the target and while most of ES5 should be compatible)
 - JSON
 - openHAB
 - PHP
-- Python (Still experimental)
+- Python
 - TypeScript
 
 ## Known issues
@@ -41,6 +42,8 @@ come from external library limitations/behavior and will be fixed/normalized ASA
   - JSON parser - [jsonc-parser](https://www.npmjs.com/package/jsonc-parser)
   - Python parser - [filbert](https://www.npmjs.com/package/filbert)
   - Java Parser - [java-parser](https://github.com/mazko/jsjavaparser)
+  - CSS Parser - [css](https://github.com/reworkcss/css)
+  - Less Parser [less](https://github.com/less/less.js)
   - Icons used in Tree View [Google Material Icons](https://material.io/icons/) [Apache License Version 2.0] with slight color-coding modification
 
 ## Screenshots

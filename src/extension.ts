@@ -3,10 +3,12 @@
 import * as vscode from "vscode";
 import { Provider } from "./provider";
 import {
+    CssProvider,
     IBaseProvider,
     ItemsProvider,
     JavaProvider,
     JsonProvider,
+    LessProvider,
     PhpProvider,
     PythonProvider,
     RuleProvider,
@@ -54,6 +56,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("python") !== -1) {
         providers.push(new PythonProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("css") !== -1) {
+        providers.push(new CssProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("css") !== -1) {
+        providers.push(new LessProvider());
     }
 
     const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);
@@ -110,7 +120,6 @@ export function activate(context: vscode.ExtensionContext) {
             });
         });
     });
-
 
     vscode.commands.registerCommand("extension.treeview.duplicateEntity", (a?: vscode.TreeItem) => {
         const conf = vscode.workspace.getConfiguration("treeview");
