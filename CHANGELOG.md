@@ -2,6 +2,13 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.3.0]
+
+### Added
+
+- [CSS] - Support
+- [LESS] - Initial (a bit experimental) support for less
+
 ## [2.2.0]
 
 ### Added
