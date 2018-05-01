@@ -442,7 +442,9 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         const line = vscode.window.activeTextEditor.document.lineAt(startPosition.line).text;
 
         const startIndex = line.indexOf(name);
-        if (startIndex === line.lastIndexOf(name)) {
+        const lastIndex = line.lastIndexOf(name);
+
+        if (startIndex > -1 && lastIndex > -1) {
             return new vscode.Range(
                 new vscode.Position(startPosition.line, startIndex),
                 new vscode.Position(startPosition.line, startIndex + name.length),
@@ -450,8 +452,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         }
 
         return new vscode.Range(
-            new vscode.Position(startPosition.line, startIndex),
-            new vscode.Position(startPosition.line, startIndex),
+            new vscode.Position(startPosition.line, startIndex > -1 ? startIndex : 0),
+            new vscode.Position(startPosition.line, startIndex > -1 ? startIndex : 0),
         );
     }
 }
