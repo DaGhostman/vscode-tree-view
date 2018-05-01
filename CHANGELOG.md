@@ -2,6 +2,13 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.3.1]
+
+### Changes
+
+- [JS/TS] - Fix wrong calculation of position
+- [JS/TS] - Fix document change event, that makes the open document `undefined` (race condition when closing files & when closing the last file)
+
 ## [2.3.0]
 
 ### Added
