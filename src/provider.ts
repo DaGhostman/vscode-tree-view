@@ -125,8 +125,10 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
     public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
-        vscode.window.onDidChangeActiveTextEditor((ev: vscode.TextEditor) => {
-            this.refresh(ev.document);
+        vscode.window.onDidChangeActiveTextEditor((ev?: vscode.TextEditor) => {
+            if (vscode.window.activeTextEditor) {
+                this.refresh(vscode.window.activeTextEditor.document);
+            }
         });
         vscode.workspace.onDidSaveTextDocument((document) => this.refresh(document));
         vscode.workspace.onDidOpenTextDocument((document) => this.refresh(document));
