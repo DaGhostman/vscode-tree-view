@@ -324,8 +324,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 ),
             );
 
-            v = v.substr(v.indexOf(dec.name) + dec.name.length)
-                .replace(/[\;\=]/ig, "")
+            v = v.substr(v.indexOf("=") + 1)
+                .replace(";", "")
                 .trim();
 
             v = v.length > 32 ? v.substr(0, 32) + ".." : v;
