@@ -330,6 +330,10 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 .trim();
 
             v = v.length > 32 ? v.substr(0, 32) + ".." : v;
+            if (v.length === 0) {
+                // well, we need to unset it
+                v = undefined;
+            }
 
             tree.variables.push({
                 name: `${dec.name}`,
