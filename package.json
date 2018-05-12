@@ -35,11 +35,25 @@
     ],
     "main": "./out/extension",
     "contributes": {
+        "keybindings": {
+            "key": "ctrl+alt+t",
+            "when": "editorTextFocus",
+            "command": "workbench.view.extension.symbol-treeview"
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "symbol-treeview",
+                    "title": "File Symbol Explorer",
+                    "icon": "assets/code-28px.svg"
+                }
+            ]
+        },
         "views": {
-            "explorer": [
+            "symbol-treeview": [
                 {
                     "id": "tree-outline",
-                    "name": "Tree"
+                    "name": "Symbols"
                 }
             ]
         },
