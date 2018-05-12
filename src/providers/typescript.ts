@@ -5,7 +5,6 @@ import * as vscode from "vscode";
 import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
-import { DH_CHECK_P_NOT_SAFE_PRIME } from "constants";
 
 export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
     private config: vscode.WorkspaceConfiguration;
