@@ -397,7 +397,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     if (x.key === null) {
                         arr.push(x.value.value);
                     } else {
-                        arr.push(`${x.key.value}: ${this.normalizeType(x.value.value)}`);
+                        arr.push(`${x.key.value}: ${x.value.value}`);
                     }
                 }
 
