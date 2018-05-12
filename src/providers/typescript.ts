@@ -317,10 +317,28 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 tree.variables = [];
             }
 
+            let v: string = vscode.window.activeTextEditor.document.getText(
+                new vscode.Range(
+                    this.offsetToPosition(dec.start),
+                    this.offsetToPosition(dec.end),
+                ),
+            );
+
+            v = v.substr(v.indexOf("=") + 1)
+                .replace(";", "")
+                .trim();
+
+            v = v.length > 32 ? v.substr(0, 32) + ".." : v;
+            if (v.length === 0) {
+                // well, we need to unset it
+                v = undefined;
+            }
+
             tree.variables.push({
                 name: `${dec.name}`,
                 position: this.generateRangeForSelection(dec.name, dec.start),
                 type: dec.type === undefined ? "any" : dec.type,
+                value: v,
                 visibility: dec.isExported === true ? "public" : "protected",
             } as token.IVariableToken);
         }
