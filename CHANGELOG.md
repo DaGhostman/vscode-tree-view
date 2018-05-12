@@ -2,6 +2,17 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.4.0]
+
+### Added
+
+- [JS/TS] - Show default values for params
+
+### Changes
+
+- [PHP] - Fix nested arrays as default values output
+- [JAVA] - Add handling for arrays default value
+
 ## [2.3.1]
 
 ### Changes
