@@ -172,12 +172,7 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
                             return undefined;
                         }).filter((po) => po instanceof vscode.Range).pop();
 
-                        const value = p.fragments[0].initializer === null
-                            ? "" : p.fragments[0].initializer.escapedValue ||
-                            ("new" + p.fragments[0].initializer.type.name.identifier +
-                                "(" + p.fragments[0].initializer.arguments.map((a) => {
-                                    return a.escapedValue;
-                                }).join(", ") + ")");
+                        const value = this.getValue(p);
 
                         return {
                             name,
@@ -220,12 +215,7 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
                             return undefined;
                         }).filter((po) => po instanceof vscode.Range).pop();
 
-                        const value = p.fragments[0].initializer === null
-                            ? "" : p.fragments[0].initializer.escapedValue ||
-                            ("new" + p.fragments[0].initializer.type.name.identifier +
-                                "(" + p.fragments[0].initializer.arguments.map((a) => {
-                                    return a.escapedValue;
-                                }).join(", ") + ")");
+                        const value = this.getValue(p);
 
                         return {
                             name,
@@ -385,5 +375,23 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
 
     public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
         return Promise.resolve([]);
+    }
+
+    private getValue(p): string {
+        if (p.fragments[0].initializer === null) {
+            return "";
+        }
+
+        if (p.fragments[0].initializer.node === "ArrayInitializer") {
+            const v = p.fragments[0].initializer.expressions.map((v) => v.escapedValue).join(", ");
+            return `[${v.length > 32 ? v.substr(0, 32) : v}]`;
+
+        }
+
+        return p.fragments[0].initializer.escapedValue ||
+        ("new" + p.fragments[0].initializer.type.name.identifier +
+            "(" + p.fragments[0].initializer.arguments.map((a) => {
+                return a.escapedValue;
+            }).join(", ") + ")");
     }
 }

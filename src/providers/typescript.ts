@@ -5,6 +5,7 @@ import * as vscode from "vscode";
 import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
+import { DH_CHECK_P_NOT_SAFE_PRIME } from "constants";
 
 export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
     private config: vscode.WorkspaceConfiguration;
@@ -317,10 +318,28 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 tree.variables = [];
             }
 
+            let v: string = vscode.window.activeTextEditor.document.getText(
+                new vscode.Range(
+                    this.offsetToPosition(dec.start),
+                    this.offsetToPosition(dec.end),
+                ),
+            );
+
+            v = v.substr(v.indexOf(dec.name) + dec.name.length)
+                .replace(/[\;\=]/ig, "")
+                .trim();
+
+            v = v.length > 32 ? v.substr(0, 32) + ".." : v;
+            if (v.length === 0) {
+                // well, we need to unset it
+                v = undefined;
+            }
+
             tree.variables.push({
                 name: `${dec.name}`,
                 position: this.generateRangeForSelection(dec.name, dec.start),
                 type: dec.type === undefined ? "any" : dec.type,
+                value: v,
                 visibility: dec.isExported === true ? "public" : "protected",
             } as token.IVariableToken);
         }
