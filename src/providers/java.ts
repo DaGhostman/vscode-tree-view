@@ -383,7 +383,7 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
         }
 
         if (p.fragments[0].initializer.node === "ArrayInitializer") {
-            const v = p.fragments[0].initializer.expressions.map((v) => v.escapedValue).join(", ");
+            const v = p.fragments[0].initializer.expressions.map((a) => a.escapedValue).join(", ");
             return `[${v.length > 32 ? v.substr(0, 32) : v}]`;
 
         }

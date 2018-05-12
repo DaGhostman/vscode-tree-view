@@ -5,7 +5,6 @@ import * as vscode from "vscode";
 import { Provider } from "./../provider";
 import * as token from "./../tokens";
 import { IBaseProvider } from "./base";
-import { DH_CHECK_P_NOT_SAFE_PRIME } from "constants";
 
 export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
     private config: vscode.WorkspaceConfiguration;
@@ -325,8 +324,8 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                 ),
             );
 
-            v = v.substr(v.indexOf(dec.name) + dec.name.length)
-                .replace(/[\;\=]/ig, "")
+            v = v.substr(v.indexOf("=") + 1)
+                .replace(";", "")
                 .trim();
 
             v = v.length > 32 ? v.substr(0, 32) + ".." : v;

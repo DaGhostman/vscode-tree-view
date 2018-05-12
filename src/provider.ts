@@ -58,6 +58,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             },
             interface: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_interface_private_24px.svg"),
+                protected: vscode.Uri.file(__dirname + "/../assets/ic_interface_protected_24px.svg"),
                 public: vscode.Uri.file(__dirname + "/../assets/ic_interface_public_24px.svg"),
             },
             list: {
