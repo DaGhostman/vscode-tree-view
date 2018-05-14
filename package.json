@@ -197,6 +197,11 @@
                         "default": {
                             "defaultNamespaceType": "internal"
                         }
+                    },
+                    "treeview.updateOnError": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Should the view update on save even if there are errors in the current file"
                     }
                 }
             }
