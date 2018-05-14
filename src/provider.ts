@@ -124,16 +124,28 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             .get("abstractCharacter") as string;
     }
 
+    protected get updateOnError(): boolean {
+        return vscode.workspace.getConfiguration("treeview")
+            .get("updateOnError") as boolean;
+    }
+
     public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
         vscode.window.onDidChangeActiveTextEditor((ev?: vscode.TextEditor) => {
-            if (vscode.window.activeTextEditor) {
-                this.refresh(vscode.window.activeTextEditor.document);
+            if ((ev && ev.document) || vscode.window.activeTextEditor) {
+                this.refresh((ev || vscode.window.activeTextEditor).document);
             }
         });
-        vscode.workspace.onDidSaveTextDocument((document) => this.refresh(document));
-        vscode.workspace.onDidOpenTextDocument((document) => this.refresh(document));
-        vscode.workspace.onDidCloseTextDocument((document) => this.refresh(document));
+        vscode.workspace.onDidSaveTextDocument((document) => {
+            if (!this.updateOnError && this.hasErrorsInDiagnostic(document)) {
+                return void 0;
+            }
+
+            this.refresh(document);
+        });
+        vscode.window.onDidChangeVisibleTextEditors((ev?: vscode.TextEditor[]) => {
+            this.refresh(ev[0].document);
+        });
     }
 
     public hasSupport(languageId: string) {
@@ -166,7 +178,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             try {
                 this.getProvider(document).refresh(document);
             } catch (ex) {
-                // console.log(ex);
+                console.log(ex);
             }
         }
 
@@ -673,5 +685,22 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
 
         return items;
+    }
+
+    private hasErrorsInDiagnostic(document: vscode.TextDocument): boolean {
+        const halt = vscode.languages.getDiagnostics().find((x) => {
+            if (x[0].fsPath === document.uri.fsPath) {
+                const diag = x[1].find((y) => {
+                    if (y.severity === vscode.DiagnosticSeverity.Error) {
+                        return true;
+                    }
+                });
+
+                return (diag !== undefined);
+            }
+            return false;
+        });
+
+        return halt !== undefined;
     }
 }
