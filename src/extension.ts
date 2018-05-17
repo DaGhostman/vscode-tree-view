@@ -67,7 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
         providers.push(new LessProvider());
     }
 
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("csharp") !== -1 || allowedProviders.indexOf("c") !== -1 || allowedProviders.indexOf("cpp") !== -1) {
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("cfamily") !== -1) {
         providers.push(new CFamilyProvider());
     }
 

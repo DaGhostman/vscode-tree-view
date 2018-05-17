@@ -18,6 +18,7 @@ come from external library limitations/behavior and will be fixed/normalized ASA
 
 ## Languages
 
+- [ExC-Family (C, C++, C#)*
 - CSS & Less CSS (note that Less is a little experimental)
 - JAVA
 - Javascript (ES6 is the target and while most of ES5 should be compatible)
@@ -26,6 +27,10 @@ come from external library limitations/behavior and will be fixed/normalized ASA
 - PHP
 - Python
 - TypeScript
+
+_* Note that C-Family require their respective official extensions to be present, although others might be fine as well_
+_Also they are disabled by default and need to be enabled by using `cfamily` in the `treeview.allowedProviders` array._
+_Please note the support if highly experimental_
 
 ## Attributions
 
