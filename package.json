@@ -183,6 +183,25 @@
                             "namespacePosition": "suffix"
                         }
                     },
+                    "treeview.cfamily": {
+                        "type": "object",
+                        "description": "Section for C/C++/C# specific configurations",
+                        "properties": {
+                            "namespacePosition": {
+                                "type": "string",
+                                "enum": [
+                                    "suffix",
+                                    "none",
+                                    "fqn"
+                                ],
+                                "default": "suffix",
+                                "description": "Control the position where the current namespace is shown"
+                            }
+                        },
+                        "default": {
+                            "namespacePosition": "suffix"
+                        }
+                    },
                     "treeview.js": {
                         "type": "object",
                         "description": "Section for JS/TS specific configuration",
