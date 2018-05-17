@@ -31,7 +31,10 @@
         "onLanguage:python",
         "onLanguage:java",
         "onLanguage:css",
-        "onLanguage:less"
+        "onLanguage:less",
+        "onLanguage:csharp",
+        "onLanguage:c",
+        "onLanguage:cpp"
     ],
     "main": "./out/extension",
     "contributes": {
