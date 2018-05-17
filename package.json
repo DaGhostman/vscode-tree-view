@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
@@ -167,6 +167,25 @@
                     "treeview.php": {
                         "type": "object",
                         "description": "Section for PHP specific configurations",
+                        "properties": {
+                            "namespacePosition": {
+                                "type": "string",
+                                "enum": [
+                                    "suffix",
+                                    "none",
+                                    "fqn"
+                                ],
+                                "default": "suffix",
+                                "description": "Control the position where the current namespace is shown"
+                            }
+                        },
+                        "default": {
+                            "namespacePosition": "suffix"
+                        }
+                    },
+                    "treeview.cfamily": {
+                        "type": "object",
+                        "description": "Section for C/C++/C# specific configurations",
                         "properties": {
                             "namespacePosition": {
                                 "type": "string",

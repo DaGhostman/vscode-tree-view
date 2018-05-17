@@ -11,7 +11,7 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
     }
 
     public refresh(document: vscode.TextDocument): void {
-        this.config = vscode.workspace.getConfiguration("treeview.csharp");
+        this.config = vscode.workspace.getConfiguration("treeview.cfamily");
 
         vscode.commands.executeCommand<vscode.SymbolInformation[]>(
                 "vscode.executeDocumentSymbolProvider",
@@ -149,7 +149,7 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
     }
 
     public getDocumentName(entityName: string, includeBody: boolean): Thenable<string> {
-        return Promise.resolve(includeBody ? `${entityName}.cs` : `I${entityName}.cs`);
+        return Promise.reject("C/C++/C# Generation is currently not supported :/ ");
     }
 
     private handleVar(def: string, symbol: vscode.SymbolInformation) {

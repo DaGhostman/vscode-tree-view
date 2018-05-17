@@ -318,8 +318,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                                 });
                             });
                     });
+                }, (err) => {
+                    vscode.window.showWarningMessage(err);
                 });
-
             });
         });
     }
