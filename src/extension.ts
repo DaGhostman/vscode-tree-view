@@ -14,6 +14,7 @@ import {
     RuleProvider,
     TypescriptProvider,
 } from "./providers";
+import { CFamilyProvider } from "./providers/cfamily";
 
 function goToDefinition(range: vscode.Range) {
     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
@@ -64,6 +65,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("less") !== -1) {
         providers.push(new LessProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("csharp") !== -1 || allowedProviders.indexOf("c") !== -1 || allowedProviders.indexOf("cpp") !== -1) {
+        providers.push(new CFamilyProvider());
     }
 
     const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);
