@@ -2,6 +2,20 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.5.0]
+
+### Added
+
+- _*HIGHLY EXPERIMENTAL*_ Support for C, C++, C#. Disabled by default (Require Language Support Extensions)
+- Configuration to prevent updating of view if file contains errors (Depends on VSCode Problems)
+
+### Changes
+
+- [ALL] Fix Ctrl + Mouse Over on symbol updates tree with data from symbol file (#77)
+- [ALL] Functions section expanded by default
+- [ALL] First item in Classes, Interfaces, Traits is always expanded by default (#76)
+- [LESS] Now under own configuration under "treeview.allowedProviders"
+
 ## [2.4.0]
 
 ### Added

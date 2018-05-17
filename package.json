@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "2.4.0",
+    "version": "2.5.0",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
@@ -17,7 +17,7 @@
         "url": "https://github.com/DaGhostman/vscode-tree-view/issues"
     },
     "engines": {
-        "vscode": "^1.18.0"
+        "vscode": "^1.23.0"
     },
     "categories": [
         "Other"
@@ -31,7 +31,10 @@
         "onLanguage:python",
         "onLanguage:java",
         "onLanguage:css",
-        "onLanguage:less"
+        "onLanguage:less",
+        "onLanguage:csharp",
+        "onLanguage:c",
+        "onLanguage:cpp"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -180,6 +183,25 @@
                             "namespacePosition": "suffix"
                         }
                     },
+                    "treeview.cfamily": {
+                        "type": "object",
+                        "description": "Section for C/C++/C# specific configurations",
+                        "properties": {
+                            "namespacePosition": {
+                                "type": "string",
+                                "enum": [
+                                    "suffix",
+                                    "none",
+                                    "fqn"
+                                ],
+                                "default": "suffix",
+                                "description": "Control the position where the current namespace is shown"
+                            }
+                        },
+                        "default": {
+                            "namespacePosition": "suffix"
+                        }
+                    },
                     "treeview.js": {
                         "type": "object",
                         "description": "Section for JS/TS specific configuration",
@@ -197,6 +219,11 @@
                         "default": {
                             "defaultNamespaceType": "internal"
                         }
+                    },
+                    "treeview.updateOnError": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Should the view update on save even if there are errors in the current file"
                     }
                 }
             }
@@ -212,19 +239,19 @@
     },
     "devDependencies": {
         "@types/mocha": "^2.2.42",
-        "@types/node": "^7.0.43",
+        "@types/node": "^7.0.64",
         "rimraf": "^2.6.2",
-        "tslint": "^5.8.0",
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6"
+        "tslint": "^5.10.0",
+        "typescript": "^2.8.3",
+        "vscode": "^1.1.17"
     },
     "dependencies": {
-        "css": "^2.2.1",
+        "css": "^2.2.3",
         "filbert": "^0.1.20",
         "java-parser": "0.0.2",
-        "jsonc-parser": "^1.0.0",
-        "less": "^3.0.1",
+        "jsonc-parser": "^1.0.3",
+        "less": "^3.0.4",
         "php-parser": "^2.1.0",
-        "typescript-parser": "^2.2.0"
+        "typescript-parser": "^2.4.0"
     }
 }
