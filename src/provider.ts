@@ -346,7 +346,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.imports !== undefined) {
                 items.push(new SectionItem(
                     `Imports`,
-                    vscode.TreeItemCollapsibleState.Expanded,
+                    vscode.TreeItemCollapsibleState.Collapsed,
                     "import-section",
                 ));
             }
@@ -354,7 +354,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.variables !== undefined) {
                 items.push(new SectionItem(
                     `Variables`,
-                    vscode.TreeItemCollapsibleState.Expanded,
+                    vscode.TreeItemCollapsibleState.Collapsed,
                     "variables-section",
                 ));
             }
@@ -388,8 +388,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (tree.traits !== undefined) {
                 for (const cls of tree.traits) {
                     const collapsed: number =
-                        (tree.classes === undefined || tree.classes.length === 0) &&
-                            tree.traits.indexOf(cls) === 0 ?
+                        tree.traits.indexOf(cls) === 0 ?
                             vscode.TreeItemCollapsibleState.Expanded :
                             vscode.TreeItemCollapsibleState.Collapsed;
 
