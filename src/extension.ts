@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
         providers.push(new CssProvider());
     }
 
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("css") !== -1) {
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("less") !== -1) {
         providers.push(new LessProvider());
     }
 
