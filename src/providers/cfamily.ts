@@ -57,11 +57,11 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
 
                             this.tree.classes = this.tree.classes || [];
                             this.tree.classes.push({
+                                abstract: (classKeys.indexOf("abstract") !== -1),
                                 name: symbol.name,
                                 position: symbol.location.range,
-                                visibility: "public",
-                                abstract: (classKeys.indexOf("abstract") !== -1),
                                 readonly: (classKeys.indexOf("final") !== -1),
+                                visibility: "public",
                             } as token.IClassToken);
                             break;
                         case vscode.SymbolKind.Interface:
@@ -101,7 +101,7 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
                         case vscode.SymbolKind.Constructor:
                         case vscode.SymbolKind.Method:
                             const methodParent = this.tree.classes.find((c) => c.name === symbol.containerName) ||
-                                this.tree.interfaces.find((i) => i.name === symbol.containerName)
+                                this.tree.interfaces.find((i) => i.name === symbol.containerName);
 
                             if (methodParent) {
                                 methodParent.methods = methodParent.methods || [];
@@ -150,23 +150,22 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
         return Promise.resolve(includeBody ? `${entityName}.cs` : `I${entityName}.cs`);
     }
 
-    private handleVar(def: string, symbol: vscode.SymbolInformation)
-    {
+    private handleVar(def: string, symbol: vscode.SymbolInformation) {
         const propKeys = def.split(" ").filter((i) => i.trim().length > 0).slice(0, 20);
 
         return {
             name: symbol.name,
             position: symbol.location.range,
-            value: (propKeys.indexOf("=") !== -1) ? propKeys.slice(propKeys.indexOf("=") + 1)
-                .join(" ")
-                .trim() : "",
             readonly: (propKeys.indexOf("readonly") !== -1),
             static: (propKeys.indexOf("static") !== -1),
             type: propKeys.indexOf("=") !== -1 ?
                 propKeys[propKeys.indexOf(symbol.name) - 1] :
                 propKeys[propKeys.indexOf(propKeys.find((x) => x.substr(0, symbol.name.length) === symbol.name)) - 1],
+            value: (propKeys.indexOf("=") !== -1) ? propKeys.slice(propKeys.indexOf("=") + 1)
+                .join(" ")
+                .trim() : "",
             visibility: propKeys.find((v) => {
-                return v === "public" || v === "protected" || v === "private"
+                return v === "public" || v === "protected" || v === "private";
             }) || "public",
         } as token.IPropertyToken;
     }
@@ -179,25 +178,18 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
                 x = x.indexOf("(") !== -1 ?
                     x.substr(0, x.indexOf("(")) : x;
 
-                const dest = symbol.name.indexOf("(");
-                return x === symbol.name.substr(0, dest !== -1 ? dest : undefined);
-            }))-1];
+                const d = symbol.name.indexOf("(");
+                return x === symbol.name.substr(0, d !== -1 ? d : undefined);
+            })) - 1];
 
         const dest = symbol.name.indexOf("(");
 
         return {
-            name: symbol.name.slice(0, dest !== -1 ? dest : undefined),
-            position: symbol.location.range,
-            value: (propKeys.indexOf("=") !== -1) ? propKeys.slice(propKeys.indexOf("=") + 1)
-                .join(" ")
-                .trim() : "",
             abstract: (propKeys.indexOf("abstract") !== -1),
-            readonly: (propKeys.indexOf("final") !== -1),
-            static: (propKeys.indexOf("static") !== -1),
-            type,
-            arguments: def.slice(def.indexOf("(")+1, def.indexOf(")") !== -1 ? def.indexOf(")") : def.length).split(',')
+            arguments: def.slice(def.indexOf("(") + 1, def.indexOf(")") !== -1 ? def.indexOf(")") : def.length)
+                .split(",")
                 .filter((x) => x.trim().length > 0).map((a) => {
-                    const split = a.trim().split('=');
+                    const split = a.trim().split("=");
                     const p = split[0].trim().split(" ").filter((i) => i.trim().length > 0);
                     return {
                         name: p[1],
@@ -205,9 +197,17 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
                         value: split[1] || "",
                     } as token.IVariableToken;
                 }) || [],
+            name: symbol.name.slice(0, dest !== -1 ? dest : undefined),
+            position: symbol.location.range,
+            readonly: (propKeys.indexOf("final") !== -1),
+            static: (propKeys.indexOf("static") !== -1),
+            type,
+            value: (propKeys.indexOf("=") !== -1) ? propKeys.slice(propKeys.indexOf("=") + 1)
+                .join(" ")
+                .trim() : "",
             visibility: propKeys.find((v) => {
-                return v === "public" || v === "protected" || v === "private"
+                return v === "public" || v === "protected" || v === "private";
             }) || "public",
-        } as token.IMethodToken
+        } as token.IMethodToken;
     }
 }
