@@ -17,7 +17,9 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
                 "vscode.executeDocumentSymbolProvider",
                 document.uri,
             ).then((symbols: vscode.SymbolInformation[]) => {
-                this.tree = {};
+                this.tree = {
+                    strict: true,
+                };
                 for (const symbol of symbols) {
                     const namespace: string = this.tree.namespace;
                     const startLine = symbol.location.range.start.line;
