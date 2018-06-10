@@ -132,7 +132,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
         vscode.window.onDidChangeActiveTextEditor((ev?: vscode.TextEditor) => {
-            if ((ev && ev.document) || vscode.window.activeTextEditor) {
+            if ((ev && ev.document) || (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document)) {
                 this.refresh((ev || vscode.window.activeTextEditor).document);
             }
         });
@@ -144,7 +144,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             this.refresh(document);
         });
         vscode.window.onDidChangeVisibleTextEditors((ev?: vscode.TextEditor[]) => {
-            this.refresh(ev[0].document);
+            if (ev.length > 0 && ev[0].document) {
+                this.refresh(ev[0].document);
+            }
         });
     }
 
@@ -233,7 +235,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
         } catch (ex) {
             vscode.window.showErrorMessage(ex);
-            return Promise.resolve([]);
+            return Promise.resolve([] as TreeItem[]);
         }
     }
 
