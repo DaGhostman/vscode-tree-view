@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "2.5.0",
+    "version": "2.5.1",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
@@ -131,7 +131,9 @@
                             "json",
                             "openhab",
                             "php",
-                            "python"
+                            "python",
+                            "css",
+                            "less"
                         ],
                         "description": "List of provider identifiers that are allowed for the workspace or in general"
                     },
