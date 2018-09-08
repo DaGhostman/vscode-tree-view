@@ -117,7 +117,7 @@ export class PythonProvider implements IBaseProvider<string> {
 
                 case "FunctionDeclaration":
                     const f = this.handleFunction(node);
-                    if (f && this.tree.classes !== undefined) {
+                    if (f) {
                         if (this.tree.functions === undefined) {
                             this.tree.functions = [];
                         }
@@ -147,7 +147,7 @@ export class PythonProvider implements IBaseProvider<string> {
             for (let i = 0; i < py.body[0].loc.start.line; i++) {
                 const line = vscode.window.activeTextEditor.document.lineAt(i).text;
 
-                if (line.indexOf("import ") !== -1) {
+                if (line.indexOf("import ") === 0) {
                     if (this.tree.imports === undefined) {
                         this.tree.imports = [];
                     }
