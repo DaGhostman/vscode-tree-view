@@ -505,8 +505,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.constants !== undefined) {
             for (const constant of cls.constants.sort(Provider.sort)) {
+                const valueType = constant.type !== undefined ? `: ${constant.type}` : "";
                 const t = new ConstantItem(
-                    `${constant.name} = ${constant.value}`,
+                    `${constant.name}${valueType} = ${constant.value}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     constant.position,
@@ -561,8 +562,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.constants !== undefined) {
             for (const constant of cls.constants.sort(Provider.sort)) {
+                const valueType = constant.type !== undefined ? `: ${constant.type}` : "";
                 const t = new ConstantItem(
-                    `${constant.name} = ${constant.value}`,
+                    `${constant.name}${valueType} = ${constant.value}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     constant.position,
@@ -618,8 +620,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.constants !== undefined) {
             for (const constant of cls.constants.sort(Provider.sort)) {
+                const valueType = constant.type !== undefined ? `: ${constant.type}` : "";
                 const t = new ConstantItem(
-                    `${constant.name} = ${constant.value}`,
+                    `${constant.name}${valueType} = ${constant.value}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
                     constant.position,
