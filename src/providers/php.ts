@@ -426,6 +426,12 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
             case "new":
                 val = `new ${value.what.name}`;
                 break;
+            case "bin":
+                const left = this.normalizeType(value.left);
+                const right = this.normalizeType(value.right);
+
+                val = `${left} ${value.type} ${right}`;
+                break;
             default:
                 val = value.value;
                 break;
