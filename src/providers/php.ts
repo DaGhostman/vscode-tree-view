@@ -461,8 +461,40 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
             case "boolean":
                 val = "boolean";
                 break;
+            case "bin":
+                switch (value.type) {
+                    case ".":
+                        val = "string";
+                        break;
+                    case "**":
+                    case "|":
+                    case ">>":
+                    case "<<":
+                    case "&":
+                    case "^":
+                    case "+":
+                    case "-":
+                    case "/":
+                    case "*":
+                        val = "int";
+                        break;
+                    default:
+                        val = "mixed";
+                        break;
+                }
+                break;
             case "new":
                 val = value.what.name;
+                break;
+            case "magic":
+                switch (value.value) {
+                    case "__LINE__":
+                        val = "int";
+                        break;
+                    default:
+                        val = "string";
+                        break;
+                }
                 break;
         }
 
@@ -501,6 +533,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     new vscode.Position(constant.loc.start.line - 1, constant.loc.start.column),
                     new vscode.Position(constant.loc.end.line - 1, constant.loc.start.column + constant.name.length),
                 ),
+                type: this.getUntypedType(constant.value),
                 value: this.normalizeType(constant.value),
                 visibility: constant.visibility === undefined ? "public" : constant.visibility,
             } as token.IConstantToken);
