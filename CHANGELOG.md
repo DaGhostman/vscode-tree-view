@@ -2,6 +2,11 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.6.0]
+
+- [ALL] Add initial handling for constant types
+- [PHP] Fix expression in value assignment
+
 ## [2.5.0]
 
 ### Added
