@@ -241,19 +241,19 @@
     },
     "devDependencies": {
         "@types/mocha": "^2.2.42",
-        "@types/node": "^7.0.64",
+        "@types/node": "^7.10.0",
         "rimraf": "^2.6.2",
-        "tslint": "^5.10.0",
-        "typescript": "^2.8.3",
-        "vscode": "^1.1.17"
+        "tslint": "^5.11.0",
+        "typescript": "^2.9.2",
+        "vscode": "^1.1.21"
     },
     "dependencies": {
-        "css": "^2.2.3",
+        "css": "^2.2.4",
         "filbert": "^0.1.20",
         "java-parser": "0.0.2",
         "jsonc-parser": "^1.0.3",
-        "less": "^3.0.4",
+        "less": "^3.8.1",
         "php-parser": "^2.1.0",
-        "typescript-parser": "^2.4.0"
+        "typescript-parser": "^2.6.1"
     }
 }
