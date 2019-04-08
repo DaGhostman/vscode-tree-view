@@ -17,7 +17,7 @@
         "url": "https://github.com/DaGhostman/vscode-tree-view/issues"
     },
     "engines": {
-        "vscode": "^1.23.0"
+        "vscode": "^1.30.0"
     },
     "categories": [
         "Other"
@@ -46,17 +46,25 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "symbol-treeview",
+                    "id": "sidebar-treeview",
                     "title": "File Symbol Explorer",
                     "icon": "assets/code-28px.svg"
                 }
             ]
         },
         "views": {
-            "symbol-treeview": [
+            "sidebar-treeview": [
                 {
-                    "id": "tree-outline",
-                    "name": "Symbols"
+                    "id": "sidebar-outline",
+                    "name": "Symbols",
+                    "when": "config.treeview.location == sidebar"
+                }
+            ],
+            "explorer": [
+                {
+                    "id": "explorer-outline",
+                    "name": "Symbols",
+                    "when": "config.treeview.location == explorer"
                 }
             ]
         },
@@ -146,6 +154,15 @@
                         "type": "string",
                         "description": "Character with which to prefix `abstract` members",
                         "default": "~"
+                    },
+                    "treeview.location": {
+                        "type": "string",
+                        "enum": [
+                            "explorer",
+                            "sidebar"
+                        ],
+                        "default": "sidebar",
+                        "description": "Where to display symbols explorer"
                     },
                     "treeview.java": {
                         "type": "object",
@@ -244,8 +261,8 @@
         "@types/node": "^7.10.0",
         "rimraf": "^2.6.2",
         "tslint": "^5.11.0",
-        "typescript": "^2.9.2",
-        "vscode": "^1.1.21"
+        "typescript": "^3.0",
+        "vscode": "^1.1.30"
     },
     "dependencies": {
         "css": "^2.2.4",
