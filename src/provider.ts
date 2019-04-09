@@ -183,7 +183,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 const provider = this.getProvider(document);
                 provider.refresh(document);
 
-                return (this.snapshot = provider.getTokenTree());
+                return provider.getTokenTree();
             }
         }
 
