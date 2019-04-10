@@ -27,7 +27,7 @@ function goToDefinition(editor: vscode.TextEditor, range: vscode.Range) {
 
 export function activate(context: vscode.ExtensionContext) {
     const providers: Array<IBaseProvider<string | vscode.TreeItem>> = [];
-    const config = vscode.workspace.getConfiguration("treeview");
+    const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("treeview");
 
     const allowedProviders: string[] = config.has("allowedProviders") ?
         config.get("allowedProviders") : [];
@@ -75,16 +75,15 @@ export function activate(context: vscode.ExtensionContext) {
         provider.refresh(vscode.window.activeTextEditor.document);
     }
 
-    vscode.window.registerTreeDataProvider("tree-outline", provider);
     vscode.commands.registerCommand("extension.treeview.refresh", () => {
         if (vscode.window.activeTextEditor.document) {
             provider.refresh(vscode.window.activeTextEditor.document);
         }
     });
 
-    vscode.commands.registerCommand("extension.treeview.goto", (editor: vscode.TextEditor, range: vscode.Range) => {
-        goToDefinition(editor, range);
-    });
+    vscode.commands.registerCommand("extension.treeview.goto", goToDefinition);
+    vscode.window.registerTreeDataProvider(`sidebar-outline`, provider);
+    vscode.window.registerTreeDataProvider(`explorer-outline`, provider);
     vscode.commands.registerCommand("extension.treeview.extractInterface", (a?: vscode.TreeItem) => {
         const conf = vscode.workspace.getConfiguration("treeview");
         provider.getTokenTree().then((tokenTree) => {
