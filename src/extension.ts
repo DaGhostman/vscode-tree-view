@@ -15,6 +15,7 @@ import {
     TypescriptProvider,
 } from "./providers";
 import { CFamilyProvider } from "./providers/cfamily";
+import { RapidProvider } from "./providers/rapid";
 
 function goToDefinition(range: vscode.Range) {
     const editor: vscode.TextEditor = vscode.window.activeTextEditor;
@@ -69,6 +70,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (allowedProviders.length === 0 || allowedProviders.indexOf("cfamily") !== -1) {
         providers.push(new CFamilyProvider());
+    }
+
+    if (allowedProviders.length === 0 || allowedProviders.indexOf("rapid") !== -1) {
+        providers.push(new RapidProvider());
     }
 
     const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);

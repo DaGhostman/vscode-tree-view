@@ -34,7 +34,8 @@
         "onLanguage:less",
         "onLanguage:csharp",
         "onLanguage:c",
-        "onLanguage:cpp"
+        "onLanguage:cpp",
+        "onLanguage:rapid"
     ],
     "main": "./out/extension",
     "contributes": {
