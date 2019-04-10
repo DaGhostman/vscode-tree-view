@@ -456,7 +456,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (element.contextValue === "functions-section") {
                 for (const func of tree.functions.sort(Provider.sort)) {
                     const args = [];
-                    for (const arg of func.arguments) {
+                    for (const arg of (func.arguments || [])) {
                         args.push(
                             `${arg.type !== undefined ? `${arg.type} ` : ""}` +
                             `${arg.name}${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
@@ -535,7 +535,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (cls.methods !== undefined) {
             for (const method of cls.methods.sort(Provider.sort)) {
                 const args = [];
-                for (const arg of method.arguments) {
+                for (const arg of (method.arguments || [])) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
                         `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
@@ -664,7 +664,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (cls.methods !== undefined) {
             for (const method of cls.methods.sort(Provider.sort)) {
                 const args = [];
-                for (const arg of method.arguments) {
+                for (const arg of (method.arguments || [])) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
                         `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
