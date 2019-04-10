@@ -16,15 +16,13 @@ import {
 } from "./providers";
 import { CFamilyProvider } from "./providers/cfamily";
 
-function goToDefinition(range: vscode.Range) {
-    const editor: vscode.TextEditor = vscode.window.activeTextEditor;
-
-    // Center the method in the document
-    editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
-    // Select the method name
-    editor.selection = new vscode.Selection(range.start, range.end);
+function goToDefinition(editor: vscode.TextEditor, range: vscode.Range) {
     // Swap the focus to the editor
-    vscode.window.showTextDocument(editor.document, editor.viewColumn, false);
+    vscode.window.showTextDocument(editor.document, editor.viewColumn, false)
+        .then((active: vscode.TextEditor) => {
+            active.revealRange(range, vscode.TextEditorRevealType.InCenter);
+            active.selection = new vscode.Selection(range.start, range.end);
+        });
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -77,9 +75,15 @@ export function activate(context: vscode.ExtensionContext) {
         provider.refresh(vscode.window.activeTextEditor.document);
     }
 
+    vscode.commands.registerCommand("extension.treeview.refresh", () => {
+        if (vscode.window.activeTextEditor.document) {
+            provider.refresh(vscode.window.activeTextEditor.document);
+        }
+    });
+
+    vscode.commands.registerCommand("extension.treeview.goto", goToDefinition);
     vscode.window.registerTreeDataProvider(`sidebar-outline`, provider);
     vscode.window.registerTreeDataProvider(`explorer-outline`, provider);
-    vscode.commands.registerCommand("extension.treeview.goto", (range: vscode.Range) => goToDefinition(range));
     vscode.commands.registerCommand("extension.treeview.extractInterface", (a?: vscode.TreeItem) => {
         const conf = vscode.workspace.getConfiguration("treeview");
         provider.getTokenTree().then((tokenTree) => {
@@ -125,6 +129,17 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             });
         });
+    });
+
+    vscode.commands.registerCommand("extension.treeview.pin", () => {
+        vscode.commands.executeCommand("setContext", "treeview-pinned", true);
+        provider.pin(true);
+    });
+
+    vscode.commands.registerCommand("extension.treeview.unpin", () => {
+        vscode.commands.executeCommand("setContext", "treeview-pinned", false);
+        provider.pin(false);
+        vscode.commands.executeCommand("extension.treeview.refresh");
     });
 
     vscode.commands.registerCommand("extension.treeview.duplicateEntity", (a?: vscode.TreeItem) => {

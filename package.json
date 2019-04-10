@@ -69,6 +69,22 @@
             ]
         },
         "menus": {
+            "view/title": [
+                {
+                    "command": "extension.treeview.refresh",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "extension.treeview.pin",
+                    "group": "navigation@2",
+                    "when": "!treeview-pinned"
+                },
+                {
+                    "command": "extension.treeview.unpin",
+                    "group": "navigation@2",
+                    "when": "treeview-pinned"
+                }
+            ],
             "view/item/context": [
                 {
                     "command": "extension.treeview.extractInterface",
@@ -105,6 +121,33 @@
                 "icon": {
                     "dark": "assets/ic_extract_dark_24px.svg",
                     "light": "assets/ic_extract_light_24px.svg"
+                }
+            },
+            {
+                "command": "extension.treeview.pin",
+                "title": "Pin Current file",
+                "category": "TreeView",
+                "icon": {
+                    "dark": "assets/ic_lock_dark_24px.svg",
+                    "light": "assets/ic_lock_light_24px.svg"
+                }
+            },
+            {
+                "command": "extension.treeview.unpin",
+                "title": "Unpin Current file",
+                "category": "TreeView",
+                "icon": {
+                    "dark": "assets/ic_unlock_dark_24px.svg",
+                    "light": "assets/ic_unlock_light_24px.svg"
+                }
+            },
+            {
+                "command": "extension.treeview.refresh",
+                "title": "Refresh",
+                "category": "TreeView",
+                "icon": {
+                    "dark": "assets/ic_refresh_dark_24px.svg",
+                    "light": "assets/ic_refresh_light_24px.svg"
                 }
             },
             {
