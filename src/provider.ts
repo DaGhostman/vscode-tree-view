@@ -25,6 +25,7 @@ import {
 export class Provider implements vscode.TreeDataProvider<TreeItem> {
     public static readonly config: vscode.WorkspaceConfiguration;
 
+
     public static addItemCommand(item: vscode.TreeItem, commandName: string, args?: any[]): vscode.TreeItem {
         item.command = {
             arguments: args,
@@ -129,6 +130,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             .get("updateOnError") as boolean;
     }
 
+    private pinnedEditor: vscode.TextEditor;
+    private pinned: boolean = false;
+
     public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
         vscode.window.onDidChangeActiveTextEditor((ev?: vscode.TextEditor) => {
@@ -150,6 +154,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         });
     }
 
+    public  pin(state: boolean) {
+        delete this.pinnedEditor;
+        if (state) {
+            this.pinnedEditor = vscode.window.activeTextEditor;
+        }
+        this.pinned = state;
+    }
+
     public hasSupport(languageId: string) {
         for (const provider of this.langProviders) {
             if (provider.hasSupport(languageId)) {
@@ -161,9 +173,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     }
 
     public getTokenTree(): Thenable<ITokenTree> {
-        if (vscode.window.activeTextEditor.document !== undefined) {
-            const document: vscode.TextDocument = vscode.window.activeTextEditor.document;
+        let document = vscode.window.activeTextEditor.document;
+        if (this.pinnedEditor) {
+            document = this.pinnedEditor.document;
+        }
 
+        if (document !== undefined) {
             if (this.hasSupport(document.languageId)) {
                 const provider = this.getProvider(document);
                 provider.refresh(document);
@@ -176,7 +191,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     }
 
     public refresh(document: vscode.TextDocument) {
-        if (!document.isClosed && !document.isDirty) {
+        if (!this.pinned && !document.isClosed && !document.isDirty) {
             try {
                 this.getProvider(document).refresh(document);
             } catch (ex) {
@@ -187,11 +202,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         this.onDidChangeTreeDataEmitter.fire(void 0);
     }
 
-    public getTreeItem(element: BaseItem): TreeItem | Thenable<TreeItem> {
+    public async getTreeItem(element: BaseItem): Promise<TreeItem> {
         try {
             if (element !== undefined && vscode.window.activeTextEditor.document !== undefined) {
                 if (element.position !== undefined) {
-                    element = Provider.addItemCommand(element, "extension.treeview.goto", [element.position]);
+                    element = Provider.addItemCommand(element, "extension.treeview.goto", [
+                        (this.pinnedEditor || vscode.window.activeTextEditor),
+                        element.position,
+                    ]);
                 }
 
                 if (element.contextValue !== undefined && element.contextValue.indexOf("section") === -1) {
@@ -212,13 +230,13 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         return Promise.resolve({} as vscode.TreeItem);
     }
 
-    public getChildren(element?: TreeItem): Thenable<TreeItem[]> {
+    public async getChildren(element?: TreeItem): Promise<TreeItem[]> {
         try {
             if (vscode.window.activeTextEditor.document !== undefined) {
                 const provider: IBaseProvider<any> =
                     this.getProvider(vscode.window.activeTextEditor.document);
 
-                return provider.getTokenTree().then((tree) => {
+                return this.getTokenTree().then((tree) => {
                     if (Object.keys(tree).length !== 0) {
                         const items = this.getBaseChildren(tree, element);
                         const providerItems = provider.getChildren(element) as Thenable<vscode.TreeItem[]>;
