@@ -137,12 +137,12 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand("extension.treeview.pin", () => {
-        vscode.commands.executeCommand("setContext", "treeview-pinned", true);
+        vscode.commands.executeCommand("setContext", "treeview.pinned", true);
         provider.pin(true);
     });
 
     vscode.commands.registerCommand("extension.treeview.unpin", () => {
-        vscode.commands.executeCommand("setContext", "treeview-pinned", false);
+        vscode.commands.executeCommand("setContext", "treeview.pinned", false);
         provider.pin(false);
         vscode.commands.executeCommand("extension.treeview.refresh");
     });

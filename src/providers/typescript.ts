@@ -247,6 +247,10 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         return edits;
     }
 
+    public isDynamic(): boolean {
+        return true;
+    }
+
     private walk(dec: ts.Declaration, tree: token.ITokenTree, namespace?: string) {
         if (dec instanceof ts.ClassDeclaration) {
             if (tree.classes === undefined) {

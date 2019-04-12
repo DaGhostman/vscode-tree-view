@@ -205,6 +205,10 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
         return edits;
     }
 
+    public isDynamic(): boolean {
+        return true;
+    }
+
     private walk(ast: any, parentNode?: token.ITokenTree): token.ITokenTree {
         let tree: token.ITokenTree = (parentNode === undefined ? {} as token.ITokenTree : parentNode);
 

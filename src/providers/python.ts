@@ -323,6 +323,10 @@ export class PythonProvider implements IBaseProvider<string> {
         return edits;
     }
 
+    public isDynamic(): boolean {
+        return true;
+    }
+
     private handleFunction(m, className?: string) {
         let functionName: string;
         let args: any[];

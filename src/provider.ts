@@ -25,7 +25,6 @@ import {
 export class Provider implements vscode.TreeDataProvider<TreeItem> {
     public static readonly config: vscode.WorkspaceConfiguration;
 
-
     public static addItemCommand(item: vscode.TreeItem, commandName: string, args?: any[]): vscode.TreeItem {
         item.command = {
             arguments: args,
@@ -154,7 +153,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         });
     }
 
-    public  pin(state: boolean) {
+    public pin(state: boolean) {
         delete this.pinnedEditor;
         if (state) {
             this.pinnedEditor = vscode.window.activeTextEditor;
@@ -194,6 +193,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (!this.pinned && !document.isClosed && !document.isDirty) {
             try {
                 this.getProvider(document).refresh(document);
+                vscode.commands.executeCommand(
+                    "setContext",
+                    "treeview.provider.dynamic",
+                    this.getProvider(document).isDynamic()
+                );
+
             } catch (ex) {
                 // console.log(ex);
             }

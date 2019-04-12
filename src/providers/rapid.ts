@@ -26,7 +26,7 @@ export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
 
         this.tree = {};
         const lines: string[] = document.getText()
-            .split(vscode.workspace.getConfiguration("files").get("eol", "\n"));
+            .split(vscode.workspace.getConfiguration("files", document.uri).get("eol", "\n"));
 
         lines.forEach((line: string, index: number) => {
             for (const row of this.PATTERNS) {
@@ -127,5 +127,9 @@ export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
 
     public getDocumentName(entityName: string, includeBody: boolean): Thenable<string> {
         return Promise.resolve("todo");
+    }
+
+    public isDynamic(): boolean {
+        return false;
     }
 }

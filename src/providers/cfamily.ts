@@ -152,6 +152,10 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
         return Promise.reject("C/C++/C# Generation is currently not supported :/ ");
     }
 
+    public isDynamic(): boolean {
+        return false;
+    }
+
     private handleVar(def: string, symbol: vscode.SymbolInformation) {
         const propKeys = def.split(" ").filter((i) => i.trim().length > 0).slice(0, 20);
 

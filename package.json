@@ -70,6 +70,20 @@
             ]
         },
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "extension.treeview.duplicateEntity",
+                    "when": "treeview.provider.dynamic"
+                },
+                {
+                    "command": "extension.treeview.extractInterface",
+                    "when": "treeview.provider.dynamic"
+                },
+                {
+                    "command": "extension.treeview.implementInterface",
+                    "when": "treeview.provider.dynamic"
+                }
+            ],
             "view/title": [
                 {
                     "command": "extension.treeview.refresh",
@@ -78,38 +92,38 @@
                 {
                     "command": "extension.treeview.pin",
                     "group": "navigation@2",
-                    "when": "!treeview-pinned"
+                    "when": "!treeview.pinned"
                 },
                 {
                     "command": "extension.treeview.unpin",
                     "group": "navigation@2",
-                    "when": "treeview-pinned"
+                    "when": "treeview.pinned"
                 }
             ],
             "view/item/context": [
                 {
                     "command": "extension.treeview.extractInterface",
-                    "when": "viewItem == class",
+                    "when": "viewItem == class && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.extractInterface",
-                    "when": "viewItem == trait",
+                    "when": "viewItem == trait && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.duplicateEntity",
-                    "when": "viewItem == class",
+                    "when": "viewItem == class && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.duplicateEntity",
-                    "when": "viewItem == trait",
+                    "when": "viewItem == trait && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.implementInterface",
-                    "when": "viewItem == interface",
+                    "when": "viewItem == interface && treeview.provider.dynamic",
                     "group": "inline"
                 }
             ]
