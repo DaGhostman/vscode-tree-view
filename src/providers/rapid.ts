@@ -5,7 +5,8 @@ import { IBaseProvider } from "./base";
 export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
     private readonly PATTERNS: Map<string, RegExp> = new Map([
         ["method", /^((?:LOCAL)?\s?PROC)\s?(?:(?:(\w+)\s)?([^\(]+)|[^\(]+)\((.*)?\)$/],
-        ["function", /^(TRAP|(?:LOCAL)\s+?FUNC|RECORD)\s?(?:(?:(\w+)\s)?([^\(]+)|[^\(]+)\((.*)?\)$/],
+        ["function", /^(TRAP|(?:LOCAL)?\s+?FUNC)\s?(?:(?:(\w+)\s)?([^\(]+)|[^\(]+)\((.*)?\)$/],
+        ["property", /^(RECORD)\s?(\w+)$/],
         ["class", /^(MODULE)\s+?(.*)$/],
     ]);
     private tree: token.ITokenTree = {};
@@ -38,6 +39,11 @@ export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
                 }
 
                 let args = [];
+                if (!this.tree.classes) {
+                    this.tree.classes = [];
+                }
+
+                const module = this.tree.classes.length - 1;
                 switch (section) {
                     case "function":
                         if (!this.tree.functions) {
@@ -74,13 +80,24 @@ export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
                             name: matches[2],
                         } as token.IClassToken);
                         break;
-                    case "method":
-                        if (!this.tree.classes[0].methods) {
-                            this.tree.classes[0].methods = [];
+                    case "property":
+                        if (!this.tree.classes[module].properties) {
+                            this.tree.classes[module].properties = [];
                         }
-                        let visibility = "public";
-                        if (matches[0].search("LOCAL") !== -1) {
-                            visibility = "private";
+
+                        this.tree.classes[module].properties.push({
+                            name:  matches[2],
+                            position: new vscode.Range(
+                                new vscode.Position(lines.indexOf(line), line.indexOf(matches[2])),
+                                new vscode.Position(lines.indexOf(line), line.indexOf(matches[2]) + matches[2].length),
+                            ),
+                            value: "",
+                            visibility: matches[0].search("LOCAL") === -1 ? "public" : "private",
+                        } as token.IPropertyToken);
+                        break;
+                    case "method":
+                        if (!this.tree.classes[module].methods) {
+                            this.tree.classes[module].methods = [];
                         }
 
                         if (matches[4]) {
@@ -94,7 +111,7 @@ export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
                             });
                         }
 
-                        this.tree.classes[0].methods.push({
+                        this.tree.classes[module].methods.push({
                             arguments: args,
                             name:  matches[3],
                             position: new vscode.Range(
@@ -103,7 +120,7 @@ export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
                             ),
                             type: (matches[2] || "void"),
                             value: "",
-                            visibility,
+                            visibility: matches[0].search("LOCAL") === -1 ? "public" : "private",
                         } as token.IMethodToken);
                         break;
                 }
