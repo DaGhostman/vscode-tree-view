@@ -196,7 +196,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                 vscode.commands.executeCommand(
                     "setContext",
                     "treeview.provider.dynamic",
-                    this.getProvider(document).isDynamic()
+                    this.getProvider(document).isDynamic(),
                 );
 
             } catch (ex) {

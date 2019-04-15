@@ -1,9 +1,9 @@
 import {
     IClassToken,
     IFunctionToken,
+    IImportToken,
     IInterfaceToken,
     IMethodToken,
-    ImportToken,
     ITraitToken,
     ITypeToken,
     IVariableToken,
@@ -12,7 +12,7 @@ import {
 export interface ITokenTree {
     strict?: boolean;
     namespace?: string;
-    imports?: ImportToken[];
+    imports?: IImportToken[];
     interfaces?: IInterfaceToken[];
     traits?: ITraitToken[];
     types?: ITypeToken[];

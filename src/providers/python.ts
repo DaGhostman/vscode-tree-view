@@ -188,7 +188,7 @@ export class PythonProvider implements IBaseProvider<string> {
                             new vscode.Position(i, 0),
                             new vscode.Position(i, line.length),
                         ),
-                    } as token.ImportToken);
+                    } as token.IImportToken);
                 }
             }
         }

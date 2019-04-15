@@ -310,7 +310,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                     break;
                 case "usegroup":
                     if (tree.imports === undefined) {
-                        tree.imports = [] as token.ImportToken[];
+                        tree.imports = [] as token.IImportToken[];
                     }
                     const imp = {
                         alias: node.items[0].alias,
@@ -319,7 +319,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
                             new vscode.Position(node.loc.start.line - 1, node.loc.start.column),
                             new vscode.Position(node.loc.end.line - 1, node.loc.end.column),
                         ),
-                    } as token.ImportToken;
+                    } as token.IImportToken;
 
                     tree.imports.push(imp);
                     break;
@@ -419,7 +419,7 @@ export class PhpProvider implements IBaseProvider<token.BaseItem> {
             case "staticlookup":
                 let qn: string = value.what.name;
                 if (this.tree.imports !== undefined) {
-                    const filteredImports: token.ImportToken[] = this.tree.imports.filter((i) => i.name === qn);
+                    const filteredImports: token.IImportToken[] = this.tree.imports.filter((i) => i.name === qn);
                     if (filteredImports.length > 0) {
                         qn = qn.split("\\").pop();
                     }

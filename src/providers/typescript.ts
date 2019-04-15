@@ -61,7 +61,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                             this.offsetToPosition(imp.start),
                             this.offsetToPosition(imp.start),
                         ),
-                    } as token.ImportToken);
+                    } as token.IImportToken);
                 }
 
                 if (imp instanceof ts.NamespaceImport) {
@@ -72,7 +72,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                             this.offsetToPosition(imp.start),
                             this.offsetToPosition(imp.start),
                         ),
-                    } as token.ImportToken);
+                    } as token.IImportToken);
                 }
             }
 
