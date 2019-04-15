@@ -542,8 +542,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -599,8 +600,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -657,9 +659,10 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
                     (property.readonly ? this.roChar : "") +
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
