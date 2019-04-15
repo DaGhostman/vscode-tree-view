@@ -365,9 +365,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     private getBaseChildren(tree: ITokenTree, element?: TreeItem): TreeItem[] {
         let items: TreeItem[] = [];
         if (element === undefined) {
-            items.push(new vscode.TreeItem(
-                `Strict: ${tree.strict !== undefined && tree.strict ? "Yes" : "No"}`,
-            ));
+            if (tree.strict) {
+                items.push(new vscode.TreeItem(
+                    `Strict: ${tree.strict !== undefined && tree.strict ? "Yes" : "No"}`,
+                ));
+            }
 
             if (tree.imports !== undefined) {
                 items.push(new SectionItem(
