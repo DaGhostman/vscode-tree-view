@@ -3,7 +3,6 @@ import {
     IFunctionToken,
     IImportToken,
     IInterfaceToken,
-    IMethodToken,
     ITraitToken,
     ITypeToken,
     IVariableToken,
