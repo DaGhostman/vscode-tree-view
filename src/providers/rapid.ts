@@ -4,8 +4,8 @@ import { IBaseProvider } from "./base";
 
 export class RapidProvider implements IBaseProvider<vscode.TreeItem> {
     private readonly PATTERNS: Map<string, RegExp> = new Map([
-        ["method", /^((?:LOCAL)?\s?PROC)\s?(?:(?:(\w+)\s)?([^\(]+)|[^\(]+)\((.*)?\)$/],
-        ["function", /^(TRAP|(?:LOCAL)?\s+?FUNC)\s?(?:(?:(\w+)\s)?([^\(]+)|[^\(]+)\((.*)?\)$/],
+        ["method", /^((?:LOCAL)?\s?(?:PROC|FUNC))\s?(?:(?:(\w+)\s)?([^\(]+)|[^\(]+)\((.*)?\)$/],
+        ["function", /^(TRAP)\s?(?:(?:(\w+)\s)?([^\(]+)|[^\(]+)$/],
         ["property", /^(RECORD)\s?(\w+)$/],
         ["class", /^(MODULE)\s+?(.*)$/],
     ]);
