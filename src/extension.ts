@@ -28,51 +28,28 @@ function goToDefinition(editor: vscode.TextEditor, range: vscode.Range) {
 
 export function activate(context: vscode.ExtensionContext) {
     const providers: Array<IBaseProvider<string | vscode.TreeItem>> = [];
-    const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("treeview");
 
-    const allowedProviders: string[] = config.has("allowedProviders") ?
-        config.get("allowedProviders") : [];
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("php") !== -1) {
-        providers.push(new PhpProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("javascript") !== -1) {
-        providers.push(new TypescriptProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("json") !== -1) {
-        providers.push(new JsonProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("java") !== -1) {
-        providers.push(new JavaProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("openhab") !== -1) {
-        providers.push(new RuleProvider());
-        providers.push(new ItemsProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("python") !== -1) {
-        providers.push(new PythonProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("css") !== -1) {
-        providers.push(new CssProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("less") !== -1) {
-        providers.push(new LessProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("cfamily") !== -1) {
-        providers.push(new CFamilyProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("rapid") !== -1) {
-        providers.push(new RapidProvider());
-    }
+    // PHP
+    providers.push(new PhpProvider());
+    // TS/JS
+    providers.push(new TypescriptProvider());
+    // json
+    providers.push(new JsonProvider());
+    // Java
+    providers.push(new JavaProvider());
+    // OpenHAB
+    providers.push(new RuleProvider());
+    providers.push(new ItemsProvider());
+    // Python
+    providers.push(new PythonProvider());
+    // CSS
+    providers.push(new CssProvider());
+    // Less
+    providers.push(new LessProvider());
+    // C/CPP/C#
+    providers.push(new CFamilyProvider());
+    // RAPID
+    providers.push(new RapidProvider());
 
     const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);
 
