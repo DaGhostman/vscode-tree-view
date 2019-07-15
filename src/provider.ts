@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { TreeItem } from "vscode";
 import { IBaseProvider } from "./providers/base";
 import {
+    AccessorItem,
     BaseItem,
     ClassItem,
     ConstantItem,
@@ -46,6 +47,16 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
 
         const icons = {
+            accessor_get: {
+                private: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_private_24px.svg"),
+                protected: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_protected_24px.svg"),
+                public: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_public_24px.svg"),
+            },
+            accessor_set: {
+                private: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_private_24px.svg"),
+                protected: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_protected_24px.svg"),
+                public: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_public_24px.svg"),
+            },
             class: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
                 protected: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
@@ -655,6 +666,22 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
                     constant.position,
                     constant.visibility,
                 );
+                items.push(t);
+            }
+        }
+
+        if (cls.accessors !== undefined) {
+            for (const accessor of cls.accessors.sort(Provider.sort)) {
+                const accessorType = accessor.type !== undefined ? `: ${accessor.type}` : "";
+                const t = new AccessorItem(
+                    `${accessor.name}${accessorType}` + `${accessor.value !== "" ? ` = ${accessor.value}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    null,
+                    accessor.position,
+                    `${accessor.visibility}`,
+                );
+                t.contextValue = `accessor_${accessor.direction}`;
+
                 items.push(t);
             }
         }
