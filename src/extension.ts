@@ -65,7 +65,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.commands.registerCommand("extension.treeview.goto", goToDefinition);
     vscode.window.registerTreeDataProvider(`sidebar-outline`, provider);
-    vscode.window.registerTreeDataProvider(`explorer-outline`, provider);
     vscode.commands.registerCommand("extension.treeview.extractInterface", (a?: vscode.TreeItem) => {
         const conf = vscode.workspace.getConfiguration("treeview");
         provider.getTokenTree().then((tokenTree) => {
