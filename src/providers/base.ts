@@ -14,4 +14,5 @@ export interface IBaseProvider<T> extends vscode.TreeDataProvider<T> {
         options?: any,
     ): vscode.TextEdit[];
     getDocumentName(entityName: string, includeBody: boolean): Thenable<string>;
+    isDynamic(): boolean;
 }

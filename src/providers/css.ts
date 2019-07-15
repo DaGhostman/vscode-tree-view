@@ -47,6 +47,10 @@ export class CssProvider implements IBaseProvider<vscode.TreeItem> {
         return Promise.resolve(this.tree);
     }
 
+    public isDynamic(): boolean {
+        return false;
+    }
+
     public generate(
         entityName: string,
         node: (token.IInterfaceToken | token.IClassToken),

@@ -2,6 +2,17 @@
 
 _[BC]_ Stands for *B*reaking *C*hange
 
+## [2.7.0]
+
+### Added
+
+- [ALL] Customize view position
+- [ALL] Refresh button to force parsing of the tree
+- [ALL] Pin/Lock current tree across editor
+- [ALL] Remove configuration-based activation of providers
+- [JS/TS] Support for accessors `get` & `set`
+- [RAPID] Initial support for RAPID programming language
+
 ## [2.6.0]
 
 - [ALL] Add initial handling for constant types

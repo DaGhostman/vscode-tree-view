@@ -1,5 +1,5 @@
 import { IBaseToken } from "./base";
 
-export interface ImportToken extends IBaseToken {
+export interface IImportToken extends IBaseToken {
     alias?: string;
 }

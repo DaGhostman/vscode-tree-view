@@ -377,6 +377,10 @@ export class JavaProvider implements IBaseProvider<vscode.TreeItem> {
         return Promise.resolve([]);
     }
 
+    public isDynamic(): boolean {
+        return true;
+    }
+
     private getValue(p): string {
         if (p.fragments[0].initializer === null) {
             return "";

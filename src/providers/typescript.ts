@@ -61,7 +61,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                             this.offsetToPosition(imp.start),
                             this.offsetToPosition(imp.start),
                         ),
-                    } as token.ImportToken);
+                    } as token.IImportToken);
                 }
 
                 if (imp instanceof ts.NamespaceImport) {
@@ -72,7 +72,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
                             this.offsetToPosition(imp.start),
                             this.offsetToPosition(imp.start),
                         ),
-                    } as token.ImportToken);
+                    } as token.IImportToken);
                 }
             }
 
@@ -247,6 +247,10 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         return edits;
     }
 
+    public isDynamic(): boolean {
+        return true;
+    }
+
     private walk(dec: ts.Declaration, tree: token.ITokenTree, namespace?: string) {
         if (dec instanceof ts.ClassDeclaration) {
             if (tree.classes === undefined) {
@@ -277,6 +281,7 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
 
             tree.classes.push({
                 abstract: (def.indexOf("abstract") > -1),
+                accessors: this.handleAccessors(dec.accessors),
                 methods: this.handleMethods(dec.methods),
                 name: entityName,
                 properties: this.handleProperties(dec.properties),
@@ -434,6 +439,48 @@ export class TypescriptProvider implements IBaseProvider<vscode.TreeItem> {
         }
 
         return methods;
+    }
+
+    private handleAccessors(children: ts.AccessorDeclaration[]): token.IAccessorToken[] {
+        const accessors: {[key: string]: token.IAccessorToken[]} = {};
+
+        for (const child of children) {
+            if (!accessors[child.name]) {
+                accessors[child.name] = [];
+            }
+
+            const def = vscode.window.activeTextEditor.document.getText(new vscode.Range(
+                this.offsetToPosition(child.start),
+                this.offsetToPosition(child.end),
+            )).split(" ").slice(0, 5).join(" ");
+
+            const matches = /.*\(.*\:(.*)\)/i.exec(def);
+
+            accessors[child.name].push({
+                abstract: child.isAbstract,
+                direction: child instanceof ts.GetterDeclaration ? "get" : "set",
+                name: child.name,
+                position: this.generateRangeForSelection(child.name, child.start),
+                // readonly: child instanceof ts.GetterDeclaration && !accessors[child.name],
+                static: child.isStatic,
+                type: child.type ? child.type : (matches && matches.length > 1) ? matches[1].toString().trim() : "any",
+                value: "",
+                visibility: this.VISIBILITY[child.visibility === undefined ? 2 : child.visibility],
+            } as token.IAccessorToken);
+        }
+
+        const result: token.IAccessorToken[] = [];
+        for (const k in accessors) {
+            if (!accessors[k]) {
+                continue;
+            }
+
+            for (const v of accessors[k]) {
+                result.push(v);
+            }
+        }
+
+        return result;
     }
 
     private handleArguments(children: any[]): token.IVariableToken[] {

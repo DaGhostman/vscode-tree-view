@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { TreeItem } from "vscode";
 import { IBaseProvider } from "./providers/base";
 import {
+    AccessorItem,
     BaseItem,
     ClassItem,
     ConstantItem,
@@ -46,6 +47,16 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
 
         const icons = {
+            accessor_get: {
+                private: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_private_24px.svg"),
+                protected: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_protected_24px.svg"),
+                public: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_public_24px.svg"),
+            },
+            accessor_set: {
+                private: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_private_24px.svg"),
+                protected: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_protected_24px.svg"),
+                public: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_public_24px.svg"),
+            },
             class: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
                 protected: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
@@ -129,6 +140,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             .get("updateOnError") as boolean;
     }
 
+    private pinnedEditor: vscode.TextEditor;
+    private pinned: boolean = false;
+
     public constructor(langProviders: Array<IBaseProvider<any>>) {
         this.langProviders = langProviders;
         vscode.window.onDidChangeActiveTextEditor((ev?: vscode.TextEditor) => {
@@ -150,6 +164,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         });
     }
 
+    public pin(state: boolean) {
+        delete this.pinnedEditor;
+        if (state) {
+            this.pinnedEditor = vscode.window.activeTextEditor;
+        }
+        this.pinned = state;
+    }
+
     public hasSupport(languageId: string) {
         for (const provider of this.langProviders) {
             if (provider.hasSupport(languageId)) {
@@ -161,9 +183,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     }
 
     public getTokenTree(): Thenable<ITokenTree> {
-        if (vscode.window.activeTextEditor.document !== undefined) {
-            const document: vscode.TextDocument = vscode.window.activeTextEditor.document;
+        let document = vscode.window.activeTextEditor.document;
+        if (this.pinnedEditor) {
+            document = this.pinnedEditor.document;
+        }
 
+        if (document !== undefined) {
             if (this.hasSupport(document.languageId)) {
                 const provider = this.getProvider(document);
                 provider.refresh(document);
@@ -176,9 +201,15 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     }
 
     public refresh(document: vscode.TextDocument) {
-        if (!document.isClosed && !document.isDirty) {
+        if (!this.pinned && !document.isClosed && !document.isDirty) {
             try {
                 this.getProvider(document).refresh(document);
+                vscode.commands.executeCommand(
+                    "setContext",
+                    "treeview.provider.dynamic",
+                    this.getProvider(document).isDynamic(),
+                );
+
             } catch (ex) {
                 // console.log(ex);
             }
@@ -187,11 +218,14 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         this.onDidChangeTreeDataEmitter.fire(void 0);
     }
 
-    public getTreeItem(element: BaseItem): TreeItem | Thenable<TreeItem> {
+    public async getTreeItem(element: BaseItem): Promise<TreeItem> {
         try {
             if (element !== undefined && vscode.window.activeTextEditor.document !== undefined) {
                 if (element.position !== undefined) {
-                    element = Provider.addItemCommand(element, "extension.treeview.goto", [element.position]);
+                    element = Provider.addItemCommand(element, "extension.treeview.goto", [
+                        (this.pinnedEditor || vscode.window.activeTextEditor),
+                        element.position,
+                    ]);
                 }
 
                 if (element.contextValue !== undefined && element.contextValue.indexOf("section") === -1) {
@@ -212,13 +246,13 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         return Promise.resolve({} as vscode.TreeItem);
     }
 
-    public getChildren(element?: TreeItem): Thenable<TreeItem[]> {
+    public async getChildren(element?: TreeItem): Promise<TreeItem[]> {
         try {
             if (vscode.window.activeTextEditor.document !== undefined) {
                 const provider: IBaseProvider<any> =
                     this.getProvider(vscode.window.activeTextEditor.document);
 
-                return provider.getTokenTree().then((tree) => {
+                return this.getTokenTree().then((tree) => {
                     if (Object.keys(tree).length !== 0) {
                         const items = this.getBaseChildren(tree, element);
                         const providerItems = provider.getChildren(element) as Thenable<vscode.TreeItem[]>;
@@ -342,9 +376,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     private getBaseChildren(tree: ITokenTree, element?: TreeItem): TreeItem[] {
         let items: TreeItem[] = [];
         if (element === undefined) {
-            items.push(new vscode.TreeItem(
-                `Strict: ${tree.strict !== undefined && tree.strict ? "Yes" : "No"}`,
-            ));
+            if (tree.strict) {
+                items.push(new vscode.TreeItem(
+                    `Strict: ${tree.strict !== undefined && tree.strict ? "Yes" : "No"}`,
+                ));
+            }
 
             if (tree.imports !== undefined) {
                 items.push(new SectionItem(
@@ -456,7 +492,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (element.contextValue === "functions-section") {
                 for (const func of tree.functions.sort(Provider.sort)) {
                     const args = [];
-                    for (const arg of func.arguments) {
+                    for (const arg of (func.arguments || [])) {
                         args.push(
                             `${arg.type !== undefined ? `${arg.type} ` : ""}` +
                             `${arg.name}${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
@@ -519,8 +555,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -535,7 +572,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (cls.methods !== undefined) {
             for (const method of cls.methods.sort(Provider.sort)) {
                 const args = [];
-                for (const arg of method.arguments) {
+                for (const arg of (method.arguments || [])) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
                         `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
@@ -576,8 +613,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -632,11 +670,28 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
         }
 
+        if (cls.accessors !== undefined) {
+            for (const accessor of cls.accessors.sort(Provider.sort)) {
+                const accessorType = accessor.type !== undefined ? `: ${accessor.type}` : "";
+                const t = new AccessorItem(
+                    `${accessor.name}${accessorType}` + `${accessor.value !== "" ? ` = ${accessor.value}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    null,
+                    accessor.position,
+                    `${accessor.visibility}`,
+                );
+                t.contextValue = `accessor_${accessor.direction}`;
+
+                items.push(t);
+            }
+        }
+
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
                     (property.readonly ? this.roChar : "") +
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -664,7 +719,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (cls.methods !== undefined) {
             for (const method of cls.methods.sort(Provider.sort)) {
                 const args = [];
-                for (const arg of method.arguments) {
+                for (const arg of (method.arguments || [])) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
                         `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
