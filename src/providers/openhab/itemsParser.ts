@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { IInterfaceToken as InterfaceToken, ImportToken, ITokenTree, IVariableToken } from "../../tokens";
+import { ITokenTree, IVariableToken } from "../../tokens";
 
 export class ItemsParser {
     private text: string;

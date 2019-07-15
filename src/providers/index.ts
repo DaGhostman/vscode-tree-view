@@ -8,3 +8,4 @@ export { PythonProvider } from "./python";
 export { JavaProvider } from "./java";
 export { CssProvider } from "./css";
 export { LessProvider } from "./less";
+export { RapidProvider } from "./rapid";

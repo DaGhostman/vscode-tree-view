@@ -2,7 +2,7 @@
     "name": "vs-treeview",
     "displayName": "File Tree View",
     "description": "Tree View extension providing an overview of the main file symbols",
-    "version": "2.6.0",
+    "version": "2.7.0-rc2",
     "author": {
         "name": "Dimitar Dimitrov",
         "email": "daghostman.dd@gmail.com"
@@ -34,7 +34,8 @@
         "onLanguage:less",
         "onLanguage:csharp",
         "onLanguage:c",
-        "onLanguage:cpp"
+        "onLanguage:cpp",
+        "onLanguage:rapid"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -62,53 +63,68 @@
             ],
             "explorer": [
                 {
-                    "id": "explorer-outline",
+                    "id": "sidebar-outline",
                     "name": "Symbols",
                     "when": "config.treeview.location == explorer"
                 }
             ]
         },
         "menus": {
+            "commandPalette": [
+                {
+                    "command": "extension.treeview.duplicateEntity",
+                    "when": "treeview.provider.dynamic"
+                },
+                {
+                    "command": "extension.treeview.extractInterface",
+                    "when": "treeview.provider.dynamic"
+                },
+                {
+                    "command": "extension.treeview.implementInterface",
+                    "when": "treeview.provider.dynamic"
+                }
+            ],
             "view/title": [
                 {
                     "command": "extension.treeview.refresh",
-                    "group": "navigation@1"
+                    "group": "navigation@1",
+                    "when": "view == sidebar-outline"
                 },
                 {
                     "command": "extension.treeview.pin",
                     "group": "navigation@2",
-                    "when": "!treeview-pinned"
+                    "when": "!treeview.pinned && view == sidebar-outline"
                 },
                 {
                     "command": "extension.treeview.unpin",
                     "group": "navigation@2",
-                    "when": "treeview-pinned"
+                    "when": "treeview.pinned && view == sidebar-outline"
                 }
             ],
             "view/item/context": [
                 {
                     "command": "extension.treeview.extractInterface",
-                    "when": "viewItem == class",
+                    "when": "viewItem == class && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.extractInterface",
-                    "when": "viewItem == trait",
+                    "when": "viewItem == trait && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.duplicateEntity",
-                    "when": "viewItem == class",
+                    "when": "viewItem == class && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.duplicateEntity",
-                    "when": "viewItem == trait",
+                    "when": "viewItem == trait && treeview.provider.dynamic",
                     "group": "inline"
                 },
                 {
                     "command": "extension.treeview.implementInterface",
-                    "when": "viewItem == interface",
+                    "when": "viewItem == interface && treeview.provider.dynamic",
                     "group": "inline"
                 }
             ]
@@ -301,11 +317,11 @@
     },
     "devDependencies": {
         "@types/mocha": "^2.2.42",
-        "@types/node": "^7.10.0",
+        "@types/node": "^7.10.6",
         "rimraf": "^2.6.2",
-        "tslint": "^5.11.0",
-        "typescript": "^3.0",
-        "vscode": "^1.1.30"
+        "tslint": "^5.18.0",
+        "typescript": "^3.5.3",
+        "vscode": "^1.1.35"
     },
     "dependencies": {
         "css": "^2.2.4",

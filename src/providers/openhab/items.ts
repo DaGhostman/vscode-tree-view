@@ -75,6 +75,10 @@ export class ItemsProvider implements IBaseProvider<vscode.TreeItem> {
     }
 
     public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    return element;
+        return element;
+    }
+
+    public isDynamic(): boolean {
+        return false;
     }
 }

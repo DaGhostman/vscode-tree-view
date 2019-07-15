@@ -71,6 +71,10 @@ export class JsonProvider implements IBaseProvider<string> {
         throw new Error("Unsupported action");
     }
 
+    public isDynamic(): boolean {
+        return false;
+    }
+
     private parseTree(document?: vscode.TextDocument): void {
         document = document !== undefined ? document : vscode.window.activeTextEditor.document;
         if (document) {

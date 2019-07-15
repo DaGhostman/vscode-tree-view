@@ -15,6 +15,7 @@ import {
     TypescriptProvider,
 } from "./providers";
 import { CFamilyProvider } from "./providers/cfamily";
+import { RapidProvider } from "./providers/rapid";
 
 function goToDefinition(editor: vscode.TextEditor, range: vscode.Range) {
     // Swap the focus to the editor
@@ -27,47 +28,28 @@ function goToDefinition(editor: vscode.TextEditor, range: vscode.Range) {
 
 export function activate(context: vscode.ExtensionContext) {
     const providers: Array<IBaseProvider<string | vscode.TreeItem>> = [];
-    const config: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("treeview");
 
-    const allowedProviders: string[] = config.has("allowedProviders") ?
-        config.get("allowedProviders") : [];
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("php") !== -1) {
-        providers.push(new PhpProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("javascript") !== -1) {
-        providers.push(new TypescriptProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("json") !== -1) {
-        providers.push(new JsonProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("java") !== -1) {
-        providers.push(new JavaProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("openhab") !== -1) {
-        providers.push(new RuleProvider());
-        providers.push(new ItemsProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("python") !== -1) {
-        providers.push(new PythonProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("css") !== -1) {
-        providers.push(new CssProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("less") !== -1) {
-        providers.push(new LessProvider());
-    }
-
-    if (allowedProviders.length === 0 || allowedProviders.indexOf("cfamily") !== -1) {
-        providers.push(new CFamilyProvider());
-    }
+    // PHP
+    providers.push(new PhpProvider());
+    // TS/JS
+    providers.push(new TypescriptProvider());
+    // json
+    providers.push(new JsonProvider());
+    // Java
+    providers.push(new JavaProvider());
+    // OpenHAB
+    providers.push(new RuleProvider());
+    providers.push(new ItemsProvider());
+    // Python
+    providers.push(new PythonProvider());
+    // CSS
+    providers.push(new CssProvider());
+    // Less
+    providers.push(new LessProvider());
+    // C/CPP/C#
+    providers.push(new CFamilyProvider());
+    // RAPID
+    providers.push(new RapidProvider());
 
     const provider = new Provider(providers as Array<IBaseProvider<string | vscode.TreeItem>>);
 
@@ -83,7 +65,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.commands.registerCommand("extension.treeview.goto", goToDefinition);
     vscode.window.registerTreeDataProvider(`sidebar-outline`, provider);
-    vscode.window.registerTreeDataProvider(`explorer-outline`, provider);
     vscode.commands.registerCommand("extension.treeview.extractInterface", (a?: vscode.TreeItem) => {
         const conf = vscode.workspace.getConfiguration("treeview");
         provider.getTokenTree().then((tokenTree) => {
@@ -132,12 +113,12 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand("extension.treeview.pin", () => {
-        vscode.commands.executeCommand("setContext", "treeview-pinned", true);
+        vscode.commands.executeCommand("setContext", "treeview.pinned", true);
         provider.pin(true);
     });
 
     vscode.commands.registerCommand("extension.treeview.unpin", () => {
-        vscode.commands.executeCommand("setContext", "treeview-pinned", false);
+        vscode.commands.executeCommand("setContext", "treeview.pinned", false);
         provider.pin(false);
         vscode.commands.executeCommand("extension.treeview.refresh");
     });

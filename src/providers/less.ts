@@ -90,6 +90,10 @@ export class LessProvider implements IBaseProvider<vscode.TreeItem> {
         return Promise.resolve(list);
     }
 
+    public isDynamic(): boolean {
+        return false;
+    }
+
     private handleRule(rule): [token.IVariableToken, token.IVariableToken[]] {
         const name = rule.selectors.map((x) => {
             return x.elements.map((y) => {

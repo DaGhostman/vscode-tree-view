@@ -38,7 +38,7 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
                             this.tree.imports.push({
                                 name: symbol.name,
                                 position: symbol.location.range,
-                            } as token.ImportToken);
+                            } as token.IImportToken);
                             break;
                         case vscode.SymbolKind.Class:
                             if (namespace) {
@@ -150,6 +150,10 @@ export class CFamilyProvider implements IBaseProvider<vscode.TreeItem> {
 
     public getDocumentName(entityName: string, includeBody: boolean): Thenable<string> {
         return Promise.reject("C/C++/C# Generation is currently not supported :/ ");
+    }
+
+    public isDynamic(): boolean {
+        return false;
     }
 
     private handleVar(def: string, symbol: vscode.SymbolInformation) {

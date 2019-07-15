@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { IInterfaceToken as InterfaceToken, ImportToken, ITokenTree, IVariableToken } from "../../tokens";
+import { IImportToken, ITokenTree, IVariableToken } from "../../tokens";
 
 export class RuleParser {
     private text: string;
@@ -16,7 +16,7 @@ export class RuleParser {
                 return {
                     name: i,
                     position: this.getPosition(i),
-                } as ImportToken;
+                } as IImportToken;
             }) || [];
 
         const rules = lines

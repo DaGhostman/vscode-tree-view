@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { TreeItem } from "vscode";
 import { IBaseProvider } from "./providers/base";
 import {
+    AccessorItem,
     BaseItem,
     ClassItem,
     ConstantItem,
@@ -24,7 +25,6 @@ import {
 
 export class Provider implements vscode.TreeDataProvider<TreeItem> {
     public static readonly config: vscode.WorkspaceConfiguration;
-
 
     public static addItemCommand(item: vscode.TreeItem, commandName: string, args?: any[]): vscode.TreeItem {
         item.command = {
@@ -47,6 +47,16 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         }
 
         const icons = {
+            accessor_get: {
+                private: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_private_24px.svg"),
+                protected: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_protected_24px.svg"),
+                public: vscode.Uri.file(__dirname + "/../assets/ic_arrow_back_public_24px.svg"),
+            },
+            accessor_set: {
+                private: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_private_24px.svg"),
+                protected: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_protected_24px.svg"),
+                public: vscode.Uri.file(__dirname + "/../assets/ic_arrow_forward_public_24px.svg"),
+            },
             class: {
                 private: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
                 protected: vscode.Uri.file(__dirname + "/../assets/ic_class_private_24px.svg"),
@@ -154,7 +164,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         });
     }
 
-    public  pin(state: boolean) {
+    public pin(state: boolean) {
         delete this.pinnedEditor;
         if (state) {
             this.pinnedEditor = vscode.window.activeTextEditor;
@@ -194,6 +204,12 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (!this.pinned && !document.isClosed && !document.isDirty) {
             try {
                 this.getProvider(document).refresh(document);
+                vscode.commands.executeCommand(
+                    "setContext",
+                    "treeview.provider.dynamic",
+                    this.getProvider(document).isDynamic(),
+                );
+
             } catch (ex) {
                 // console.log(ex);
             }
@@ -360,9 +376,11 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
     private getBaseChildren(tree: ITokenTree, element?: TreeItem): TreeItem[] {
         let items: TreeItem[] = [];
         if (element === undefined) {
-            items.push(new vscode.TreeItem(
-                `Strict: ${tree.strict !== undefined && tree.strict ? "Yes" : "No"}`,
-            ));
+            if (tree.strict) {
+                items.push(new vscode.TreeItem(
+                    `Strict: ${tree.strict !== undefined && tree.strict ? "Yes" : "No"}`,
+                ));
+            }
 
             if (tree.imports !== undefined) {
                 items.push(new SectionItem(
@@ -474,7 +492,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             if (element.contextValue === "functions-section") {
                 for (const func of tree.functions.sort(Provider.sort)) {
                     const args = [];
-                    for (const arg of func.arguments) {
+                    for (const arg of (func.arguments || [])) {
                         args.push(
                             `${arg.type !== undefined ? `${arg.type} ` : ""}` +
                             `${arg.name}${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
@@ -537,8 +555,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -553,7 +572,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (cls.methods !== undefined) {
             for (const method of cls.methods.sort(Provider.sort)) {
                 const args = [];
-                for (const arg of method.arguments) {
+                for (const arg of (method.arguments || [])) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
                         `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
@@ -594,8 +613,9 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
 
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -650,11 +670,28 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
             }
         }
 
+        if (cls.accessors !== undefined) {
+            for (const accessor of cls.accessors.sort(Provider.sort)) {
+                const accessorType = accessor.type !== undefined ? `: ${accessor.type}` : "";
+                const t = new AccessorItem(
+                    `${accessor.name}${accessorType}` + `${accessor.value !== "" ? ` = ${accessor.value}` : ""}`,
+                    vscode.TreeItemCollapsibleState.None,
+                    null,
+                    accessor.position,
+                    `${accessor.visibility}`,
+                );
+                t.contextValue = `accessor_${accessor.direction}`;
+
+                items.push(t);
+            }
+        }
+
         if (cls.properties !== undefined) {
             for (const property of cls.properties.sort(Provider.sort)) {
+                const propertyType = property.type !== undefined ? `: ${property.type}` : "";
                 const t = new PropertyItem(
                     (property.readonly ? this.roChar : "") +
-                    `${property.name}: ${property.type}` +
+                    `${property.name}${propertyType}` +
                     `${property.value !== "" ? ` = ${property.value}` : ""}`,
                     vscode.TreeItemCollapsibleState.None,
                     undefined,
@@ -682,7 +719,7 @@ export class Provider implements vscode.TreeDataProvider<TreeItem> {
         if (cls.methods !== undefined) {
             for (const method of cls.methods.sort(Provider.sort)) {
                 const args = [];
-                for (const arg of method.arguments) {
+                for (const arg of (method.arguments || [])) {
                     args.push(
                         `${arg.type !== undefined ? `${arg.type} ` : ""}${arg.name}` +
                         `${(arg.value !== "" ? ` = ${arg.value}` : "")}`,
