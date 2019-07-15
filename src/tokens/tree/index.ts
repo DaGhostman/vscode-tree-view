@@ -1,5 +1,6 @@
 "use strict";
 
+export * from "./accessor";
 export * from "./tree";
 export * from "./base";
 export * from "./constant";
